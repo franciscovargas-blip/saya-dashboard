@@ -2,285 +2,333 @@ import { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie } from "recharts";
 
 const MO=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-const OX={SW0001:"Salaries & Wages",PF0001:"Professional Fees",SM0001:"Sales & Marketing",TA0001:"Travel & Accommodation",IT0001:"IT",OF0001:"Office Expenses",OP0001:"Operations",DP0001:"Depreciation",FE0001:"Financial Expense",FI0001:"Financial Income",OT0001:"Others",TX0001:"Taxes & Permits"};
-const PLO=["Net Sales","Gross to Net","COGS","Gross Profit","TOTAL OPERATING  EXPENSES","EBIT","EBITDA"];
-const OC=Object.keys(OX);const BL=new Set(["Net Sales","Gross Profit","EBIT","EBITDA"]);
-const COLORS=["#1D9E75","#534AB7","#D85A30","#185FA5","#BA7517","#E24B4A","#D4537E","#639922","#888780"];
+const COLORS=["#1D9E75","#534AB7","#D85A30","#185FA5","#BA7517","#E24B4A","#D4537E","#639922","#888"];
+const OPEX_LINES=["SW0001","SM0001","TA0001","PF0001","OF0001"];
+const OPEX_LABELS={SW0001:"Salaries & Wages",SM0001:"Sales & Marketing",TA0001:"Travel & Accommodation",PF0001:"Professional Fees",OF0001:"Office Expenses"};
 
-const D=[["4400","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",4400.0],["8800","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8800.0],["Beginning Inventory","Forecast",7,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8612.0],["Beginning Inventory","Forecast",8,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8236.0],["Beginning Inventory","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",7673.0],["Beginning Inventory","Forecast",10,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",6734.0],["Beginning Inventory","Forecast",11,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",5232.0],["Beginning Inventory","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",3166.0],["COGS","Forecast",1,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",2,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",3,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",1355200.0],["COGS","Forecast",4,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",5,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",7,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",8,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",677600.0],["COGS","Forecast",10,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",11,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["COGS","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",0.0],["Depreciation & Amortization","Reales",1,"FIXED","NOAP","—","Ajuste Depreciación y Amortizacion - Fran","NOAP",513127.62],["Ending Inventory","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8612.0],["Ending Inventory","Forecast",7,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8236.0],["Ending Inventory","Forecast",8,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",7673.0],["Ending Inventory","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",6734.0],["Ending Inventory","Forecast",10,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",5232.0],["Ending Inventory","Forecast",11,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",3166.0],["Ending Inventory","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",5500.0],["Financial Expense","Reales",1,"FIXED","NOAP","—","Ajuste Financial Expense - Fran","NOAP",435134.95],["Financial Income","Reales",1,"FIXED","NOAP","—","Ajuste Financial Income - Fran","NOAP",-514523.15],["IT (Software-Hardware)","Reales",1,"FIXED","NOAP","Licencias de Software","Amazon web services","AMAZON WEB SERVICES",32.91],["IT (Software-Hardware)","Reales",1,"FIXED","NOAP","Licencias de Software","Amazonweb services","AMAZON WEB SERVICES",36.42],["IT (Software-Hardware)","Reales",1,"FIXED","NOAP","Licencias de Software","Notion Lab marzo 2026","STEPHANIE BACHAALANI D'URZO",14701.15],["IT (Software-Hardware)","Reales",1,"FIXED","NOAP","Licencias de Software","Notion Labs","NOTION LABS INC",11180.02],["IT (Software-Hardware)","Reales",1,"FIXED","NOAP","Licencias de Software","Reembolso - Notion Lab abril 2026","STEPHANIE BACHAALANI D'URZO",18259.13],["IT (Software-Hardware)","Reales",1,"FIXED","NOAP","—","Ajuste IT - Fran","NOAP",1769.0],["IT (Software-Hardware)","Reales",2,"FIXED","NOAP","Licencias de Software","Amazon MXN","AMAZON WEB SERVICES",44.16],["IT (Software-Hardware)","Reales",4,"FIXED","NOAP","Licencias de Software","Amazon Web Serives","AMAZON WEB SERVICES",39.17],["IT (Software-Hardware)","Reales",5,"FIXED","NOAP","Reclutamiento Fees","Posteo vacante AG LinkdeIn","PPROMEX*LINKEDIN",4066.36],["IT (Software-Hardware)","Reales",7,"FIXED","NOAP","Licencias de Software","Servicio de declaración tributaria STD (Liq. Sem julio-di...","EDICOMUNICACIONES MEXICO",199.0],["IT (Software-Hardware)","Reales",9,"FIXED","NOAP","Licencias de Software","Asana","ASANA",3800.0],["IT (Software-Hardware)","Reales",9,"FIXED","NOAP","Licencias de Software","Asana 09FEB26 - 08MAR26","ASANA",3800.0],["IT (Software-Hardware)","Reales",9,"FIXED","NOAP","Licencias de Software","Asana 09MAR26 al 08ABR26","ASANA",3800.0],["IT (Software-Hardware)","Reales",9,"FIXED","NOAP","Licencias de Software","Asana: 09ABR26 al 08MAY26","ASANA",3800.0],["Months of Cover","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",13.76],["Months of Cover","Forecast",7,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8.22],["Months of Cover","Forecast",8,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",5.11],["Months of Cover","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",3.59],["Months of Cover","Forecast",10,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",3.29],["Months of Cover","Forecast",11,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",2.72],["Months of Cover","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",7.2],["Net Sales","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",180083.09],["Net Sales","Forecast",7,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",360166.19],["Net Sales","Forecast",8,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",539291.39],["Net Sales","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",899457.58],["Net Sales","Forecast",10,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",1438748.98],["Net Sales","Forecast",11,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",1978998.26],["Net Sales","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",1978998.26],["Office Expense","Reales",3,"FIXED","NOAP","Arrendamiento de Oficinas","Renta y estacionamiento de oficina CDMX marzo 2026","COWORKING CHAPULTEPEC",49700.0],["Office Expense","Reales",5,"FIXED","NOAP","Comidas de Trabajo en Oficina","Comida AnG equipo SINETI GDL","LAGUNEROS ORIENTALES",263.79],["Office Expense","Reales",6,"FIXED","NOAP","Arrendamiento de Oficinas","Renta y estacionamiento de oficina CDMX abril 2026","COWORKING CHAPULTEPEC",49700.0],["Office Expense","Reales",6,"FIXED","NOAP","Arrendamiento de Oficinas","Renta y estacionamiento de oficina CDMX enero 2026","COWORKING CHAPULTEPEC",49700.0],["Office Expense","Reales",6,"FIXED","NOAP","Arrendamiento de Oficinas","Renta, estacionamiento y hrs extras (enero) de oficina CD...","COWORKING CHAPULTEPEC",55587.49],["Office Expense","Reales",6,"FIXED","NOAP","Estacionamiento","Reembolso - Estacionamiento","EDWIN IVAN RAMIREZ GARDUÑO",275.86],["Office Expense","Reales",6,"FIXED","NOAP","Estacionamiento","Reembolso - Estacionamiento","MIGUEL ANGEL CARRILLO GONZALEZ",137.93],["Office Expense","Reales",9,"FIXED","NOAP","Papelería y artículos de oficina","Papelería JR CDMX","OFFICE DEPOT INTERNET",5350.43],["Office Expense","Reales",10,"FIXED","NOAP","Papelería y artículos de oficina","Impresiones AnG Etiquetas AF","OFFICE DEPOT AMERICAS",34.48],["Office Expense","Reales",11,"FIXED","NOAP","Papelería y artículos de oficina","Libro de FARMACOPEA","FARMACOPEA DE LOS ESTADOS UNIDOS MEXICANOS, A. C.",1920.0],["Office Expense","Reales",12,"FIXED","NOAP","Equipo de computo","Servicio en Sistemas (Computadora Lau-Francisco)","T9 DIGITAL MARKETING",850.0],["Operations","Forecast",3,"Ácido Hialurónico 1%","NOAP","—","OK: CALIDAD SIN EQMS","Maxigen Biotech",55680.0],["Operations","Reales",1,"FIXED","NOAP","—","Ajuste Operaciones - Fran","NOAP",17780.67],["Operations","Reales",3,"TERI","SAOS","Cuotas COFEPRIS","Permiso de importación Euxara","COFEPRIS",7300.0],["Operations","Reales",4,"ACHI","SAOS","Costo de almacenaje","Servicio de Almacenamiento Protocolo","WORLD COURIER DE MEXICO",12841.44],["Operations","Reales",4,"ACHI","SAOS","Costo de distribucion","Servicio de Transporte con Origen en Tlalnepantla y Desti...","WORLD COURIER DE MEXICO",2305.72],["Others","Reales",1,"FIXED","NOAP","—","Ajuste Others - Fran","NOAP",30141.05],["PO Placed","Forecast",3,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8800.0],["PO Placed","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",4400.0],["PO Received","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",8800.0],["PO Received","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",4400.0],["Price","Forecast",1,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",2,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",3,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",4,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",5,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",7,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",8,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",10,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",11,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Price","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","OK","Maxigen Biotech",957.89],["Professional Fees","Reales",1,"FIXED","NOAP","Consultoria de traduccion de texto","Traducción RC Documentos","DEEPL* SUB:BTTWXJVFW9I",195.6],["Professional Fees","Reales",1,"FIXED","NOAP","Consultoría contable","Honorarios por la prestación de servicios de asesoría con...","PROTEXI EMPRESARIAL",6300.0],["Professional Fees","Reales",1,"FIXED","NOAP","Consultoría de marketing","Servicio de Relaciones Públicas correspondiente al mes de...","INCIDENCIA EN COMUNICACION",95000.0],["Professional Fees","Reales",1,"FIXED","NOAP","Consultoría estratégica y de gestión","Consuntancy Fee","JUNEE PHARMACEUTICAL CO. LTD.",35905.6],["Professional Fees","Reales",1,"FIXED","NOAP","Reclutamiento Fees","Placement fee for Tatiana Yglesias - This is 20% of base ...","QUALITY PRECISION GROUP LIMITED",942522.0],["Professional Fees","Reales",1,"FIXED","NOAP","Reclutamiento Fees","Posición Ssr. Recruiter - Cierre de Proceso","HALO EXECUTIVE SEARCH",39607.26],["Professional Fees","Reales",1,"FIXED","NOAP","—","Ajuste Professional Fees - Fran","NOAP",-1770.0],["Professional Fees","Reales",2,"FIXED","NOAP","Consultoría contable","Honorarios por la prestación de servicios de asesoría con...","PROTEXI EMPRESARIAL",6300.0],["Professional Fees","Reales",2,"FIXED","NOAP","Consultoría de marketing","Servicio de Relaciones Públicas correspondiente al mes de...","INCIDENCIA EN COMUNICACION",95000.0],["Professional Fees","Reales",2,"FIXED","NOAP","Consultoría de marketing","Servicio de Relaciones Públicas correspondiente al mes de...","INCIDENCIA EN COMUNICACION",95000.0],["Professional Fees","Reales",3,"FIXED","NOAP","Consultoría contable","Honorarios por la prestación de servicios de asesoría con...","PROTEXI EMPRESARIAL",6300.0],["Professional Fees","Reales",3,"FIXED","NOAP","Consultoría regulatoria","Farmacovigilancia/Tecnovigilancia. Costo Mensual 1 a 5 pr...","JORGE SANCHEZ BADILLO",15750.0],["Professional Fees","Reales",3,"TERI","SAOS","Consultoría regulatoria","Permiso de importación Euxara. Se requiere uno por producto","JORGE SANCHEZ BADILLO",5250.0],["Professional Fees","Reales",5,"FIXED","NOAP","Consultoría contable","Honorarios por la prestación de servicios de asesoría con...","PROTEXI EMPRESARIAL",6300.0],["Professional Fees","Reales",6,"FIXED","NOAP","Consultoría regulatoria","Farmacovigilancia/Tecnovigilancia. Costo Mensual 1 a 5 pr...","JORGE SANCHEZ BADILLO",15750.0],["Professional Fees","Reales",8,"TERI","SAOS","Consultoria de traduccion de texto","Traducción RC Docuemtno Euxara español-inglés","PAYCLIP*SERV LINGUASPR",5420.77],["Professional Fees","Reales",12,"ACHI","SAOS","Costo Materiales","Material Médico HA","JORGE EDUARDO GARCIA HERNANDEZ",61269.23],["Salaries & Wages","Reales",1,"FIXED","NOAP","Prestación de Autos del Personal","Alquiler de vehículo del mes de febrero 2026 (Tesla model 3)","TRACSA",21339.11],["Salaries & Wages","Reales",10,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo BY King","TRACSA",14487.97],["Salaries & Wages","Reales",10,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo EX30 Ultra","TRACSA",28365.13],["Salaries & Wages","Reales",10,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo Tesla Model 3 STD y sus servicios","TRACSA",41509.44],["Salaries & Wages","Reales",10,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo XC40 Recharge","TRACSA",26710.67],["Salaries & Wages","Reales",11,"FIXED","NOAP","Capacitación al personal","Inscripción Deydre y Edwin curso: La Inteligencia Artific...","ASOCIACION MEXICANA DE PROFESIONALES EN REGULACION SANITARIA DE LA INDUSTRIA DE INSUMOS PARA LA SALUD",9655.17],["Salaries & Wages","Reales",11,"FIXED","NOAP","Prestación de Autos del Personal","Alquiler de vehÍculo por el mes de febrero 2025 (Refactur...","TRACSA",20818.48],["Salaries & Wages","Reales",12,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo BY King","TRACSA",14487.97],["Salaries & Wages","Reales",12,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo EX30 Ultra","TRACSA",28365.13],["Salaries & Wages","Reales",12,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo Tesla Model 3 STD y sus servicios","TRACSA",41509.44],["Salaries & Wages","Reales",12,"FIXED","NOAP","Prestación de Autos del Personal","Arrendamiento del vehículo XC40 Recharge","TRACSA",26710.67],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos comerciales externos","Hospedaje The Barnett JDV By Hyatt","PRISCILLA JIMENEZ",5957.02],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Cena personal AAOS día 1","LUIS FERNANDO DE LA CRUZ GUTIERREZ",791.05],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Comida Aeropuerto Internacional de Houston-.AAOS","KARLA CAROLINA LOPEZ FIGUEROA",1069.82],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Comida Aeropuerto Internacional de Houston-.AAOS","LUIS FERNANDO DE LA CRUZ GUTIERREZ",1871.21],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Hospedaje The Barnett JDV By Hyatt","EDUARDO AZPEITIA",5986.8],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Hospedaje The Barnett JDV By Hyatt","GUSTAVO COMPEAN",5957.01],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Hospedaje The Barnett JDV By Hyatt","KARLA CAROLINA LOPEZ FIGUEROA",5986.8],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Hospedaje The Barnett JDV By Hyatt","LUIS FERNANDO DE LA CRUZ GUTIERREZ",5957.01],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Servicio de cafe en Aeropuerto Internacional de Houston- ...","LUIS FERNANDO DE LA CRUZ GUTIERREZ",145.5],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Traslado Aeropuerto Internacional Nueva Orleans- JDV By H...","LUIS FERNANDO DE LA CRUZ GUTIERREZ",1153.52],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Traslado Aeropuerto Internacional Nueva Orleans- JDV By H...","KARLA CAROLINA LOPEZ FIGUEROA",1297.56],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Traslado Aeropuerto Internacional Nueva Orleans- JDV By H...","KARLA CAROLINA LOPEZ FIGUEROA",1512.6],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Traslado Aeropuerto NOLA-JDV BY HYATT","ISAAC LOPEZ",998.6],["Sales & Marketing","Reales",1,"ACHI","SAOS","Eventos de prelanzamiento de productos","Traslado Aeropuerto NOLA-JDV BY HYATT","IVETTE CALDERON",720.0],["Sales & Marketing","Reales",1,"ACHI","SAOS","Taxis","Uber KL CDMX","MOBILITY DAE",343.08],["Sales & Marketing","Reales",1,"ACHI","SAOS","Vuelos","Diferencia","UNITED01643747464295",19.95],["Sales & Marketing","Reales",1,"ACHI","SAOS","Vuelos","Maleta documentada KL New Orleans","UNITED01643747464295",690.25],["Sales & Marketing","Reales",2,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","MAIN SQUEEZE JUICE CAR",778.07],["Sales & Marketing","Reales",2,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","MARRIOTT 337V6NOCONVCT",231.99],["Sales & Marketing","Reales",2,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","UBER EATS",529.06],["Sales & Marketing","Reales",2,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","SQ *PLUCK WINE BAR & R",903.47],["Sales & Marketing","Reales",2,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","TFK-NEW ORLEANS - IN-S",920.49],["Sales & Marketing","Reales",2,"ACHI","SAOS","Alimentos","Diferencia","TFK-NEW ORLEANS - IN-S",559.04],["Sales & Marketing","Reales",2,"ACHI","SAOS","Alimentos","Propina","SQ *PLUCK WINE BAR & R",135.5],["Sales & Marketing","Reales",2,"ACHI","SAOS","Eventos de prelanzamiento de productos","Desayuno Equipo Médico-Comercial AAOS","KARLA CAROLINA LOPEZ FIGUEROA",898.15],["Sales & Marketing","Reales",2,"ACHI","SAOS","Taxis","Uber KL New Orleans","UBER",1648.19],["Sales & Marketing","Reales",3,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","TARGET 00014498",1285.5],["Sales & Marketing","Reales",3,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","THE ANTIDOTE JUICE",1003.32],["Sales & Marketing","Reales",3,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","ARNAUDS",13556.96],["Sales & Marketing","Reales",3,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","SQ *BAYOU BELLE CAFÉ",1401.49],["Sales & Marketing","Reales",3,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","TARGET 00014498",203.88],["Sales & Marketing","Reales",3,"ACHI","SAOS","Alimentos","Diferencia y propina","ARNAUDS",4842.47],["Sales & Marketing","Reales",3,"ACHI","SAOS","Alimentos","Propina","SQ *BAYOU BELLE CAFÉ",192.97],["Sales & Marketing","Reales",3,"ACHI","SAOS","Taxis","Uber KL New Orleans","UBER",1428.81],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","MAIN SQUEEZE JUICE CAR",513.91],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","MARRIOTT 337V6NOCONVCT",122.58],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","UBER EATS",1495.77],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","STARBUCKS 16183",1092.51],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","TST*N7",12362.13],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Comisión y envío","UBER EATS",318.54],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Propina","MAIN SQUEEZE JUICE CAR",69.69],["Sales & Marketing","Reales",4,"ACHI","SAOS","Alimentos","Propina","TST*N7",2472.39],["Sales & Marketing","Reales",4,"ACHI","SAOS","Hospedaje","Hospedaje FC New Orleans","CORPORATE TRAVEL SERVICES WORLDWIDE",27515.45],["Sales & Marketing","Reales",4,"ACHI","SAOS","Taxis","Uber FC New Orleans","UBER",1097.46],["Sales & Marketing","Reales",4,"ACHI","SAOS","Taxis","Uber KL New Orleans","UBER",729.63],["Sales & Marketing","Reales",5,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","HYATT BARNETT CAFE",300.16],["Sales & Marketing","Reales",5,"ACHI","SAOS","Alimentos","Alimentos FC New Orleans","MARRIOTT 337V6NOCONVCT",1061.68],["Sales & Marketing","Reales",5,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","MAIN SQUEEZE JUICE CAR",940.11],["Sales & Marketing","Reales",5,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","TST* WILLIE MAE'S NOLA",6154.95],["Sales & Marketing","Reales",5,"ACHI","SAOS","Alimentos","Diferencia","TST* WILLIE MAE'S NOLA",1109.01],["Sales & Marketing","Reales",5,"ACHI","SAOS","Alimentos","Propina","HYATT BARNETT CAFE",36.14],["Sales & Marketing","Reales",5,"ACHI","SAOS","Consultoría de marketing","Implementación de apoyo visual de dispositivo médico pago...","COARDISA CORP",51240.1],["Sales & Marketing","Reales",5,"ACHI","SAOS","Taxis","Transporte FC New Orleans","SQ *B & D FITZGERALD T",1264.96],["Sales & Marketing","Reales",5,"ACHI","SAOS","Taxis","Uber FC New Orleans","UBER",3049.3],["Sales & Marketing","Reales",5,"ACHI","SAOS","Taxis","Uber KL New Orleans","UBER",1895.63],["Sales & Marketing","Reales",6,"ACHI","SAOS","Alimentos","Alimentos FC CDMX","CAFE SIRENA",373.31],["Sales & Marketing","Reales",6,"ACHI","SAOS","Alimentos","Alimentos KL New Orleans","STARBUCKS C EAST MSY",416.35],["Sales & Marketing","Reales",6,"ACHI","SAOS","Taxis","Uber FC CDMX","MOBILITY DAE",241.35],["Sales & Marketing","Reales",6,"ACHI","SAOS","Taxis","Uber FC CDMX","UBER",284.47],["Sales & Marketing","Reales",6,"ACHI","SAOS","Taxis","Uber KL CDMX","UBER",287.6],["Sales & Marketing","Reales",6,"ACHI","SAOS","Taxis","Uber KL New Orleans","UBER",1774.59],["Sales & Marketing","Reales",6,"ACHI","SAOS","Vuelos","Maleta KL New Orleans","UNITED",2529.91],["Sales & Marketing","Reales",7,"ACHI","SAOS","Representacion de ventas","Alimentos FC GDL","REST CRISTINA SAO PAUL",1331.42],["Sales & Marketing","Reales",7,"ACHI","SAOS","Representacion de ventas","Comida con Dr. Eduardo García, Dr Gaytan y Lic. Gabriela ...","GOMCARLU",6327.59],["Sales & Marketing","Reales",7,"ACHI","SAOS","Representacion de ventas","Propina","GOMCARLU",1101.0],["Sales & Marketing","Reales",7,"ACHI","SAOS","Taxis","Uber KL New Orleans","UBER",805.97],["Sales & Marketing","Reales",7,"TERI","SAOS","Representacion de ventas","Comida FC Dr. Loza y Mirassou","REST HARRYS MASARYK",4965.48],["Sales & Marketing","Reales",7,"TERI","SAOS","Representacion de ventas","Propina","REST HARRYS MASARYK",864.04],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Alimentos FC GDL Dra. Caldero, Amaya y Espinosa","REST GUEPARDO",1575.0],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Alimentos FC GDL Dra. Ozuna","RES LOCO MARINO",2068.97],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Alimentos FC GDL Dra. Priscila","MERCADOPAGO *PISTACH3",1000.86],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Alimentos FC miembros BIRMEX","REST CASA D AMICO",5266.35],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Cervezas","REST CASA D AMICO",482.79],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Comida FC Dr. García","CAFE SIRENA",175.0],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Propina","MERCADOPAGO *PISTACH3",174.15],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Propina","RES LOCO MARINO",360.0],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Propina","REST CASA D AMICO",1000.35],["Sales & Marketing","Reales",8,"ACHI","SAOS","Representacion de ventas","Propina","REST GUEPARDO",274.05],["Sales & Marketing","Reales",9,"ACHI","SAOS","Eventos de prelanzamiento de productos","Participación en el LIV Congreso Mexicano de Reumatología...","COLEGIO MEXICANO DE REUMATOLOGIA",150000.0],["Sales & Marketing","Reales",9,"ACHI","SAOS","Representacion de ventas","Alimentos FC GDL Dr. Azpeitia","D ALMENDRA KETO PANAD",480.0],["Sales & Marketing","Reales",9,"ACHI","SAOS","Representacion de ventas","Alimentos FC GDL Dra. Terán","REAL FOOD",1021.54],["Sales & Marketing","Reales",9,"ACHI","SAOS","Representacion de ventas","Alimentos FC MTY Dr. Gerhard y Valrio","SUSHI KIIRO",2514.67],["Sales & Marketing","Reales",9,"ACHI","SAOS","Representacion de ventas","Propina","REAL FOOD",177.76],["Sales & Marketing","Reales",9,"ACHI","SAOS","Representacion de ventas","Propina","SUSHI KIIRO",437.53],["Sales & Marketing","Reales",10,"ACHI","SAOS","Representacion de ventas","Alimentos KL Pixel Lab","ABARROTS CASROL MIDTWN",725.01],["Sales & Marketing","Reales",10,"ACHI","SAOS","Representacion de ventas","Propina","ABARROTS CASROL MIDTWN",126.14],["Sales & Marketing","Reales",12,"TERI","SAOS","Representacion de ventas","Alimentos FC CDMX","REST DANTE",3075.86],["Sales & Marketing","Reales",12,"TERI","SAOS","Representacion de ventas","Propina","REST DANTE",535.2],["Total Demand (Vol)","Forecast",6,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",188.0],["Total Demand (Vol)","Forecast",7,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",376.0],["Total Demand (Vol)","Forecast",8,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",563.0],["Total Demand (Vol)","Forecast",9,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",939.0],["Total Demand (Vol)","Forecast",10,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",1502.0],["Total Demand (Vol)","Forecast",11,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",2066.0],["Total Demand (Vol)","Forecast",12,"Ácido Hialurónico 1%","NOAP","—","—","Maxigen Biotech",2066.0],["Travel & Accomodation","Reales",1,"ACHI","SAOS","—","Gastos de prelanzamiento de producto KL Devolución","- - -",-602.0],["Travel & Accomodation","Reales",1,"DENO","SAOS","Hospedaje","Hospedaje AG","CORPORATE TRAVEL SERVICES WORLDWIDE",2851.36],["Travel & Accomodation","Reales",1,"FIXED","NOAP","Hospedaje","Hospedaje TY New York","CORPORATE TRAVEL SERVICES WORLDWIDE",31751.0],["Travel & Accomodation","Reales",1,"FIXED","NOAP","—","Ajuste T&A - Fran","NOAP",0.0],["Travel & Accomodation","Reales",1,"FIXED","NOAP","—","RECLASIFICACIÓN - ANT REST MANDRAKE VALLE AG","- - -",242.0],["Travel & Accomodation","Reales",1,"PELI","ONHE","Alimentos","Alimentos AG Chicago","PANERA BREAD 203142 P",230.21],["Travel & Accomodation","Reales",1,"PELI","ONHE","Alimentos","Alimentos AG Chicago","TALBOTT HOTEL AUTOGRAP",141.48],["Travel & Accomodation","Reales",1,"PELI","ONHE","Hospedaje","Fee Hospedaje RC Chicagi","CORPORATE TRAVEL SERVICES WORLDWIDE",60.0],["Travel & Accomodation","Reales",1,"PELI","ONHE","Hospedaje","Hospedaje RC Chicago","CORPORATE TRAVEL SERVICES WORLDWIDE",8499.3],["Travel & Accomodation","Reales",1,"PELI","ONHE","Taxis","Uber AG Chicago","UBER",1099.45],["Travel & Accomodation","Reales",1,"PELI","ONHE","—","Devolución AG Hospedaje","- - -",-717.4],["Travel & Accomodation","Reales",1,"PELI","ONHE","—","Devolución AG Hospedaje(Anulación) - 2684","- - -",38.29],["Travel & Accomodation","Reales",1,"TERI","SAOS","Hospedaje","Hospedaje AG","CORPORATE TRAVEL SERVICES WORLDWIDE",2851.37],["Travel & Accomodation","Reales",2,"FIXED","NOAP","Taxis","Uber DD CDMX","UBER",9.48],["Travel & Accomodation","Reales",2,"FIXED","NOAP","Taxis","Uber KL CDMX","MOBILITY DAE",267.22],["Travel & Accomodation","Reales",2,"FIXED","NOAP","Taxis","Uber KL CDMX","UBER",362.02],["Travel & Accomodation","Reales",2,"PELI","ONHE","Taxis","Uber AG MTY","UBER",525.85],["Travel & Accomodation","Reales",3,"PELI","ONHE","Vuelos","Vuelo RC Chicago","AEROVIAS DE MEXICO",10639.0],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Hospedaje","Hospedaje FC GDL","CORPORATE TRAVEL SERVICES WORLDWIDE",5990.4],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Hospedaje","Hospedaje KL GDL","CORPORATE TRAVEL SERVICES WORLDWIDE",5990.4],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Vuelos","Diferencia de facturs","AEROENLACES NACIONALES",0.01],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Vuelos","Diferencia factura","AEROENLACES NACIONALES",0.01],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Vuelos","Vuelo FC GDL","AEROVIAS DE MEXICO",6076.59],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Vuelos","Vuelo FC GDL-CDMX","AEROENLACES NACIONALES",1433.34],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Vuelos","Vuelo KL GDL","AEROVIAS DE MEXICO",5585.21],["Travel & Accomodation","Reales",4,"ACHI","SAOS","Vuelos","Vuelo KL GDL-CDMX","AEROENLACES NACIONALES",1433.34],["Travel & Accomodation","Reales",4,"ACHI","SAOS","—","Devolución Alimentos KL New Orleans","- - -",-118.38],["Travel & Accomodation","Reales",4,"ACHI","SAOS","—","Devolución Alimentos KL New Orleans(Anulación) - 2937","- - -",59.19],["Travel & Accomodation","Reales",4,"FIXED","NOAP","Taxis","Uber KL CDMX","DIGITAL SOLUTIONS AMERICAS",112.05],["Travel & Accomodation","Reales",4,"FIXED","NOAP","Vuelos","Diferencia","AEROENLACES NACIONALES",0.01],["Travel & Accomodation","Reales",4,"FIXED","NOAP","Vuelos","Vuelo AG CDMX","AEROENLACES NACIONALES",1217.38],["Travel & Accomodation","Reales",4,"FIXED","NOAP","Vuelos","Vuelo TY CDMX","AEROVIAS DE MEXICO",10631.0],["Travel & Accomodation","Reales",4,"FIXED","NOAP","Vuelos","Vuelo TY CDMX","CORPORATE TRAVEL SERVICES WORLDWIDE",60.0],["Travel & Accomodation","Reales",4,"FIXED","NOAP","Vuelos","Vuelo TY GDL reunión directores y socios","AMERICAN AIRLINES INC",13807.0],["Travel & Accomodation","Reales",5,"ACHI","SAOS","Vuelos","Fee Aereo FC","CORPORATE TRAVEL SERVICES WORLDWIDE",183.45],["Travel & Accomodation","Reales",5,"ACHI","SAOS","Vuelos","Fee Aereo KL","CORPORATE TRAVEL SERVICES WORLDWIDE",183.45],["Travel & Accomodation","Reales",5,"BEVA","ONHE","Alimentos","Alimentos RC sin factura","TIMHOR INSURGENTESUR I",499.0],["Travel & Accomodation","Reales",5,"FIXED","NOAP","Hospedaje","Hospedaje AG CDMX","HOTELCOM73389321170430",1680.43],["Travel & Accomodation","Reales",5,"FIXED","NOAP","Taxis","Uber DD Toluca","UBER",82.03],["Travel & Accomodation","Reales",5,"FIXED","NOAP","Taxis","Uber KL CDMX","UBER",86.19],["Travel & Accomodation","Reales",5,"FIXED","NOAP","Taxis","Uber KL CDMX sin factura","UBER",239.98],["Travel & Accomodation","Reales",5,"FIXED","NOAP","Taxis","Uber RC CDMX","DIGITAL SOLUTIONS AMERICAS",43.09],["Travel & Accomodation","Reales",5,"FIXED","NOAP","Vuelos","Vuelo AG CDMX","AEROENLACES NACIONALES",1527.94],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Alimentos","Alimentos FC GDL","CLIP MX*SERV LUIS MUNG",1250.86],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Alimentos","Alimentos KL CMR","OJO DE AGUA T2 2",852.59],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Alimentos","Propina","CLIP MX*SERV LUIS MUNG",217.65],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Alimentos","Propina","OJO DE AGUA T2 2",148.35],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Taxis","Uber FC CDMX","UBER",275.85],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Taxis","Uber FC GDL","UBER",146.53],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Taxis","Uber KL CDMX","MOBILITY DAE",293.08],["Travel & Accomodation","Reales",6,"ACHI","SAOS","Taxis","Uber KL GDL","UBER",86.19],["Travel & Accomodation","Reales",6,"DENO","SAOS","Gastos Varios de Viaje","Visa RC India","indianvisaonlineSBIePI",1139.65],["Travel & Accomodation","Reales",6,"FIXED","NOAP","Comidas de Trabajo en Oficina","Rosca de Reyes SIENTI/SAP GDL","COMERCIAL CITY FRESKO",199.0],["Travel & Accomodation","Reales",6,"FIXED","NOAP","Taxis","Uber KL CDMX","UBER",137.91],["Travel & Accomodation","Reales",6,"FIXED","NOAP","Taxis","Uber RC CDMX","DIGITAL SOLUTIONS AMERICAS",163.78],["Travel & Accomodation","Reales",6,"FIXED","NOAP","Taxis","Uber RC CDMX","UBER",86.16],["Travel & Accomodation","Reales",6,"TERI","SAOS","Gastos Varios de Viaje","Visa RC India","indianvisaonlineSBIePI",1139.84],["Travel & Accomodation","Reales",7,"ACHI","SAOS","Taxis","Reembolso - Taxi GDL por falla con trajeta Clara","KARLA CAROLINA LOPEZ FIGUEROA",2408.13],["Travel & Accomodation","Reales",7,"ACHI","SAOS","Taxis","Uber FC GDL","UBER",216.87],["Travel & Accomodation","Reales",7,"ACHI","SAOS","Taxis","Uber KL GDL","UBER",43.08],["Travel & Accomodation","Reales",7,"FIXED","NOAP","Taxis","Uber IG GDL","UBER",94.77],["Travel & Accomodation","Reales",7,"FIXED","NOAP","Taxis","Uber KL CDMX","DIGITAL SOLUTIONS AMERICAS",76.9],["Travel & Accomodation","Reales",7,"FIXED","NOAP","Taxis","Uber KL CDMX","UBER",92.59],["Travel & Accomodation","Reales",8,"ACHI","SAOS","Alimentos","Alimentos FC GDL","CAFE SIRENA",125.86],["Travel & Accomodation","Reales",8,"ACHI","SAOS","Taxis","Uber FC GDL","DIGITAL SOLUTIONS AMERICAS",248.56],["Travel & Accomodation","Reales",8,"ACHI","SAOS","Taxis","Uber FC GDL","UBER",224.11],["Travel & Accomodation","Reales",8,"FIXED","NOAP","Taxis","Uber FC CDMX","UBER",293.84],["Travel & Accomodation","Reales",8,"FIXED","NOAP","Taxis","Uber KL CDMX","UBER",925.84],["Travel & Accomodation","Reales",9,"ACHI","SAOS","Alimentos","Alimentos FC GDL","CAFE SIRENA",297.79],["Travel & Accomodation","Reales",9,"ACHI","SAOS","Alimentos","Alimentos KL GDL","WUZIPAY*AZUCAR ZAZ",626.72],["Travel & Accomodation","Reales",9,"ACHI","SAOS","Alimentos","Propina","WUZIPAY*AZUCAR ZAZ",109.05],["Travel & Accomodation","Reales",9,"ACHI","SAOS","Taxis","Uber FC GDL","DIGITAL SOLUTIONS AMERICAS",60.33],["Travel & Accomodation","Reales",9,"ACHI","SAOS","Taxis","Uber FC GDL","UBER",258.61],["Travel & Accomodation","Reales",9,"FIXED","NOAP","Alimentos","Alimentos JR CDMX","CLIP MX*REST FONDA CAR",471.55],["Travel & Accomodation","Reales",9,"FIXED","NOAP","Alimentos","Propina","CLIP MX*REST FONDA CAR",54.7],["Travel & Accomodation","Reales",9,"FIXED","NOAP","Taxis","Uber DD CDMX","UBER",198.24],["Travel & Accomodation","Reales",9,"FIXED","NOAP","Taxis","Uber DD Toluca","UBER",71.39],["Travel & Accomodation","Reales",9,"FIXED","NOAP","Taxis","Uber EG CDMX","UBER",517.14],["Travel & Accomodation","Reales",9,"FIXED","NOAP","Taxis","Uber JR CDMX","UBER",224.06],["Travel & Accomodation","Reales",10,"ACHI","SAOS","Alimentos","Alimentos FC GDL","OJO DE AGUA GDL II",150.86],["Travel & Accomodation","Reales",10,"ACHI","SAOS","Alimentos","Alimentos KL CDMX","AEROCOMIDAS",1115.52],["Travel & Accomodation","Reales",10,"ACHI","SAOS","Alimentos","Propina","AEROCOMIDAS",194.1],["Travel & Accomodation","Reales",10,"ACHI","SAOS","Taxis","Uber FC CDMX","DIGITAL SOLUTIONS AMERICAS",284.47],["Travel & Accomodation","Reales",10,"ACHI","SAOS","Taxis","Uber KL CDMX","DIGITAL SOLUTIONS AMERICAS",215.51],["Travel & Accomodation","Reales",10,"DENO","SAOS","Gastos Varios de Viaje","Permiso ingreso RC a UK","UKVI ETAMOB00001212296",246.83],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Alimentos","Alimentos AG","DLO*UBER",419.25],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Alimentos","Alimentos AG CDMX","BUNA CAFE RICO ORIZABA",150.86],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Alimentos","Comida TY Boston","TST* LEGAL SEA FOODS -",911.38],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Alimentos","Propina","BUNA CAFE RICO ORIZABA",17.5],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Hospedaje","Hospedaje AG CDMX","HOTELES COM",2319.85],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Hospedaje","Impuesto Sobre Hospedaje","HOTELES COM",81.2],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Taxis","Uber AG CDMX","MOBILITY DAE",89.8],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Taxis","Uber AG CDMX","UBER",612.01],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Taxis","Uber AG MTY","UBER",577.58],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Taxis","Uber MC CDMX","UBER",206.84],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Taxis","Uber TY San Francisco","UBER",1165.33],["Travel & Accomodation","Reales",10,"FIXED","NOAP","Vuelos","Vuelo AG CDMX","AEROENLACES NACIONALES",2789.32],["Travel & Accomodation","Reales",10,"TERI","SAOS","Gastos Varios de Viaje","Permiso ingreso RC a UK","UKVI ETAMOB00001212296",246.83],["Travel & Accomodation","Reales",11,"ACHI","SAOS","Taxis","Uber FC CDMX","DIGITAL SOLUTIONS AMERICAS",43.09],["Travel & Accomodation","Reales",11,"ACHI","SAOS","Taxis","Uber FC CDMX","UBER",767.8],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Alimentos","Alimentos AG CDMX","CLIP MX*REST ARTEMIGA",89.66],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Alimentos","Alimentos AG CDMX","CONGRESO CAFE",142.23],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Alimentos","Comida TY Boston","POPI'S OYSTERETTE",1342.78],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Alimentos","Comida TY Boston","SQ *BLUESTONE LANE - 1",665.0],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Alimentos","Comisión app","CLIP MX*REST ARTEMIGA",5.0],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber AG CDMX","UBER",525.82],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber AG MTY","UBER",637.92],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber DD CDMX","MOBILITY DAE",95.97],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber DD CDMX","UBER",254.22],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber DD Toluca","DIGITAL SOLUTIONS AMERICAS",39.05],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber DD Toluca","UBER",58.8],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber JR FIXED","UBER",103.41],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber KL Toluca","UBER",489.41],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber MC CDMX","UBER",198.12],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Taxis","Uber TY San Francisco","UBER",647.41],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Vuelos","Vuelo AG","AEROENLACES NACIONALES",473.83],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Vuelos","Vuelo AT CDMX","AEROENLACES NACIONALES",1281.17],["Travel & Accomodation","Reales",11,"FIXED","NOAP","Vuelos","Vuelo AT CDMX","CONCESIONARIA VUELA COMPAÑIA DE AVIACION",1371.0],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Alimentos","Alimentos AG MTY","CAFE SIRENA",200.86],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Alimentos","Comida AG MTY","PLUM MARKET - B4 DFW",300.64],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Alimentos","Comida TY Boston","SQ *BLUESTONE LANE - 1",445.68],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Hospedaje","Fee Hospedaje TY","CORPORATE TRAVEL SERVICES WORLDWIDE",60.0],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Hospedaje","Gastos No Deducibles","HOTELCOM73372984870600",351.77],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Hospedaje","Hospedaje AG CDMX","HOTELCOM73372984870600",1904.17],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Hospedaje","Hospedaje TY","CORPORATE TRAVEL SERVICES WORLDWIDE",60.0],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Hospedaje","Hospedaje TY Boston","HOTEL ADAGIO, AUTOGRAP",1667.14],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Hospedaje","Impuesto Sobre Hospedaje","HOTELCOM73372984870600",66.65],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Taxis","Uber AG MTY","UBER",602.74],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Taxis","Uber AG San Francisco","UBER",1347.79],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Taxis","Uber FC CDMX","UBER",62.4],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Taxis","Uber KL CDMX","UBER",167.24],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Taxis","Uber TY San Francisco","UBER",776.51],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Vuelos","Vuelo AG CDMX","AEROENLACES NACIONALES",2782.81],["Travel & Accomodation","Reales",12,"FIXED","NOAP","Vuelos","Vuelo TY Cambio de fecha","CORPORATE TRAVEL SERVICES WORLDWIDE",60.0]];
+// Molecule mapping to Consolidado names
+const MOL_MAP={"Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ácido Hialurónico 2%":"Hyaxum","Bevacizumab 100":"Bevacizumab","Bevacizumab 400":"Bevacizumab","Hyaxum 1":"Hyaxum","Hyaxum 1.5 Plus":"Hyaxum","Hyaxum 2 Pro":"Hyaxum","Euxara":"Euxara","Fixed":"Fixed","ACHI":"Hyaxum","BEVA":"Bevacizumab","TERI":"Euxara","FIXED":"Fixed","PELI":"Peli","DENO":"Deno","SIME":"Sime","ACMI":"Acmi"};
+const mapMol=m=>MOL_MAP[m]||m;
+
+// Multi-select dropdown component
+function MultiSel({options,selected,onChange,label}){
+  const [open,setOpen]=useState(false);
+  const allSelected=selected.length===0||selected.length===options.length;
+  const displayText=allSelected?label:`${selected.length} seleccionadas`;
+  return(
+    <div style={{position:"relative",display:"inline-block"}}>
+      <button onClick={()=>setOpen(!open)} style={{padding:"5px 10px",borderRadius:6,border:"1px solid #D0D5E8",fontSize:11,fontFamily:"inherit",background:"#fff",cursor:"pointer",color:"#1a1a2e",display:"flex",alignItems:"center",gap:4}}>
+        {displayText}<span style={{fontSize:8}}>{open?"▲":"▼"}</span>
+      </button>
+      {open&&<div style={{position:"absolute",top:"100%",left:0,marginTop:4,background:"#fff",border:"1px solid #D0D5E8",borderRadius:8,padding:6,zIndex:100,minWidth:160,maxHeight:200,overflowY:"auto",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
+        <div style={{padding:"4px 8px",fontSize:10,cursor:"pointer",borderRadius:4,background:allSelected?"#D4F0E6":"transparent",marginBottom:2}} onClick={()=>{onChange([]);setOpen(false)}}>✓ Todas</div>
+        {options.map(o=>{const isOn=selected.includes(o);return(
+          <div key={o} style={{padding:"4px 8px",fontSize:10,cursor:"pointer",borderRadius:4,background:isOn?"#E6F1FB":"transparent",display:"flex",alignItems:"center",gap:4}} onClick={()=>{const next=isOn?selected.filter(x=>x!==o):[...selected,o];onChange(next.length===options.length?[]:next)}}>
+            <span style={{width:12,height:12,borderRadius:3,border:"1px solid #D0D5E8",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,background:isOn?"#185FA5":"#fff",color:"#fff"}}>{isOn?"✓":""}</span>{o}
+          </div>
+        )})}
+      </div>}
+    </div>
+  );
+}
+
+const D=[["COGS","Forecast",1,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",2,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",3,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1355200.0],["COGS","Forecast",4,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",5,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",6,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",7,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",8,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",9,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",677600.0],["COGS","Forecast",10,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",11,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["COGS","Forecast",12,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0.0],["DP0001","Reales",1,"FIXED","NOAP","—","Ajuste Depreciación","NOAP",513127.62],["EBIT","Forecast",1,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBIT","Forecast",2,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBIT","Forecast",3,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",-1410880.0],["EBIT","Forecast",4,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBIT","Forecast",5,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBIT","Forecast",6,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",180083.09],["EBIT","Forecast",7,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",360166.18],["EBIT","Forecast",8,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",539291.39],["EBIT","Forecast",9,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",221857.58],["EBIT","Forecast",10,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1438748.97],["EBIT","Forecast",11,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["EBIT","Forecast",12,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["EBITDA","Forecast",1,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBITDA","Forecast",2,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBITDA","Forecast",3,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",-1410880.0],["EBITDA","Forecast",4,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBITDA","Forecast",5,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["EBITDA","Forecast",6,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",180083.09],["EBITDA","Forecast",7,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",360166.18],["EBITDA","Forecast",8,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",539291.39],["EBITDA","Forecast",9,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",221857.58],["EBITDA","Forecast",10,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1438748.97],["EBITDA","Forecast",11,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["EBITDA","Forecast",12,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["FE0001","Reales",1,"FIXED","NOAP","—","Ajuste Financial Expense","NOAP",435134.95],["FI0001","Reales",1,"FIXED","NOAP","—","Ajuste Financial Income","NOAP",-514523.15],["Gross Profit","Forecast",1,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["Gross Profit","Forecast",2,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["Gross Profit","Forecast",3,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",-1355200.0],["Gross Profit","Forecast",4,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["Gross Profit","Forecast",5,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",0],["Gross Profit","Forecast",6,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",180083.09],["Gross Profit","Forecast",7,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",360166.18],["Gross Profit","Forecast",8,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",539291.39],["Gross Profit","Forecast",9,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",221857.58],["Gross Profit","Forecast",10,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1438748.97],["Gross Profit","Forecast",11,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["Gross Profit","Forecast",12,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["Gross to Net","Forecast",1,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",2,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",3,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",4,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",5,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",6,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",7,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",8,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",9,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",10,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",11,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["Gross to Net","Forecast",12,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1280.6],["IT0001","Reales",1,"FIXED","NOAP","Licencias de Software","Notion + AWS","VARIOS",45978.63],["IT0001","Reales",2,"FIXED","NOAP","Licencias de Software","Amazon MXN","AMAZON WEB SERVICES",44.16],["IT0001","Reales",4,"FIXED","NOAP","Licencias de Software","AWS","AMAZON WEB SERVICES",39.17],["IT0001","Reales",5,"FIXED","NOAP","Reclutamiento Fees","LinkedIn","PPROMEX*LINKEDIN",4066.36],["IT0001","Reales",7,"FIXED","NOAP","Licencias de Software","Declaración tributaria","EDICOMUNICACIONES MEXICO",199.0],["IT0001","Reales",9,"FIXED","NOAP","Licencias de Software","Asana (4 meses)","ASANA",15200.0],["Net Sales","Forecast",6,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",180083.09],["Net Sales","Forecast",7,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",360166.19],["Net Sales","Forecast",8,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",539291.39],["Net Sales","Forecast",9,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",899457.58],["Net Sales","Forecast",10,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1438748.98],["Net Sales","Forecast",11,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["Net Sales","Forecast",12,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",1978998.26],["OF0001","Reales",3,"FIXED","NOAP","Arrendamiento","Renta oficina","COWORKING CHAPULTEPEC",49700.0],["OF0001","Reales",5,"FIXED","NOAP","Comidas","Comida equipo","LAGUNEROS ORIENTALES",263.79],["OF0001","Reales",6,"FIXED","NOAP","Arrendamiento","Renta oficinas","COWORKING CHAPULTEPEC",155401.28],["OF0001","Reales",9,"FIXED","NOAP","Papelería","Papelería","OFFICE DEPOT INTERNET",5350.43],["OF0001","Reales",10,"FIXED","NOAP","Papelería","Impresiones","OFFICE DEPOT AMERICAS",34.48],["OF0001","Reales",11,"FIXED","NOAP","Papelería","Farmacopea","FARMACOPEA MX",1920.0],["OF0001","Reales",12,"FIXED","NOAP","Equipo","Servicio Sistemas","T9 DIGITAL",850.0],["OP0001","Reales",1,"FIXED","NOAP","—","Ajuste Operaciones","NOAP",17780.67],["OP0001","Reales",4,"ACHI","SAOS","Logística","Almacenaje y transporte","WORLD COURIER DE MEXICO",15147.16],["OT0001","Reales",1,"FIXED","NOAP","—","Ajuste Others","NOAP",30141.05],["PF0001","Reales",1,"FIXED","NOAP","Reclutamiento Fees","Placement + Recruiter","VARIOS",982129.26],["PF0001","Reales",1,"FIXED","NOAP","Consultoría de marketing","RRPP febrero","INCIDENCIA EN COMUNICACION",95000.0],["PF0001","Reales",1,"FIXED","NOAP","Consultoría estratégica","Consultancy Fee Junee","JUNEE PHARMACEUTICAL",35905.6],["PF0001","Reales",1,"FIXED","NOAP","Consultoría contable","Honorarios abril","PROTEXI EMPRESARIAL",6300.0],["PF0001","Reales",1,"FIXED","NOAP","Traducción","Documentos","DEEPL",195.6],["PF0001","Reales",1,"FIXED","NOAP","—","Ajuste PF","NOAP",-1770.0],["PF0001","Reales",2,"FIXED","NOAP","Consultoría de marketing","RRPP dic-ene","INCIDENCIA EN COMUNICACION",190000.0],["PF0001","Reales",2,"FIXED","NOAP","Consultoría contable","Honorarios marzo","PROTEXI EMPRESARIAL",6300.0],["PF0001","Reales",3,"FIXED","NOAP","Consultoría regulatoria","Farmacovigilancia","JORGE SANCHEZ BADILLO",15750.0],["PF0001","Reales",3,"FIXED","NOAP","Consultoría contable","Honorarios febrero","PROTEXI EMPRESARIAL",6300.0],["PF0001","Reales",3,"TERI","SAOS","Consultoría regulatoria","Permiso Euxara","JORGE SANCHEZ BADILLO",5250.0],["PF0001","Reales",5,"FIXED","NOAP","Consultoría contable","Honorarios enero","PROTEXI EMPRESARIAL",6300.0],["PF0001","Reales",6,"FIXED","NOAP","Consultoría regulatoria","Farmacovigilancia","JORGE SANCHEZ BADILLO",15750.0],["PF0001","Reales",8,"TERI","SAOS","Traducción","Traducción Euxara","PAYCLIP",5420.77],["PF0001","Reales",12,"ACHI","SAOS","Materiales","Material Médico HA","JORGE EDUARDO GARCIA",61269.23],["Quality","Forecast",3,"Ácido Hialurónico 1%","Hyaxum","—","OK","NOAP",55680.0],["SM0001","Reales",1,"ACHI","SAOS","Eventos prelanzamiento","AAOS Conference","VARIOS",40457.78],["SM0001","Reales",2,"ACHI","SAOS","Alimentos","Alimentos AAOS","VARIOS",6603.96],["SM0001","Reales",3,"ACHI","SAOS","Alimentos","Alimentos New Orleans","VARIOS",23915.4],["SM0001","Reales",4,"ACHI","SAOS","Eventos prelanzamiento","AAOS + hospedaje","VARIOS",47790.06],["SM0001","Reales",5,"ACHI","SAOS","Marketing","Apoyo visual + alimentos","VARIOS",67052.04],["SM0001","Reales",6,"ACHI","SAOS","Varios","Alimentos y transporte","VARIOS",5907.58],["SM0001","Reales",7,"ACHI","SAOS","Rep ventas","GDL + BIRMEX","VARIOS",9565.98],["SM0001","Reales",7,"TERI","SAOS","Rep ventas","Dr. Loza","REST HARRYS MASARYK",5829.52],["SM0001","Reales",8,"ACHI","SAOS","Rep ventas","GDL doctores","VARIOS",12377.52],["SM0001","Reales",9,"ACHI","SAOS","Eventos prelanzamiento","Congreso Reumatología","COLEGIO MX REUMATOLOGIA",150000.0],["SM0001","Reales",9,"ACHI","SAOS","Rep ventas","GDL/MTY","VARIOS",4631.5],["SM0001","Reales",10,"ACHI","SAOS","Rep ventas","Pixel Lab","ABARROTS CASROL MIDTWN",851.15],["SM0001","Reales",12,"TERI","SAOS","Rep ventas","CDMX","REST DANTE",3611.06],["SW0001","Reales",1,"FIXED","NOAP","Autos","Tesla Model 3","TRACSA",21339.11],["SW0001","Reales",10,"FIXED","NOAP","Autos","Arrendamiento 4 vehículos","TRACSA",111073.21],["SW0001","Reales",11,"FIXED","NOAP","Capacitación","Curso IA Regulación","AMPRESIH",9655.17],["SW0001","Reales",11,"FIXED","NOAP","Autos","Vehículo refacturación","TRACSA",20818.48],["SW0001","Reales",12,"FIXED","NOAP","Autos","Arrendamiento 4 vehículos","TRACSA",111073.21],["TA0001","Reales",1,"FIXED","NOAP","Hospedaje","TY New York","CORPORATE TRAVEL",31751.0],["TA0001","Reales",1,"PELI","ONHE","Varios","Chicago BD trip","VARIOS",9351.33],["TA0001","Reales",1,"DENO","SAOS","Hospedaje","AG viaje","CORPORATE TRAVEL",2851.36],["TA0001","Reales",1,"TERI","SAOS","Hospedaje","AG viaje","CORPORATE TRAVEL",2851.37],["TA0001","Reales",1,"ACHI","SAOS","—","Devolución KL","- - -",-602.0],["TA0001","Reales",1,"FIXED","NOAP","—","Ajustes varios","NOAP",242.0],["TA0001","Reales",2,"FIXED","NOAP","Taxis","Uber varios","VARIOS",638.72],["TA0001","Reales",2,"PELI","ONHE","Taxis","Uber MTY","UBER",525.85],["TA0001","Reales",3,"PELI","ONHE","Vuelos","Vuelo Chicago","AEROVIAS DE MEXICO",10639.0],["TA0001","Reales",4,"ACHI","SAOS","Viaje GDL","Hospedaje + vuelos GDL","VARIOS",26450.1],["TA0001","Reales",4,"FIXED","NOAP","Viaje ejecutivo","Vuelos TY/AG + uber","VARIOS",25827.44],["TA0001","Reales",5,"FIXED","NOAP","Varios","Hospedaje + uber + vuelo","VARIOS",3659.66],["TA0001","Reales",5,"ACHI","SAOS","Vuelos","Fees aéreos","CORPORATE TRAVEL",366.9],["TA0001","Reales",5,"BEVA","ONHE","Alimentos","Alimentos RC","TIMHOR",499.0],["TA0001","Reales",6,"ACHI","SAOS","Varios","Alimentos + taxis GDL","VARIOS",3271.1],["TA0001","Reales",6,"FIXED","NOAP","Varios","Uber + rosca","VARIOS",586.85],["TA0001","Reales",6,"DENO","SAOS","Visa","Visa India","indianvisa",1139.65],["TA0001","Reales",6,"TERI","SAOS","Visa","Visa India","indianvisa",1139.84],["TA0001","Reales",7,"ACHI","SAOS","Taxis","Uber GDL","VARIOS",2668.08],["TA0001","Reales",7,"FIXED","NOAP","Taxis","Uber varios","VARIOS",264.26],["TA0001","Reales",8,"ACHI","SAOS","Varios","Alimentos + uber GDL","VARIOS",598.53],["TA0001","Reales",8,"FIXED","NOAP","Taxis","Uber CDMX","UBER",1219.68],["TA0001","Reales",9,"ACHI","SAOS","Varios","Alimentos + uber GDL","VARIOS",1352.5],["TA0001","Reales",9,"FIXED","NOAP","Varios","Alimentos + uber CDMX","VARIOS",1537.08],["TA0001","Reales",10,"ACHI","SAOS","Varios","Alimentos + uber","VARIOS",1960.46],["TA0001","Reales",10,"FIXED","NOAP","Varios","Hospedaje + uber + vuelo + alimentos","VARIOS",9841.56],["TA0001","Reales",10,"DENO","SAOS","Permiso","Permiso UK","UKVI",246.83],["TA0001","Reales",10,"TERI","SAOS","Permiso","Permiso UK","UKVI",246.83],["TA0001","Reales",11,"ACHI","SAOS","Taxis","Uber CDMX","VARIOS",810.89],["TA0001","Reales",11,"FIXED","NOAP","Varios","Viaje Boston/SF + vuelos","VARIOS",8420.8],["TA0001","Reales",12,"FIXED","NOAP","Varios","Viaje Boston/SF/MTY","VARIOS",10856.4],["TX0001","Reales",3,"TERI","SAOS","COFEPRIS","Permiso Euxara","COFEPRIS",7300.0]];
 
 const F=v=>{if(!v||v===0)return"—";const n=v<0,a=Math.abs(v);let s;if(a>=1e6)s=`$${(a/1e6).toFixed(1)}M`;else if(a>=1e3)s=`$${(a/1e3).toFixed(1)}K`;else s=`$${a.toFixed(0)}`;return n?`-${s}`:s};
-const P=v=>(!isFinite(v)||isNaN(v))?"—":`${(v*100).toFixed(1)}%`;
-const gS=(d,l,o,ms)=>d.filter(r=>r[0]===l&&r[1]===o&&ms.includes(r[2])).reduce((s,r)=>s+r[8],0);
-const gOx=(d,ms)=>OC.reduce((s,c)=>s+d.filter(r=>r[0]===c&&r[1]==="Reales"&&ms.includes(r[2])).reduce((a,r)=>a+r[8],0),0);
-const mols=[...new Set(D.map(r=>r[3]))].sort();
+const P=v=>(!isFinite(v)||isNaN(v)||v===0)?"—":`${(v*100).toFixed(1)}%`;
+const gV=(d,pl,or,m)=>d.filter(r=>r[0]===pl&&r[1]===or&&r[2]===m).reduce((s,r)=>s+r[8],0);
+const gVms=(d,pl,or,ms)=>ms.reduce((s,m)=>s+gV(d,pl,or,m),0);
+const mols=[...new Set(D.map(r=>mapMol(r[3])))].sort();
 const areas=[...new Set(D.map(r=>r[4]))].filter(a=>a!=="—").sort();
 
-export default function Dashboard(){
-  const [cm,setCm]=useState(4);
-  const [mol,setMol]=useState("Todas");
-  const [area,setArea]=useState("Todas");
-  const [exp,setExp]=useState({});
-  const [expP,setExpP]=useState({});
+// Build P&L for a single month given a data source mode: "forecast", "reales", "consolidado"
+function buildPL(fd, m, cm, mode) {
+  const getVal = (pl, isOpex) => {
+    if (mode === "forecast") return gV(fd, pl, "Forecast", m);
+    if (mode === "reales") return isOpex ? gV(fd, pl, "Reales", m) : gV(fd, pl, "Reales", m);
+    // consolidado: reales for opex always, for PL lines use reales if m<=cm else forecast
+    if (isOpex) return gV(fd, pl, "Reales", m);
+    return m <= cm ? (gV(fd, pl, "Reales", m) || gV(fd, pl, "Forecast", m)) : gV(fd, pl, "Forecast", m);
+  };
 
-  const fd=useMemo(()=>{let d=D;if(mol!=="Todas")d=d.filter(r=>r[3]===mol);if(area!=="Todas")d=d.filter(r=>r[4]===area);return d},[mol,area]);
-  const ytdM=useMemo(()=>Array.from({length:cm},(_,i)=>i+1),[cm]);
-  const allM=Array.from({length:12},(_,i)=>i+1);
+  const ns = getVal("Net Sales", false);
+  const cogs = getVal("COGS", false);
+  const gp = ns - cogs;
+  const gmPct = ns ? gp / ns : 0;
+  const sw = gV(fd, "SW0001", "Reales", m);
+  const sm = gV(fd, "SM0001", "Reales", m);
+  const ta = gV(fd, "TA0001", "Reales", m);
+  const pf = gV(fd, "PF0001", "Reales", m);
+  const of_ = gV(fd, "OF0001", "Reales", m);
+  const qual = gV(fd, "Quality", "Forecast", m);
+  const totOpex = sw + sm + ta + pf + of_ + qual;
+  const totOpexPct = ns ? totOpex / ns : 0;
+  const ebitda = gp - totOpex;
+  const ebitdaPct = ns ? ebitda / ns : 0;
+  const depr = gV(fd, "DP0001", "Reales", m);
+  const ebit = ebitda - depr;
 
-  // KPIs with reales and variations
-  const kpis=useMemo(()=>{
-    const nsCM=gS(fd,"Net Sales","Forecast",[cm]),nsYTD=gS(fd,"Net Sales","Forecast",ytdM),nsFY=gS(fd,"Net Sales","Forecast",allM);
-    const ebitdaCM=gS(fd,"EBITDA","Forecast",[cm]),ebitdaYTD=gS(fd,"EBITDA","Forecast",ytdM);
-    const gpYTD=gS(fd,"Gross Profit","Forecast",ytdM);
-    const opexCM=gOx(fd,[cm]),opexYTD=gOx(fd,ytdM);
-    const opexPrev=cm>1?gOx(fd,[cm-1]):0;
-    const opexVar=opexPrev?((opexCM-opexPrev)/Math.abs(opexPrev)):0;
-    const gmYTD=nsYTD?gpYTD/nsYTD:0;
-    const burn=opexYTD-(nsYTD>0?nsYTD:0);
+  return { ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, qual, totOpex, totOpexPct, ebitda, ebitdaPct, depr, ebit };
+}
+
+const PL_KEYS = ["ns","cogs","gp","gmPct","sw","sm","ta","pf","of","qual","totOpex","totOpexPct","ebitda","ebitdaPct","depr","ebit"];
+const PL_LABELS = {ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expenses",qual:"Quality",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Depreciation",ebit:"EBIT"};
+const PCT_KEYS = new Set(["gmPct","totOpexPct","ebitdaPct"]);
+const BOLD_KEYS = new Set(["ns","gp","totOpex","ebitda","ebit"]);
+const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","qual"]);
+
+export default function Dashboard() {
+  const [cm, setCm] = useState(4);
+  const [selMols, setSelMols] = useState([]);
+  const [selAreas, setSelAreas] = useState([]);
+  const [view, setView] = useState("consolidado");
+  const [expP, setExpP] = useState({});
+
+  const fd = useMemo(() => {
+    let d = D;
+    if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
+    if (selAreas.length > 0) d = d.filter(r => selAreas.includes(r[4]));
+    return d;
+  }, [selMols, selAreas]);
+  const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
+  const allM = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  // P&L table data
+  const plData = useMemo(() => {
+    const monthly = [];
+    for (let m = 1; m <= 12; m++) monthly.push(buildPL(fd, m, cm, view));
+    // Totals
+    const totals = {};
+    PL_KEYS.forEach(k => {
+      if (PCT_KEYS.has(k)) {
+        // Recalculate percentage from totals
+        const numKey = k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : "ebitda";
+        const num = monthly.reduce((s, row) => s + row[numKey], 0);
+        const den = monthly.reduce((s, row) => s + row.ns, 0);
+        totals[k] = den ? num / den : 0;
+      } else {
+        totals[k] = monthly.reduce((s, row) => s + row[k], 0);
+      }
+    });
+    return { monthly, totals };
+  }, [fd, cm, view]);
+
+  // YTD & CM comparison tables
+  const comp = useMemo(() => {
+    const ytdFC = {}, ytdRE = {}, cmFC = {}, cmRE = {};
+    PL_KEYS.forEach(k => {
+      const fcMonthly = allM.map(m => buildPL(fd, m, cm, "forecast"));
+      const reMonthly = allM.map(m => buildPL(fd, m, cm, "reales"));
+      ytdFC[k] = PCT_KEYS.has(k) ?
+        (ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + fcMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : "ebitda"], 0) / ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) : 0) :
+        ytdM.reduce((s, m) => s + fcMonthly[m-1][k], 0);
+      ytdRE[k] = PCT_KEYS.has(k) ?
+        (ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + reMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : "ebitda"], 0) / ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) : 0) :
+        ytdM.reduce((s, m) => s + reMonthly[m-1][k], 0);
+      cmFC[k] = fcMonthly[cm-1][k];
+      cmRE[k] = reMonthly[cm-1][k];
+    });
+    return PL_KEYS.map(k => ({
+      k, label: PL_LABELS[k], isPct: PCT_KEYS.has(k), isBold: BOLD_KEYS.has(k),
+      ytdFC: ytdFC[k], ytdRE: ytdRE[k], ytdVar: ytdRE[k] - ytdFC[k], ytdVarPct: ytdFC[k] ? (ytdRE[k] - ytdFC[k]) / Math.abs(ytdFC[k]) : 0,
+      cmFC: cmFC[k], cmRE: cmRE[k], cmVar: cmRE[k] - cmFC[k], cmVarPct: cmFC[k] ? (cmRE[k] - cmFC[k]) / Math.abs(cmFC[k]) : 0,
+    }));
+  }, [fd, cm, ytdM]);
+
+  // KPIs
+  const kpis = useMemo(() => {
+    const c = buildPL(fd, cm, cm, "consolidado");
+    const ytdTotals = {};
+    PL_KEYS.forEach(k => { ytdTotals[k] = ytdM.reduce((s, m) => s + buildPL(fd, m, cm, "consolidado")[k], 0); });
+    const nsYTD = ytdTotals.ns, nsFY = allM.reduce((s, m) => s + buildPL(fd, m, cm, "consolidado").ns, 0);
+    const opexYTD = ytdTotals.totOpex;
     return [
-      {l:`SALES ${MO[cm-1]}`,v:F(nsCM),s:`YTD ${F(nsYTD)}`,c:"#1D9E75"},
-      {l:"NET SALES FY",v:F(nsFY),s:"Forecast anual",c:"#0B6644"},
-      {l:`EBITDA ${MO[cm-1]}`,v:F(ebitdaCM),s:`YTD ${F(ebitdaYTD)}`,c:ebitdaCM<0?"#E24B4A":"#1D9E75",var:ebitdaYTD},
-      {l:"GROSS PROFIT YTD",v:F(gpYTD),s:nsYTD?`Margen ${P(gmYTD)}`:"Pre-revenue",c:"#185FA5"},
-      {l:`OPEX REAL ${MO[cm-1]}`,v:F(opexCM),s:`YTD ${F(opexYTD)}`,c:"#E24B4A",pct:opexVar,showPct:cm>1},
-      {l:"OPEX FY REAL",v:F(gOx(fd,allM)),s:`${OC.filter(c=>fd.some(r=>r[0]===c&&r[1]==="Reales")).length} categorías`,c:"#534AB7"},
-      {l:"BURN RATE YTD",v:F(burn),s:"OpEx - Revenue",c:"#8B5CF6"},
-      {l:"COGS YTD",v:F(gS(fd,"COGS","Forecast",ytdM)),s:`FY ${F(gS(fd,"COGS","Forecast",allM))}`,c:"#BA7517"},
+      { l: `SALES ${MO[cm-1]}`, v: F(c.ns), s: `YTD ${F(nsYTD)}`, c: "#1D9E75" },
+      { l: "NET SALES FY", v: F(nsFY), s: "Forecast anual", c: "#0B6644" },
+      { l: `EBITDA ${MO[cm-1]}`, v: F(c.ebitda), s: `YTD ${F(ytdTotals.ebitda)}`, c: c.ebitda < 0 ? "#E24B4A" : "#1D9E75" },
+      { l: "GROSS PROFIT YTD", v: F(ytdTotals.gp), s: nsYTD ? `Margen ${P(ytdTotals.gp / nsYTD)}` : "Pre-revenue", c: "#185FA5" },
+      { l: `OPEX ${MO[cm-1]}`, v: F(c.totOpex), s: `YTD ${F(opexYTD)}`, c: "#E24B4A" },
+      { l: "BURN RATE YTD", v: F(opexYTD - (nsYTD > 0 ? nsYTD : 0)), s: "OpEx - Revenue", c: "#8B5CF6" },
+      { l: "COGS YTD", v: F(ytdTotals.cogs), s: `FY ${F(allM.reduce((s, m) => s + buildPL(fd, m, cm, "consolidado").cogs, 0))}`, c: "#BA7517" },
+      { l: `EBIT ${MO[cm-1]}`, v: F(c.ebit), s: `YTD ${F(ytdTotals.ebit)}`, c: c.ebit < 0 ? "#E24B4A" : "#1D9E75" },
     ];
-  },[fd,cm,ytdM]);
-
-  // P&L Table
-  const rows=useMemo(()=>[...PLO,...OC].map(line=>{
-    const isO=OC.includes(line);const label=isO?OX[line]:(line==="TOTAL OPERATING  EXPENSES"?"Total OpEx (FC)":line);
-    const ld=fd.filter(r=>r[0]===line);const monthly=[];
-    for(let m=1;m<=12;m++){const fc=ld.filter(r=>r[2]===m&&r[1]==="Forecast").reduce((s,r)=>s+r[8],0);const re=ld.filter(r=>r[2]===m&&r[1]==="Reales").reduce((s,r)=>s+r[8],0);monthly.push(isO?re:(m<=cm&&re?re:fc))}
-    const total=monthly.reduce((s,v)=>s+v,0);
-    const dm={};ld.forEach(r=>{const c=r[5]||"—";if(!dm[c])dm[c]={items:{},m:Array(12).fill(0)};dm[c].m[r[2]-1]+=r[8];const co=r[6]||"—";if(!dm[c].items[co])dm[c].items[co]={m:Array(12).fill(0),p:r[7]};dm[c].items[co].m[r[2]-1]+=r[8]});
-    return{line,label,monthly,total,isO,isBold:BL.has(line),dd:dm};
-  }),[fd,cm]);
-
-  // YTD & CM comparison
-  const comp=useMemo(()=>PLO.map(l=>{const rY=gS(fd,l,"Reales",ytdM),fY=gS(fd,l,"Forecast",ytdM),rC=gS(fd,l,"Reales",[cm]),fC=gS(fd,l,"Forecast",[cm]);return{l,rY,fY,vY:rY-fY,pY:fY?((rY-fY)/Math.abs(fY)):0,rC,fC,vC:rC-fC,pC:fC?((rC-fC)/Math.abs(fC)):0}}),[fd,cm,ytdM]);
+  }, [fd, cm, ytdM]);
 
   // Charts
-  const chartData=useMemo(()=>MO.map((m,i)=>({name:m,Sales:Math.round(gS(fd,"Net Sales","Forecast",[i+1])),EBITDA:Math.round(gS(fd,"EBITDA","Forecast",[i+1])),OpEx:Math.round(gOx(fd,[i+1])),cur:i+1<=cm})),[fd,cm]);
+  const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, i+1, cm, "consolidado"); return { name: m, Sales: Math.round(p.ns), EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
 
   // Waterfall
-  const wf=useMemo(()=>{const ns=gS(fd,"Net Sales","Forecast",ytdM),gtn=gS(fd,"Gross to Net","Forecast",ytdM),cogs=gS(fd,"COGS","Forecast",ytdM),opex=gOx(fd,ytdM),gp=ns-gtn-cogs,ebit=gp-opex;let run=0;return[{name:"Net Sales",val:ns},{name:"G-to-N",val:-gtn},{name:"COGS",val:-cogs},{name:"Gross Profit",val:0,total:gp},{name:"OpEx",val:-opex},{name:"EBIT",val:0,total:ebit}].map(it=>{if(it.total!==undefined){run=it.total;return{...it,start:0,end:it.total,isT:true}}const s=run;run+=it.val;return{...it,start:s,end:run}});},[fd,ytdM]);
+  const wf = useMemo(() => {
+    const t = {};PL_KEYS.forEach(k=>{t[k]=ytdM.reduce((s,m)=>s+buildPL(fd,m,cm,"consolidado")[k],0)});
+    let run=0;return[{name:"Net Sales",val:t.ns},{name:"COGS",val:-t.cogs},{name:"Gross Profit",val:0,total:t.gp},{name:"OpEx",val:-t.totOpex},{name:"EBITDA",val:0,total:t.ebitda},{name:"Depr",val:-t.depr},{name:"EBIT",val:0,total:t.ebit}].map(it=>{if(it.total!==undefined){run=it.total;return{...it,start:0,end:it.total,isT:true}}const s=run;run+=it.val;return{...it,start:s,end:run}});
+  }, [fd, cm, ytdM]);
 
-  // Pie charts: expenses by molecule
-  const pieYTD=useMemo(()=>{
-    const map={};fd.filter(r=>r[1]==="Reales"&&OC.includes(r[0])&&ytdM.includes(r[2])).forEach(r=>{const m=r[3];if(!map[m])map[m]=0;map[m]+=Math.abs(r[8])});
-    return Object.entries(map).map(([name,value])=>({name,value:Math.round(value)})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
-  },[fd,ytdM]);
+  // Pies
+  const OC_ALL=["SW0001","PF0001","SM0001","TA0001","IT0001","OF0001","OP0001","DP0001","FE0001","FI0001","OT0001","TX0001"];
+  const pieYTD = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[2])).forEach(r => { const m = mapMol(r[3]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[8]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, ytdM]);
+  const pieCM = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && r[2] === cm).forEach(r => { const m = mapMol(r[3]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[8]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, cm]);
 
-  const pieCM=useMemo(()=>{
-    const map={};fd.filter(r=>r[1]==="Reales"&&OC.includes(r[0])&&r[2]===cm).forEach(r=>{const m=r[3];if(!map[m])map[m]=0;map[m]+=Math.abs(r[8])});
-    return Object.entries(map).map(([name,value])=>({name,value:Math.round(value)})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
-  },[fd,cm]);
+  // Pareto
+  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && r[2] === cm); const map = {}; re.forEach(r => { const p = r[7]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[8]; const c = r[6]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[8] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
 
-  // Pareto (current month)
-  const pareto=useMemo(()=>{const re=fd.filter(r=>r[1]==="Reales"&&r[2]===cm);const map={};re.forEach(r=>{const p=r[7];if(p==="NOAP"||p==="- - -"||p==="VARIOS")return;if(!map[p])map[p]={t:0,items:{}};map[p].t+=r[8];const c=r[6];if(!map[p].items[c])map[p].items[c]=0;map[p].items[c]+=r[8]});const arr=Object.entries(map).map(([k,v])=>({partner:k,total:v.t,items:v.items})).sort((a,b)=>Math.abs(b.total)-Math.abs(a.total));const grand=arr.reduce((s,x)=>s+Math.abs(x.total),0);let cum=0;return arr.map(x=>{cum+=Math.abs(x.total);return{...x,cumPct:grand?cum/grand:0}});},[fd,cm]);
+  const toggleP = k => setExpP(p => ({ ...p, [k]: !p[k] }));
+  const maxP = pareto.length ? Math.abs(pareto[0].total) : 1;
+  const sel = { padding: "5px 10px", borderRadius: 6, border: "1px solid #D0D5E8", fontSize: 11, fontFamily: "inherit", background: "#fff", cursor: "pointer", color: "#1a1a2e" };
+  const th = { fontSize: 9, color: "#8A90A8", fontWeight: 400, padding: "5px 6px", borderBottom: "1px solid #E4E8F2", whiteSpace: "nowrap" };
+  const td = { fontSize: 10, padding: "5px 6px", borderBottom: "1px solid #f0f2fa" };
+  const vc = v => v < 0 ? "#E24B4A" : v > 0 ? "#1D9E75" : "#ccc";
+  const fv = (v, isPct) => isPct ? P(v) : F(v);
+  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => { if (percent < 0.05) return null; const r = innerRadius + (outerRadius - innerRadius) * 0.5; const x = cx + r * Math.cos(-midAngle * Math.PI / 180); const y = cy + r * Math.sin(-midAngle * Math.PI / 180); return <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={500}>{`${(percent * 100).toFixed(0)}%`}</text> };
 
-  const toggle=k=>setExp(p=>({...p,[k]:!p[k]}));
-  const toggleP=k=>setExpP(p=>({...p,[k]:!p[k]}));
-  const maxP=pareto.length?Math.abs(pareto[0].total):1;
-  const sel={padding:"5px 10px",borderRadius:6,border:"1px solid #D0D5E8",fontSize:11,fontFamily:"inherit",background:"#fff",cursor:"pointer",color:"#1a1a2e"};
-  const th={fontSize:9,color:"#8A90A8",fontWeight:400,padding:"5px 6px",borderBottom:"1px solid #E4E8F2",whiteSpace:"nowrap"};
-  const td={fontSize:10,padding:"5px 6px",borderBottom:"1px solid #f0f2fa"};
-  const vc=v=>v<0?"#E24B4A":v>0?"#1D9E75":"#ccc";
-  const renderLabel=({cx,cy,midAngle,innerRadius,outerRadius,percent,name})=>{if(percent<0.05)return null;const r=innerRadius+(outerRadius-innerRadius)*0.5;const x=cx+r*Math.cos(-midAngle*Math.PI/180);const y=cy+r*Math.sin(-midAngle*Math.PI/180);return <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={500}>{`${(percent*100).toFixed(0)}%`}</text>};
-
-  return(
-    <div style={{fontFamily:"'DM Mono','Consolas',monospace",minHeight:"100vh"}}>
+  return (
+    <div style={{ fontFamily: "'DM Mono','Consolas',monospace", minHeight: "100vh" }}>
       {/* HEADER */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #E4E8F2",marginBottom:16,flexWrap:"wrap",gap:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <svg width="42" height="42" viewBox="0 0 42 42"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#1D9E75"/><stop offset="100%" stopColor="#085041"/></linearGradient></defs><rect width="42" height="42" rx="10" fill="url(#lg)"/><text x="21" y="17" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="'Fraunces',serif" dominantBaseline="middle">SAYA</text><text x="21" y="29" textAnchor="middle" fill="#ffffff99" fontSize="7" fontWeight="400" dominantBaseline="middle">BIOLOGICS</text></svg>
-          <div><div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:500,color:"#1a1a2e",letterSpacing:-0.5}}>Financial Intelligence</div><div style={{fontSize:9,color:"#8A90A8",letterSpacing:2,textTransform:"uppercase"}}>Rolling Forecast 2026 · Corte: {MO[cm-1]}</div></div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #E4E8F2", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <svg width="42" height="42" viewBox="0 0 42 42"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#1D9E75" /><stop offset="100%" stopColor="#085041" /></linearGradient></defs><rect width="42" height="42" rx="10" fill="url(#lg)" /><text x="21" y="17" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700" fontFamily="serif" dominantBaseline="middle">SAYA</text><text x="21" y="29" textAnchor="middle" fill="#ffffff99" fontSize="7" dominantBaseline="middle">BIOLOGICS</text></svg>
+          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Financial Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]}</div></div>
         </div>
-        <div className="no-print" style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
-          <select value={cm} onChange={e=>setCm(+e.target.value)} style={sel}>{MO.map((m,i)=><option key={i} value={i+1}>{m} 2026</option>)}</select>
-          <select value={mol} onChange={e=>setMol(e.target.value)} style={sel}><option value="Todas">Todas moléculas</option>{mols.map(m=><option key={m} value={m}>{m}</option>)}</select>
-          <select value={area} onChange={e=>setArea(e.target.value)} style={sel}><option value="Todas">Todas áreas</option>{areas.map(a=><option key={a} value={a}>{a}</option>)}</select>
-          <button onClick={()=>window.print()} style={{padding:"6px 14px",borderRadius:6,border:"none",fontSize:10,fontFamily:"inherit",cursor:"pointer",fontWeight:500,background:"#1a1a2e",color:"#fff"}}>📄 PDF</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
+          <MultiSel options={mols} selected={selMols} onChange={setSelMols} label="Todas moléculas"/>
+          <MultiSel options={areas} selected={selAreas} onChange={setSelAreas} label="Todas áreas"/>
+          <div style={{ display: "flex", borderRadius: 6, border: "1px solid #D0D5E8", overflow: "hidden" }}>
+            {[["forecast", "Forecast"], ["reales", "Reales"], ["consolidado", "Consolidado"]].map(([v, l]) => (
+              <button key={v} onClick={() => setView(v)} style={{ padding: "5px 10px", fontSize: 10, fontFamily: "inherit", border: "none", cursor: "pointer", background: view === v ? "#1a1a2e" : "#fff", color: view === v ? "#fff" : "#1a1a2e", fontWeight: view === v ? 500 : 400 }}>{l}</button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* LEGEND */}
-      <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-        <span style={{fontSize:8,padding:"3px 8px",borderRadius:4,background:"#D4F0E6",color:"#085041"}}>● Reales ≤ {MO[cm-1]}</span>
-        <span style={{fontSize:8,padding:"3px 8px",borderRadius:4,background:"#E6F1FB",color:"#185FA5"}}>● Forecast &gt; {MO[cm-1]}</span>
-        <span style={{fontSize:8,padding:"3px 8px",borderRadius:4,background:"#EEEDFE",color:"#534AB7"}}>▶ Clic filas para drill-down</span>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: "#D4F0E6", color: "#085041" }}>● Reales ≤ {MO[cm - 1]}</span>
+        <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: "#E6F1FB", color: "#185FA5" }}>● Forecast &gt; {MO[cm - 1]}</span>
+        <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: view === "consolidado" ? "#D4F0E6" : view === "forecast" ? "#E6F1FB" : "#FCEBEB", color: view === "consolidado" ? "#085041" : view === "forecast" ? "#185FA5" : "#E24B4A" }}>Vista: {view.charAt(0).toUpperCase() + view.slice(1)}</span>
       </div>
 
       {/* KPI CARDS */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:8,marginBottom:16}}>
-        {kpis.map((k,i)=>(
-          <div key={i} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:`3px solid ${k.c}`}}>
-            <div style={{fontSize:7,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",marginBottom:3}}>{k.l}</div>
-            <div style={{fontSize:18,fontWeight:500,color:k.v.startsWith("-")?"#E24B4A":"#1a1a2e",fontFamily:"'Fraunces',serif"}}>{k.v}</div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:2}}>
-              <span style={{fontSize:8,color:"#8A90A8"}}>{k.s}</span>
-              {k.showPct&&<span style={{fontSize:8,fontWeight:500,color:k.pct>=0?"#E24B4A":"#1D9E75"}}>{k.pct>=0?"▲":"▼"} {P(Math.abs(k.pct))}</span>}
-            </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))", gap: 8, marginBottom: 16 }}>
+        {kpis.map((k, i) => (
+          <div key={i} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: "10px 12px", borderTop: `3px solid ${k.c}` }}>
+            <div style={{ fontSize: 7, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>{k.l}</div>
+            <div style={{ fontSize: 18, fontWeight: 500, color: k.v.startsWith("-") ? "#E24B4A" : "#1a1a2e", fontFamily: "serif" }}>{k.v}</div>
+            <div style={{ fontSize: 8, color: "#8A90A8", marginTop: 2 }}>{k.s}</div>
           </div>
         ))}
       </div>
 
-      {/* P&L ANNUAL TABLE */}
-      <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,marginBottom:16,overflowX:"auto"}}>
-        <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:8}}>P&L Anual — Rolling Forecast 2026</div>
-        <table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr>
-          <th style={{...th,textAlign:"left",position:"sticky",left:0,background:"#fff",minWidth:160}}>Línea P&L</th>
-          {MO.map((m,i)=><th key={i} style={{...th,textAlign:"right",minWidth:64,color:i+1<=cm?"#085041":"#185FA5",background:i+1<=cm?"#f0faf6":"#f5f8fc"}}>{m}</th>)}
-          <th style={{...th,textAlign:"right",fontWeight:500,color:"#1a1a2e",borderLeft:"2px solid #E4E8F2"}}>Total</th>
-        </tr></thead>
-        <tbody>{rows.map((row,idx)=>{
-          const isFirst=idx===PLO.length;const k=row.line;const isE=exp[k];
-          const hasDrill=Object.keys(row.dd).length>1||(Object.keys(row.dd).length===1&&!row.dd["—"]);
-          return(<>
-            {isFirst&&<tr key="sep"><td colSpan={14} style={{padding:"8px 6px 3px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500}}>OpEx — Gastos Reales</td></tr>}
-            <tr key={idx} style={{background:row.isBold?"#fafbfe":"transparent",cursor:hasDrill?"pointer":"default"}} onClick={()=>hasDrill&&toggle(k)}>
-              <td style={{...td,fontWeight:row.isBold?500:400,color:row.isO?"#534AB7":"#1a1a2e",position:"sticky",left:0,background:row.isBold?"#fafbfe":"#fff",fontSize:row.isO?9:10}}>
-                {hasDrill&&<span style={{marginRight:4,fontSize:8}}>{isE?"▼":"▶"}</span>}{row.label}
-              </td>
-              {row.monthly.map((v,mi)=><td key={mi} style={{...td,textAlign:"right",color:v<0?"#E24B4A":v===0?"#ccc":"#1a1a2e",fontWeight:row.isBold?500:400,fontSize:row.isO?9:10}}>{v===0?"—":F(v)}</td>)}
-              <td style={{...td,textAlign:"right",fontWeight:500,color:row.total<0?"#E24B4A":"#1a1a2e",borderLeft:"2px solid #E4E8F2"}}>{F(row.total)}</td>
-            </tr>
-            {isE&&Object.entries(row.dd).filter(([c])=>c!=="—").map(([cls,data])=>{
-              const ck=`${k}|${cls}`;const ce=exp[ck];const ct=data.m.reduce((s,v)=>s+v,0);
-              return(<>
-                <tr key={ck} style={{background:"#fafcff",cursor:"pointer"}} onClick={e=>{e.stopPropagation();toggle(ck)}}>
-                  <td style={{...td,paddingLeft:24,fontSize:9,color:"#185FA5",position:"sticky",left:0,background:"#fafcff"}}><span style={{fontSize:7,marginRight:3}}>{ce?"▼":"▶"}</span>{cls}</td>
-                  {data.m.map((v,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:9,color:v<0?"#E24B4A":v===0?"#ddd":"#666"}}>{v===0?"":F(v)}</td>)}
-                  <td style={{...td,textAlign:"right",fontSize:9,fontWeight:500,borderLeft:"2px solid #E4E8F2"}}>{F(ct)}</td>
+      {/* P&L TABLE */}
+      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>P&L Anual — {view === "forecast" ? "Forecast" : view === "reales" ? "Reales" : "Consolidado"} 2026</span>
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead><tr>
+            <th style={{ ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 180 }}>Línea P&L</th>
+            {MO.map((m, i) => <th key={i} style={{ ...th, textAlign: "right", minWidth: 64, color: i + 1 <= cm ? "#085041" : "#185FA5", background: i + 1 <= cm ? "#f0faf6" : "#f5f8fc" }}>{m}</th>)}
+            <th style={{ ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" }}>Total</th>
+          </tr></thead>
+          <tbody>
+            {PL_KEYS.map((k, idx) => {
+              const isPct = PCT_KEYS.has(k);
+              const isBold = BOLD_KEYS.has(k);
+              const isOpex = OPEX_KEY_SET.has(k);
+              const isSep = k === "sw"; // separator before opex
+              return (<>
+                {isSep && <tr key="sep"><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>}
+                <tr key={idx} style={{ background: isBold ? "#fafbfe" : "transparent" }}>
+                  <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>{PL_LABELS[k]}</td>
+                  {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct)}</td>)}
+                  <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct)}</td>
                 </tr>
-                {ce&&Object.entries(data.items).map(([co,cd])=>{const cot=cd.m.reduce((s,v)=>s+v,0);return(
-                  <tr key={`${ck}|${co}`} style={{background:"#f8f9fe"}}>
-                    <td style={{...td,paddingLeft:44,fontSize:8,color:"#8A90A8",position:"sticky",left:0,background:"#f8f9fe"}} title={`Partner: ${cd.p}`}>{co.length>42?co.slice(0,42)+"…":co}</td>
-                    {cd.m.map((v,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:8,color:v<0?"#E24B4A":v===0?"#eee":"#999"}}>{v===0?"":F(v)}</td>)}
-                    <td style={{...td,textAlign:"right",fontSize:8,borderLeft:"2px solid #E4E8F2"}}>{F(cot)}</td>
-                  </tr>
-                )})}
               </>);
             })}
-          </>);
-        })}</tbody></table>
+          </tbody>
+        </table>
       </div>
 
       {/* YTD + CM TABLES */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-        {[{t:`YTD ${MO[0]}–${MO[cm-1]} 2026`,rk:"rY",fk:"fY",vk:"vY",pk:"pY"},{t:`Mes — ${MO[cm-1]} 2026`,rk:"rC",fk:"fC",vk:"vC",pk:"pC"}].map((t,ti)=>(
-          <div key={ti} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
-            <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:8}}>{t.t}</div>
-            <table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr>{["Línea","Reales","Forecast","Var $","Var %"].map(h=><th key={h} style={{...th,textAlign:h==="Línea"?"left":"right"}}>{h}</th>)}</tr></thead>
-            <tbody>{comp.map((r,i)=><tr key={i} style={{background:BL.has(r.l)?"#fafbfe":"transparent"}}>
-              <td style={{...td,fontWeight:BL.has(r.l)?500:400}}>{r.l==="TOTAL OPERATING  EXPENSES"?"Total OpEx":r.l}</td>
-              <td style={{...td,textAlign:"right",color:vc(r[t.rk])}}>{F(r[t.rk])}</td>
-              <td style={{...td,textAlign:"right",color:r[t.fk]<0?"#E24B4A":"#185FA5"}}>{F(r[t.fk])}</td>
-              <td style={{...td,textAlign:"right",color:vc(r[t.vk]),fontWeight:500}}>{F(r[t.vk])}</td>
-              <td style={{...td,textAlign:"right"}}><span style={{padding:"2px 6px",borderRadius:4,fontSize:9,fontWeight:500,background:r[t.pk]<0?"#FCEBEB":r[t.pk]>0?"#D4F0E6":"#f0f2fa",color:vc(r[t.pk])}}>{P(r[t.pk])}</span></td>
-            </tr>)}</tbody></table>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        {[{ t: `YTD ${MO[0]}–${MO[cm - 1]} 2026`, fk: "ytdFC", rk: "ytdRE", vk: "ytdVar", pk: "ytdVarPct" }, { t: `Mes — ${MO[cm - 1]} 2026`, fk: "cmFC", rk: "cmRE", vk: "cmVar", pk: "cmVarPct" }].map((t, ti) => (
+          <div key={ti} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, overflowX: "auto" }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>{t.t}</div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>{["Línea", "Forecast", "Reales", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
+              <tbody>{comp.map((r, i) => (
+                <tr key={i} style={{ background: r.isBold ? "#fafbfe" : "transparent" }}>
+                  <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: OPEX_KEY_SET.has(r.k) ? "#534AB7" : "#1a1a2e", paddingLeft: OPEX_KEY_SET.has(r.k) ? 16 : 6 }}>{r.label}</td>
+                  <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct)}</td>
+                  <td style={{ ...td, textAlign: "right", color: vc(r[t.rk]), fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.rk], r.isPct)}</td>
+                  <td style={{ ...td, textAlign: "right", color: vc(r[t.vk]), fontWeight: 500, fontSize: r.isPct ? 9 : 10 }}>{r.isPct ? P(r[t.vk]) : F(r[t.vk])}</td>
+                  <td style={{ ...td, textAlign: "right" }}>{!r.isPct && <span style={{ padding: "2px 6px", borderRadius: 4, fontSize: 9, fontWeight: 500, background: r[t.pk] < 0 ? "#FCEBEB" : r[t.pk] > 0 ? "#D4F0E6" : "#f0f2fa", color: vc(r[t.pk]) }}>{P(r[t.pk])}</span>}</td>
+                </tr>
+              ))}</tbody>
+            </table>
           </div>
         ))}
       </div>
 
-      {/* CHARTS ROW 1: Revenue + Waterfall */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
-          <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:2}}>Revenue vs OpEx Mensual</div>
-          <div style={{fontSize:9,color:"#8A90A8",marginBottom:8}}>Barras: Sales + OpEx · Línea: EBITDA</div>
+      {/* CHARTS */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
           <ResponsiveContainer width="100%" height={180}>
-            <ComposedChart data={chartData} margin={{top:5,right:5,bottom:0,left:-15}}>
-              <XAxis dataKey="name" tick={{fontSize:8,fill:"#8A90A8"}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?`${(v/1e6).toFixed(1)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:"0"}/>
-              <Tooltip formatter={v=>`$${(v/1e3).toFixed(1)}K`} contentStyle={{fontSize:9,borderRadius:6}}/>
-              <ReferenceLine y={0} stroke="#E4E8F2"/>
-              <Bar dataKey="Sales" radius={[3,3,0,0]}>{chartData.map((e,i)=><Cell key={i} fill={e.cur?"#1D9E7566":"#1D9E7533"}/>)}</Bar>
-              <Bar dataKey="OpEx" radius={[3,3,0,0]}>{chartData.map((e,i)=><Cell key={i} fill={e.cur?"#E24B4A55":"#E24B4A22"}/>)}</Bar>
-              <Line type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={2} dot={{r:2,fill:"#534AB7"}}/>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
+              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
+              <Bar dataKey="Sales" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E7566" : "#1D9E7533"} />)}</Bar>
+              <Bar dataKey="OpEx" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A55" : "#E24B4A22"} />)}</Bar>
+              <Line type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={2} dot={{ r: 2, fill: "#534AB7" }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
-          <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:2}}>Cascada P&L — YTD</div>
-          <div style={{fontSize:9,color:"#8A90A8",marginBottom:8}}>Net Sales → deducciones → EBIT</div>
+        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Cascada P&L — YTD</div>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={wf} margin={{top:5,right:5,bottom:0,left:-15}}>
-              <XAxis dataKey="name" tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?`${(v/1e6).toFixed(1)}M`:v<=-1e6?`-${(Math.abs(v)/1e6).toFixed(1)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:"0"}/>
-              <Tooltip formatter={v=>`$${(v/1e3).toFixed(1)}K`} contentStyle={{fontSize:9,borderRadius:6}}/>
-              <ReferenceLine y={0} stroke="#E4E8F2"/>
-              <Bar dataKey="start" stackId="a" fill="transparent"/>
-              <Bar dataKey="end" stackId="a" radius={[3,3,0,0]}>{wf.map((e,i)=><Cell key={i} fill={e.isT?(e.total>=0?"#1D9E75":"#E24B4A"):(e.val>=0?"#1D9E7577":"#E24B4A77")}/>)}</Bar>
+            <BarChart data={wf} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v <= -1e6 ? `-${(Math.abs(v) / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
+              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
+              <Bar dataKey="start" stackId="a" fill="transparent" /><Bar dataKey="end" stackId="a" radius={[3, 3, 0, 0]}>{wf.map((e, i) => <Cell key={i} fill={e.isT ? (e.total >= 0 ? "#1D9E75" : "#E24B4A") : (e.val >= 0 ? "#1D9E7577" : "#E24B4A77")} />)}</Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* CHARTS ROW 2: Pie YTD + Pie CM */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
-          <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:2}}>Gasto Real por Molécula — YTD</div>
-          <div style={{fontSize:9,color:"#8A90A8",marginBottom:4}}>{MO[0]}–{MO[cm-1]} 2026</div>
-          <div style={{display:"flex",alignItems:"center"}}>
-            <ResponsiveContainer width="60%" height={180}>
-              <PieChart><Pie data={pieYTD} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>
-                {pieYTD.map((e,i)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}
-              </Pie><Tooltip formatter={v=>F(v)} contentStyle={{fontSize:9,borderRadius:6}}/></PieChart>
-            </ResponsiveContainer>
-            <div style={{width:"40%",fontSize:9}}>
-              {pieYTD.map((e,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}>
-                <div style={{width:8,height:8,borderRadius:2,background:COLORS[i%COLORS.length],flexShrink:0}}/>
-                <span style={{color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.name}</span>
-                <span style={{marginLeft:"auto",color:"#8A90A8",flexShrink:0}}>{F(e.value)}</span>
-              </div>)}
-            </div>
+      {/* PIE CHARTS */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
+          <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
+            {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <ResponsiveContainer width="60%" height={180}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
+                <div style={{ width: "40%", fontSize: 9 }}>{p.data.map((e, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span><span style={{ marginLeft: "auto", color: "#8A90A8", flexShrink: 0 }}>{F(e.value)}</span></div>)}</div>
+              </div>}
           </div>
-        </div>
-        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
-          <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:2}}>Gasto Real por Molécula — {MO[cm-1]}</div>
-          <div style={{fontSize:9,color:"#8A90A8",marginBottom:4}}>Mes corriente</div>
-          {pieCM.length===0?<div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center",color:"#8A90A8",fontSize:10}}>Sin gastos en {MO[cm-1]}</div>:
-          <div style={{display:"flex",alignItems:"center"}}>
-            <ResponsiveContainer width="60%" height={180}>
-              <PieChart><Pie data={pieCM} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>
-                {pieCM.map((e,i)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}
-              </Pie><Tooltip formatter={v=>F(v)} contentStyle={{fontSize:9,borderRadius:6}}/></PieChart>
-            </ResponsiveContainer>
-            <div style={{width:"40%",fontSize:9}}>
-              {pieCM.map((e,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}>
-                <div style={{width:8,height:8,borderRadius:2,background:COLORS[i%COLORS.length],flexShrink:0}}/>
-                <span style={{color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.name}</span>
-                <span style={{marginLeft:"auto",color:"#8A90A8",flexShrink:0}}>{F(e.value)}</span>
-              </div>)}
-            </div>
-          </div>}
-        </div>
+        ))}
       </div>
 
       {/* PARETO */}
-      <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
-        <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:2}}>Pareto por Partner — {MO[cm-1]} 2026</div>
-        <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Mes corriente · Clic para desglose</div>
-        {pareto.length===0&&<div style={{fontSize:10,color:"#8A90A8",padding:16,textAlign:"center"}}>Sin gastos con partner en {MO[cm-1]}</div>}
-        {pareto.slice(0,15).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
-          <div key={i} style={{marginBottom:isE?8:3}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-              <div style={{width:150,fontSize:9,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"▶"}</span>{p.partner.length>20?p.partner.slice(0,20)+"…":p.partner}</div>
-              <div style={{flex:1,height:16,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7544,#1D9E7522)",borderRadius:3,border:`1px solid ${p.total<0?"#E24B4A44":"#1D9E7544"}`}}/></div>
-              <div style={{width:65,textAlign:"right",fontSize:9,fontWeight:500,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
-              <div style={{width:36,textAlign:"right",fontSize:8,color:"#8A90A8",flexShrink:0}}>{P(p.cumPct)}</div>
+      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 10 }}>Pareto por Partner — {MO[cm - 1]} 2026</div>
+        {pareto.length === 0 && <div style={{ fontSize: 10, color: "#8A90A8", padding: 16, textAlign: "center" }}>Sin gastos con partner en {MO[cm - 1]}</div>}
+        {pareto.slice(0, 15).map((p, i) => { const w = maxP ? Math.abs(p.total) / maxP * 100 : 0; const isE = expP[p.partner]; return (
+          <div key={i} style={{ marginBottom: isE ? 8 : 3 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => toggleP(p.partner)}>
+              <div style={{ width: 150, fontSize: 9, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }} title={p.partner}><span style={{ fontSize: 7, marginRight: 3 }}>{isE ? "▼" : "▶"}</span>{p.partner.length > 20 ? p.partner.slice(0, 20) + "…" : p.partner}</div>
+              <div style={{ flex: 1, height: 16, background: "#f0f2fa", borderRadius: 3, overflow: "hidden" }}><div style={{ height: "100%", width: `${w}%`, background: p.total < 0 ? "#FCEBEB" : "linear-gradient(90deg,#1D9E7544,#1D9E7522)", borderRadius: 3, border: `1px solid ${p.total < 0 ? "#E24B4A44" : "#1D9E7544"}` }} /></div>
+              <div style={{ width: 65, textAlign: "right", fontSize: 9, fontWeight: 500, color: p.total < 0 ? "#E24B4A" : "#1a1a2e", flexShrink: 0 }}>{F(p.total)}</div>
+              <div style={{ width: 36, textAlign: "right", fontSize: 8, color: "#8A90A8", flexShrink: 0 }}>{P(p.cumPct)}</div>
             </div>
-            {isE&&<div style={{marginLeft:18,marginTop:3,borderLeft:"2px solid #E4E8F2",paddingLeft:8}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-              <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"2px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"80%"}} title={co}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",flexShrink:0,marginLeft:8}}>{F(val)}</span></div>
+            {isE && <div style={{ marginLeft: 18, marginTop: 3, borderLeft: "2px solid #E4E8F2", paddingLeft: 8 }}>{Object.entries(p.items).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).map(([co, val], j) => (
+              <div key={j} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0", fontSize: 8, color: "#666" }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "80%" }}>{co}</span><span style={{ fontWeight: 500, color: val < 0 ? "#E24B4A" : "#1a1a2e", flexShrink: 0, marginLeft: 8 }}>{F(val)}</span></div>
             ))}</div>}
           </div>
-        );})}
+        ); })}
       </div>
 
-      <div style={{textAlign:"center",fontSize:8,color:"#B0B6CC",padding:"12px 0",marginTop:8}}>Saya Biologics — Financial Intelligence · Rolling Forecast 2026</div>
+      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · Rolling Forecast 2026</div>
     </div>
   );
 }
