@@ -89,7 +89,10 @@ export default function Dashboard() {
   const [selAreas, setSelAreas] = useState([]);
   const [view, setView] = useState("consolidado");
   const [expP, setExpP] = useState({});
-
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMsg, setChatMsg] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
@@ -178,6 +181,26 @@ export default function Dashboard() {
   const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && r[2] === cm); const map = {}; re.forEach(r => { const p = r[7]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[8]; const c = r[6]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[8] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
 
   const toggleP = k => setExpP(p => ({ ...p, [k]: !p[k] }));
+
+  // AI Chat
+  const buildContext = () => {
+    const t = {};PL_KEYS.forEach(k=>{t[k]=ytdM.reduce((s,m)=>s+buildPL(fd,m,cm,"consolidado")[k],0)});
+    const cmPL = buildPL(fd, cm, cm, "consolidado");
+    return `Mes corriente: ${MO[cm-1]} 2026. Net Sales mes: ${F(cmPL.ns)}, YTD: ${F(t.ns)}. COGS YTD: ${F(t.cogs)}. Gross Profit YTD: ${F(t.gp)}, Margen: ${P(t.ns?t.gp/t.ns:0)}. OpEx mes: ${F(cmPL.totOpex)}, YTD: ${F(t.totOpex)}. EBITDA mes: ${F(cmPL.ebitda)}, YTD: ${F(t.ebitda)}. EBIT YTD: ${F(t.ebit)}. SW YTD: ${F(t.sw)}, SM YTD: ${F(t.sm)}, TA YTD: ${F(t.ta)}, PF YTD: ${F(t.pf)}, OF YTD: ${F(t.of)}. Depr YTD: ${F(t.depr)}. Top partners mes: ${pareto.slice(0,5).map(p=>`${p.partner}: ${F(p.total)}`).join(', ')}. Moléculas con gasto: ${pieCM.map(p=>`${p.name}: ${F(p.value)}`).join(', ')}.`;
+  };
+  const sendChat = async () => {
+    if (!chatMsg.trim() || chatLoading) return;
+    const userMsg = chatMsg.trim();
+    setChatMsg("");
+    setChatHistory(h => [...h, { role: "user", text: userMsg }]);
+    setChatLoading(true);
+    try {
+      const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: userMsg, context: buildContext() }) });
+      const data = await r.json();
+      setChatHistory(h => [...h, { role: "ai", text: data.response || data.error || "Error" }]);
+    } catch (e) { setChatHistory(h => [...h, { role: "ai", text: "Error de conexión. Verifica que ANTHROPIC_API_KEY esté configurada en Vercel." }]); }
+    setChatLoading(false);
+  };
   const maxP = pareto.length ? Math.abs(pareto[0].total) : 1;
   const sel = { padding: "5px 10px", borderRadius: 6, border: "1px solid #D0D5E8", fontSize: 11, fontFamily: "inherit", background: "#fff", cursor: "pointer", color: "#1a1a2e" };
   const th = { fontSize: 9, color: "#8A90A8", fontWeight: 400, padding: "5px 6px", borderBottom: "1px solid #E4E8F2", whiteSpace: "nowrap" };
@@ -240,15 +263,18 @@ export default function Dashboard() {
               const isPct = PCT_KEYS.has(k);
               const isBold = BOLD_KEYS.has(k);
               const isOpex = OPEX_KEY_SET.has(k);
-              const isSep = k === "sw"; // separator before opex
-              return (<>
-                {isSep && <tr key="sep"><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>}
-                <tr key={idx} style={{ background: isBold ? "#fafbfe" : "transparent" }}>
+              const isSep = k === "sw";
+              const rows = [];
+              if (isSep) rows.push(<tr key={"sep-"+idx}><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>);
+              rows.push(
+                <tr key={"pl-"+idx} style={{ background: isBold ? "#fafbfe" : "transparent" }}>
                   <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>{PL_LABELS[k]}</td>
                   {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct)}</td>)}
                   <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct)}</td>
                 </tr>
-              </>);
+              );
+              return rows;
+            })}
             })}
           </tbody>
         </table>
@@ -334,8 +360,29 @@ export default function Dashboard() {
         ); })}
       </div>
 
+      {/* AI AGENT */}
+      <div style={{position:"fixed",bottom:20,right:20,zIndex:1000}}>
+        {chatOpen && <div style={{width:380,height:460,background:"#fff",border:"1px solid #E4E8F2",borderRadius:14,boxShadow:"0 8px 30px rgba(0,0,0,0.12)",display:"flex",flexDirection:"column",overflow:"hidden",marginBottom:8}}>
+          <div style={{padding:"12px 16px",background:"linear-gradient(135deg,#1D9E75,#085041)",color:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:12,fontWeight:500}}>🤖 Agente Financiero</div><div style={{fontSize:9,opacity:0.8}}>Pregunta sobre tus gastos y forecast</div></div>
+            <button onClick={()=>setChatOpen(false)} style={{background:"none",border:"none",color:"#fff",fontSize:18,cursor:"pointer"}}>×</button>
+          </div>
+          <div style={{flex:1,overflowY:"auto",padding:12,display:"flex",flexDirection:"column",gap:8}}>
+            {chatHistory.length===0 && <div style={{textAlign:"center",color:"#8A90A8",fontSize:10,padding:20}}>Hola! Soy tu asistente financiero. Puedes preguntarme cosas como:<br/><br/>• ¿Cuál es el gasto más grande este mes?<br/>• ¿Cómo va nuestro burn rate?<br/>• ¿Qué categoría de OpEx creció más?<br/>• Análisis del P&L YTD</div>}
+            {chatHistory.map((m,i) => <div key={i} style={{alignSelf:m.role==="user"?"flex-end":"flex-start",maxWidth:"85%",padding:"8px 12px",borderRadius:m.role==="user"?"12px 12px 4px 12px":"12px 12px 12px 4px",background:m.role==="user"?"#1D9E75":"#f0f2fa",color:m.role==="user"?"#fff":"#1a1a2e",fontSize:11,lineHeight:1.5,whiteSpace:"pre-wrap"}}>{m.text}</div>)}
+            {chatLoading && <div style={{alignSelf:"flex-start",padding:"8px 12px",borderRadius:12,background:"#f0f2fa",fontSize:11,color:"#8A90A8"}}>Analizando datos...</div>}
+          </div>
+          <div style={{padding:8,borderTop:"1px solid #E4E8F2",display:"flex",gap:6}}>
+            <input value={chatMsg} onChange={e=>setChatMsg(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendChat()} placeholder="Pregunta sobre tus finanzas..." style={{flex:1,padding:"8px 12px",borderRadius:8,border:"1px solid #D0D5E8",fontSize:11,fontFamily:"inherit",outline:"none"}}/>
+            <button onClick={sendChat} disabled={chatLoading} style={{padding:"8px 14px",borderRadius:8,border:"none",background:"#1D9E75",color:"#fff",fontSize:11,cursor:"pointer",fontFamily:"inherit",opacity:chatLoading?0.5:1}}>Enviar</button>
+          </div>
+        </div>}
+        <button onClick={()=>setChatOpen(!chatOpen)} style={{width:52,height:52,borderRadius:"50%",border:"none",background:"linear-gradient(135deg,#1D9E75,#085041)",color:"#fff",fontSize:22,cursor:"pointer",boxShadow:"0 4px 14px rgba(29,158,117,0.4)",display:"flex",alignItems:"center",justifyContent:"center",marginLeft:"auto"}}>{chatOpen?"×":"🤖"}</button>
+      </div>
+
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · Rolling Forecast 2026</div>
     </div>
   );
 }
+
 
