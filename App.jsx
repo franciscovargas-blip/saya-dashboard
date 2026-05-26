@@ -259,23 +259,23 @@ export default function Dashboard() {
             <th style={{ ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" }}>Total</th>
           </tr></thead>
           <tbody>
-            {PL_KEYS.map((k, idx) => {
-              const isPct = PCT_KEYS.has(k);
-              const isBold = BOLD_KEYS.has(k);
-              const isOpex = OPEX_KEY_SET.has(k);
-              const isSep = k === "sw";
-              const rows = [];
-              if (isSep) rows.push(<tr key={"sep-"+idx}><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>);
-              rows.push(
-                <tr key={"pl-"+idx} style={{ background: isBold ? "#fafbfe" : "transparent" }}>
-                  <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>{PL_LABELS[k]}</td>
-                  {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct)}</td>)}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct)}</td>
-                </tr>
-              );
-              return rows;
-            })}
-            })}
+            {(() => {
+              const tableRows = [];
+              PL_KEYS.forEach((k, idx) => {
+                const isPct = PCT_KEYS.has(k);
+                const isBold = BOLD_KEYS.has(k);
+                const isOpex = OPEX_KEY_SET.has(k);
+                if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>);
+                tableRows.push(
+                  <tr key={"row-"+k} style={{ background: isBold ? "#fafbfe" : "transparent" }}>
+                    <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>{PL_LABELS[k]}</td>
+                    {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct)}</td>)}
+                    <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct)}</td>
+                  </tr>
+                );
+              });
+              return tableRows;
+            })()}
           </tbody>
         </table>
       </div>
@@ -380,9 +380,6 @@ export default function Dashboard() {
         <button onClick={()=>setChatOpen(!chatOpen)} style={{width:52,height:52,borderRadius:"50%",border:"none",background:"linear-gradient(135deg,#1D9E75,#085041)",color:"#fff",fontSize:22,cursor:"pointer",boxShadow:"0 4px 14px rgba(29,158,117,0.4)",display:"flex",alignItems:"center",justifyContent:"center",marginLeft:"auto"}}>{chatOpen?"×":"🤖"}</button>
       </div>
 
-      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · Rolling Forecast 2026</div>
-    </div>
-  );
-}
+      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Bussines Intelligence · Rolling Forecast 2026</div>
 
 
