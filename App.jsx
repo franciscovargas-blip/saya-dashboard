@@ -381,5 +381,9 @@ export default function Dashboard() {
       </div>
 
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Bussines Intelligence · Rolling Forecast 2026</div>
+      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Bussines Intelligence · Rolling Forecast 2026</div>
+    </div>
+  );
+}
 
 
