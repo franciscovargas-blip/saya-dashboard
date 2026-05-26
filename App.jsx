@@ -93,6 +93,7 @@ export default function Dashboard() {
   const [chatMsg, setChatMsg] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
+  const [expOpex, setExpOpex] = useState({});
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
@@ -215,7 +216,7 @@ export default function Dashboard() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #E4E8F2", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src="data:image/png;base64,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" alt="Saya Biologics" style={{width:42,height:42,borderRadius:10,objectFit:"cover"}} />
-          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Bussines Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]}</div></div>
+          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Financial Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]}</div></div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
@@ -260,19 +261,81 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {(() => {
+              const OPEX_CODE_MAP = {sw:"SW0001",sm:"SM0001",ta:"TA0001",pf:"PF0001",of:"OF0001",qual:"Quality"};
+              const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
-              PL_KEYS.forEach((k, idx) => {
+              PL_KEYS.forEach((k) => {
                 const isPct = PCT_KEYS.has(k);
                 const isBold = BOLD_KEYS.has(k);
                 const isOpex = OPEX_KEY_SET.has(k);
+                const code = OPEX_CODE_MAP[k];
                 if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>);
                 tableRows.push(
-                  <tr key={"row-"+k} style={{ background: isBold ? "#fafbfe" : "transparent" }}>
-                    <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>{PL_LABELS[k]}</td>
+                  <tr key={"row-"+k} style={{ background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
+                    <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
+                      {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
+                      {PL_LABELS[k]}
+                    </td>
                     {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct)}</td>)}
                     <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct)}</td>
                   </tr>
                 );
+                // Drill-down for OpEx rows
+                if (isOpex && expOpex[k] && code) {
+                  const origen = code === "Quality" ? "Forecast" : "Reales";
+                  const codeData = fd.filter(r => r[0] === code && r[1] === origen);
+                  // Group by Clasificacion
+                  const clsMap = {};
+                  codeData.forEach(r => {
+                    const cls = r[5] || "—";
+                    if (!clsMap[cls]) clsMap[cls] = { items: {}, m: Array(12).fill(0) };
+                    clsMap[cls].m[r[2] - 1] += r[8];
+                    const com = r[6] || "—";
+                    if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { m: Array(12).fill(0), p: r[7] };
+                    clsMap[cls].items[com].m[r[2] - 1] += r[8];
+                  });
+                  Object.entries(clsMap).filter(([c]) => c !== "—").forEach(([cls, data]) => {
+                    const clsKey = k + "|" + cls;
+                    const clsExp = expOpex[clsKey];
+                    const clsTotal = data.m.reduce((s, v) => s + v, 0);
+                    tableRows.push(
+                      <tr key={"cls-" + clsKey} style={{ background: "#fafcff", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); toggleOx(clsKey); }}>
+                        <td style={{ ...td, paddingLeft: 32, fontSize: 9, color: "#185FA5", position: "sticky", left: 0, background: "#fafcff" }}>
+                          <span style={{ fontSize: 7, marginRight: 3 }}>{clsExp ? "▼" : "▶"}</span>{cls}
+                        </td>
+                        {data.m.map((v, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontSize: 9, color: v < 0 ? "#E24B4A" : v === 0 ? "#ddd" : "#666" }}>{v === 0 ? "" : F(v)}</td>)}
+                        <td style={{ ...td, textAlign: "right", fontSize: 9, fontWeight: 500, borderLeft: "2px solid #E4E8F2" }}>{F(clsTotal)}</td>
+                      </tr>
+                    );
+                    if (clsExp) {
+                      Object.entries(data.items).forEach(([com, cd]) => {
+                        const comTotal = cd.m.reduce((s, v) => s + v, 0);
+                        tableRows.push(
+                          <tr key={"com-" + clsKey + "|" + com} style={{ background: "#f8f9fe" }}>
+                            <td style={{ ...td, paddingLeft: 48, fontSize: 8, color: "#8A90A8", position: "sticky", left: 0, background: "#f8f9fe" }} title={"Partner: " + cd.p}>
+                              {com.length > 40 ? com.slice(0, 40) + "…" : com}
+                            </td>
+                            {cd.m.map((v, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontSize: 8, color: v < 0 ? "#E24B4A" : v === 0 ? "#eee" : "#999" }}>{v === 0 ? "" : F(v)}</td>)}
+                            <td style={{ ...td, textAlign: "right", fontSize: 8, borderLeft: "2px solid #E4E8F2" }}>{F(comTotal)}</td>
+                          </tr>
+                        );
+                      });
+                    }
+                  });
+                  // Show "—" items (no clasificacion)
+                  if (clsMap["—"]) {
+                    const noClsTotal = clsMap["—"].m.reduce((s, v) => s + v, 0);
+                    if (noClsTotal !== 0) {
+                      tableRows.push(
+                        <tr key={"cls-" + k + "-other"} style={{ background: "#fafcff" }}>
+                          <td style={{ ...td, paddingLeft: 32, fontSize: 9, color: "#8A90A8", position: "sticky", left: 0, background: "#fafcff" }}>Otros / Ajustes</td>
+                          {clsMap["—"].m.map((v, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontSize: 9, color: v < 0 ? "#E24B4A" : v === 0 ? "#ddd" : "#666" }}>{v === 0 ? "" : F(v)}</td>)}
+                          <td style={{ ...td, textAlign: "right", fontSize: 9, fontWeight: 500, borderLeft: "2px solid #E4E8F2" }}>{F(noClsTotal)}</td>
+                        </tr>
+                      );
+                    }
+                  }
+                }
               });
               return tableRows;
             })()}
@@ -380,8 +443,7 @@ export default function Dashboard() {
         <button onClick={()=>setChatOpen(!chatOpen)} style={{width:52,height:52,borderRadius:"50%",border:"none",background:"linear-gradient(135deg,#1D9E75,#085041)",color:"#fff",fontSize:22,cursor:"pointer",boxShadow:"0 4px 14px rgba(29,158,117,0.4)",display:"flex",alignItems:"center",justifyContent:"center",marginLeft:"auto"}}>{chatOpen?"×":"🤖"}</button>
       </div>
 
-      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Bussines Intelligence · Rolling Forecast 2026</div>
-      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Bussines Intelligence · Rolling Forecast 2026</div>
+      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · Rolling Forecast 2026</div>
     </div>
   );
 }
