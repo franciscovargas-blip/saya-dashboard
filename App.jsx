@@ -94,6 +94,7 @@ export default function Dashboard() {
   const [chatHistory, setChatHistory] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [expOpex, setExpOpex] = useState({});
+  const [expComp, setExpComp] = useState({});
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
@@ -345,20 +346,94 @@ export default function Dashboard() {
 
       {/* YTD + CM TABLES */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-        {[{ t: `YTD ${MO[0]}–${MO[cm - 1]} 2026`, fk: "ytdFC", rk: "ytdRE", vk: "ytdVar", pk: "ytdVarPct" }, { t: `Mes — ${MO[cm - 1]} 2026`, fk: "cmFC", rk: "cmRE", vk: "cmVar", pk: "cmVarPct" }].map((t, ti) => (
+        {[{ t: `YTD ${MO[0]}–${MO[cm - 1]} 2026`, fk: "ytdFC", rk: "ytdRE", vk: "ytdVar", pk: "ytdVarPct", prefix: "ytd", months: ytdM },
+          { t: `Mes — ${MO[cm - 1]} 2026`, fk: "cmFC", rk: "cmRE", vk: "cmVar", pk: "cmVarPct", prefix: "cm", months: [cm] }].map((t, ti) => (
           <div key={ti} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, overflowX: "auto" }}>
             <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>{t.t}</div>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead><tr>{["Línea", "Forecast", "Reales", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
-              <tbody>{comp.map((r, i) => (
-                <tr key={i} style={{ background: r.isBold ? "#fafbfe" : "transparent" }}>
-                  <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: OPEX_KEY_SET.has(r.k) ? "#534AB7" : "#1a1a2e", paddingLeft: OPEX_KEY_SET.has(r.k) ? 16 : 6 }}>{r.label}</td>
-                  <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct)}</td>
-                  <td style={{ ...td, textAlign: "right", color: vc(r[t.rk]), fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.rk], r.isPct)}</td>
-                  <td style={{ ...td, textAlign: "right", color: vc(r[t.vk]), fontWeight: 500, fontSize: r.isPct ? 9 : 10 }}>{r.isPct ? P(r[t.vk]) : F(r[t.vk])}</td>
-                  <td style={{ ...td, textAlign: "right" }}>{!r.isPct && <span style={{ padding: "2px 6px", borderRadius: 4, fontSize: 9, fontWeight: 500, background: r[t.pk] < 0 ? "#FCEBEB" : r[t.pk] > 0 ? "#D4F0E6" : "#f0f2fa", color: vc(r[t.pk]) }}>{P(r[t.pk])}</span>}</td>
-                </tr>
-              ))}</tbody>
+              <tbody>
+                {(() => {
+                  const OPEX_CODE_MAP2 = {sw:"SW0001",sm:"SM0001",ta:"TA0001",pf:"PF0001",of:"OF0001",qual:"Quality"};
+                  const tRows = [];
+                  comp.forEach((r, i) => {
+                    const isOpex = OPEX_KEY_SET.has(r.k);
+                    const code = OPEX_CODE_MAP2[r.k];
+                    const expKey = t.prefix + "-" + r.k;
+                    const isExp = expComp[expKey];
+                    tRows.push(
+                      <tr key={"r-"+i} style={{ background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
+                        <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
+                          {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
+                          {r.label}
+                        </td>
+                        <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct)}</td>
+                        <td style={{ ...td, textAlign: "right", color: vc(r[t.rk]), fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.rk], r.isPct)}</td>
+                        <td style={{ ...td, textAlign: "right", color: vc(r[t.vk]), fontWeight: 500, fontSize: r.isPct ? 9 : 10 }}>{r.isPct ? P(r[t.vk]) : F(r[t.vk])}</td>
+                        <td style={{ ...td, textAlign: "right" }}>{!r.isPct && <span style={{ padding: "2px 6px", borderRadius: 4, fontSize: 9, fontWeight: 500, background: r[t.pk] < 0 ? "#FCEBEB" : r[t.pk] > 0 ? "#D4F0E6" : "#f0f2fa", color: vc(r[t.pk]) }}>{P(r[t.pk])}</span>}</td>
+                      </tr>
+                    );
+                    // Drill-down for OpEx in comparison tables
+                    if (isOpex && isExp && code) {
+                      const origen = code === "Quality" ? "Forecast" : "Reales";
+                      const codeData = fd.filter(row => row[0] === code && row[1] === origen && t.months.includes(row[2]));
+                      const clsMap = {};
+                      codeData.forEach(row => {
+                        const cls = row[5] || "—";
+                        if (!clsMap[cls]) clsMap[cls] = { total: 0, items: {} };
+                        clsMap[cls].total += row[8];
+                        const com = row[6] || "—";
+                        if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { total: 0, partner: row[7] };
+                        clsMap[cls].items[com].total += row[8];
+                      });
+                      const clsExpKey = expKey + "-cls";
+                      Object.entries(clsMap).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total)).forEach(([cls, data]) => {
+                        const ck = clsExpKey + "|" + cls;
+                        const ce = expComp[ck];
+                        tRows.push(
+                          <tr key={"cls2-" + ck} style={{ background: "#fafcff", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setExpComp(p => ({...p, [ck]: !p[ck]})); }}>
+                            <td style={{ ...td, paddingLeft: 28, fontSize: 9, color: "#185FA5" }}>
+                              <span style={{fontSize:7,marginRight:3}}>{ce ? "▼" : "▶"}</span>{cls}
+                            </td>
+                            <td style={{ ...td, textAlign: "right", fontSize: 9, color: "#ccc" }}>—</td>
+                            <td style={{ ...td, textAlign: "right", fontSize: 9, color: data.total < 0 ? "#E24B4A" : "#1a1a2e" }}>{F(data.total)}</td>
+                            <td style={{ ...td, textAlign: "right", fontSize: 9, color: "#ccc" }}>—</td>
+                            <td style={{ ...td }}></td>
+                          </tr>
+                        );
+                        if (ce) {
+                          Object.entries(data.items).sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total)).forEach(([com, cd]) => {
+                            tRows.push(
+                              <tr key={"com2-" + ck + "|" + com} style={{ background: "#f8f9fe" }}>
+                                <td style={{ ...td, paddingLeft: 42, fontSize: 8, color: "#8A90A8" }} title={"Partner: " + cd.partner}>
+                                  {com.length > 35 ? com.slice(0, 35) + "…" : com}
+                                </td>
+                                <td style={{ ...td, textAlign: "right", fontSize: 8, color: "#ccc" }}>—</td>
+                                <td style={{ ...td, textAlign: "right", fontSize: 8, color: cd.total < 0 ? "#E24B4A" : "#999" }}>{F(cd.total)}</td>
+                                <td style={{ ...td, textAlign: "right", fontSize: 8, color: "#ccc" }}>—</td>
+                                <td style={{ ...td }}></td>
+                              </tr>
+                            );
+                          });
+                        }
+                      });
+                      // Otros/Ajustes
+                      if (clsMap["—"] && clsMap["—"].total !== 0) {
+                        tRows.push(
+                          <tr key={"other-" + expKey} style={{ background: "#fafcff" }}>
+                            <td style={{ ...td, paddingLeft: 28, fontSize: 9, color: "#8A90A8" }}>Otros / Ajustes</td>
+                            <td style={{ ...td, textAlign: "right", fontSize: 9, color: "#ccc" }}>—</td>
+                            <td style={{ ...td, textAlign: "right", fontSize: 9, color: clsMap["—"].total < 0 ? "#E24B4A" : "#1a1a2e" }}>{F(clsMap["—"].total)}</td>
+                            <td style={{ ...td, textAlign: "right", fontSize: 9, color: "#ccc" }}>—</td>
+                            <td style={{ ...td }}></td>
+                          </tr>
+                        );
+                      }
+                    }
+                  });
+                  return tRows;
+                })()}
+              </tbody>
             </table>
           </div>
         ))}
@@ -447,5 +522,4 @@ export default function Dashboard() {
     </div>
   );
 }
-
 
