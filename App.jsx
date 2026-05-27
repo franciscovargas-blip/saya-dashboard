@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Refere
 
 const MO=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const COLORS=["#1D9E75","#534AB7","#D85A30","#185FA5","#BA7517","#E24B4A","#D4537E","#639922","#888"];
-const OPEX_LINES=["SW0001","SM0001","TA0001","PF0001","OF0001"];
+const OPEX_LINES=["Salaries & Wages","Sales & Marketing","Travel & Accomodation","Professional Fees","Office Expense"];
 const OPEX_LABELS={SW0001:"Salaries & Wages",SM0001:"Sales & Marketing",TA0001:"Travel & Accommodation",PF0001:"Professional Fees",OF0001:"Office Expenses"};
 
 // Molecule mapping to Consolidado names
@@ -61,17 +61,17 @@ function buildPL(fd, m, cm, mode) {
   const cogs = getPL("COGS");
   const gp = ns - cogs;
   const gmPct = ns ? gp / ns : 0;
-  const sw = getOpex("SW0001");
-  const sm = getOpex("SM0001");
-  const ta = getOpex("TA0001");
-  const pf = getOpex("PF0001");
-  const of_ = getOpex("OF0001");
+const sw = getOpex("Salaries & Wages");
+const sm = getOpex("Sales & Marketing");
+const ta = getOpex("Travel & Accomodation");
+const pf = getOpex("Professional Fees");
+const of_ = getOpex("Office Expense");
   const qual = mode === "reales" ? 0 : gV(fd, "Quality", "Forecast", m); // Quality is forecast only
   const totOpex = sw + sm + ta + pf + of_ + qual;
   const totOpexPct = ns ? totOpex / ns : 0;
   const ebitda = gp - totOpex;
   const ebitdaPct = ns ? ebitda / ns : 0;
-  const depr = getOpex("DP0001");
+  const depr = getOpex("Depreciation & Amortization");
   const ebit = ebitda - depr;
 
   return { ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, qual, totOpex, totOpexPct, ebitda, ebitdaPct, depr, ebit };
@@ -262,7 +262,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {(() => {
-              const OPEX_CODE_MAP = {sw:"SW0001",sm:"SM0001",ta:"TA0001",pf:"PF0001",of:"OF0001",qual:"Quality"};
+              const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",qual:"Quality"};
               const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
               PL_KEYS.forEach((k) => {
@@ -354,7 +354,7 @@ export default function Dashboard() {
               <thead><tr>{["Línea", "Forecast", "Reales", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
               <tbody>
                 {(() => {
-                  const OPEX_CODE_MAP2 = {sw:"SW0001",sm:"SM0001",ta:"TA0001",pf:"PF0001",of:"OF0001",qual:"Quality"};
+                  const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",qual:"Quality"};
                   const tRows = [];
                   comp.forEach((r, i) => {
                     const isOpex = OPEX_KEY_SET.has(r.k);
