@@ -358,7 +358,7 @@ export default function Dashboard() {
                   const tRows = [];
                   comp.forEach((r, i) => {
                     const isOpex = OPEX_KEY_SET.has(r.k);
-                    const code = OPEX_CODE_MAP2[r.k];
+                    const code = OPEX_CODE_MAP[r.k];
                     const expKey = t.prefix + "-" + r.k;
                     const isExp = expComp[expKey];
                     tRows.push(
