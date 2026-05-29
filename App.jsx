@@ -175,7 +175,7 @@ export default function Dashboard() {
   }, [fd, cm, ytdM]);
 
   // Pies
-  const OC_ALL=["SW0001","PF0001","SM0001","TA0001","IT0001","OF0001","OP0001","DP0001","FE0001","FI0001","OT0001","TX0001"];
+  const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others"];
   const pieYTD = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[2])).forEach(r => { const m = mapMol(r[3]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[8]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, ytdM]);
   const pieCM = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && r[2] === cm).forEach(r => { const m = mapMol(r[3]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[8]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, cm]);
 
@@ -522,4 +522,6 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
 
