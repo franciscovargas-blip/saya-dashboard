@@ -170,13 +170,21 @@ export default function Dashboard() {
   const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, i+1, cm, "consolidado"); return { name: m, Sales: Math.round(p.ns), EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
 
   // Waterfall
+  const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others"];
   const wf = useMemo(() => {
-    const t = {};PL_KEYS.forEach(k=>{t[k]=ytdM.reduce((s,m)=>s+buildPL(fd,m,cm,"consolidado")[k],0)});
-    let run=0;return[{name:"Net Sales",val:t.ns},{name:"COGS",val:-t.cogs},{name:"Gross Profit",val:0,total:t.gp},{name:"OpEx",val:-t.totOpex},{name:"EBITDA",val:0,total:t.ebitda},{name:"Depr",val:-t.depr},{name:"EBIT",val:0,total:t.ebit}].map(it=>{if(it.total!==undefined){run=it.total;return{...it,start:0,end:it.total,isT:true}}const s=run;run+=it.val;return{...it,start:s,end:run}});
+    const clsMap={};
+    fd.filter(r=>r[1]==="Reales"&&OC_ALL.includes(r[0])&&r[2]===cm).forEach(r=>{
+      const cls=r[5]||"Otros";if(!clsMap[cls])clsMap[cls]=0;clsMap[cls]+=Math.abs(r[8]);
+    });
+    const sorted=Object.entries(clsMap).sort((a,b)=>b[1]-a[1]).map(([name,val])=>({name:name.length>14?name.slice(0,13)+"…":name,val,fullName:name}));
+    const total=sorted.reduce((s,x)=>s+x.val,0);
+    let run=0;
+    const bars=sorted.map(it=>{const s=run;run+=it.val;return{...it,start:s,end:run}});
+    bars.push({name:"Total",val:0,start:0,end:total,isT:true,total});
+    return bars;
   }, [fd, cm, ytdM]);
 
   // Pies
-  const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others"];
   const pieYTD = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[2])).forEach(r => { const m = mapMol(r[3]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[8]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, ytdM]);
   const pieCM = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && r[2] === cm).forEach(r => { const m = mapMol(r[3]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[8]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, cm]);
 
@@ -231,7 +239,7 @@ export default function Dashboard() {
   },[cm]);
   const toggleB=k=>setExpB(p=>({...p,[k]:!p[k]}));
   const bCum=(row,m)=>{let s=0;for(let i=0;i<m;i++)s+=(row.vals[i]||0);return s;};
-  const renderBalRows=(section,sColor)=>{
+  const renderBalRows=(section,sColor,label)=>{
     if(!balData)return null;
     const items=balData.enriched.filter(r=>r.section===section);
     const topRow=items.find(r=>r.depth===0&&!r.isTotal);
@@ -240,7 +248,7 @@ export default function Dashboard() {
     if(topRow)rows.push(
       <tr key={section} style={{background:`${sColor}08`,cursor:"pointer"}} onClick={()=>toggleB(section)}>
         <td style={{...td,fontWeight:600,color:sColor,position:"sticky",left:0,background:`${sColor}08`,borderBottom:`2px solid ${sColor}33`}}>
-          <span style={{fontSize:8,marginRight:5}}>{expB[section]?"▼":"▶"}</span>{section==="Capital"?"Capital Contable":section}
+          <span style={{fontSize:8,marginRight:5}}>{expB[section]?"▼":"▶"}</span>{label||section}
         </td>
         {MO.map((m,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:10,fontWeight:500,color:bCum(topRow,mi+1)<0?"#E24B4A":bCum(topRow,mi+1)===0?"#ccc":"#1a1a2e",borderBottom:`2px solid ${sColor}33`}}>{bCum(topRow,mi+1)===0?"—":Fn(bCum(topRow,mi+1))}</td>)}
       </tr>
@@ -319,6 +327,32 @@ export default function Dashboard() {
       </div>
 
       {/* P&L TABLE */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
+          <ResponsiveContainer width="100%" height={180}>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
+              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
+              <Bar dataKey="Sales" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E7566" : "#1D9E7533"} />)}</Bar>
+              <Bar dataKey="OpEx" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A55" : "#E24B4A22"} />)}</Bar>
+              <Line type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={2} dot={{ r: 2, fill: "#534AB7" }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>OpEx por Clasificación — {MO[cm-1]}</div>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={wf} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v <= -1e6 ? `-${(Math.abs(v) / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
+              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
+              <Bar dataKey="start" stackId="a" fill="transparent" /><Bar dataKey="end" stackId="a" radius={[3, 3, 0, 0]}>{wf.map((e, i) => <Cell key={i} fill={e.isT ? "#534AB7" : COLORS[i % COLORS.length]} />)}</Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>P&L Anual — {view === "forecast" ? "Forecast" : view === "reales" ? "Reales" : "Consolidado"} 2026</span>
@@ -509,32 +543,21 @@ export default function Dashboard() {
       </div>
 
       {/* CHARTS */}
+      {/* PIE CHARTS */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
-          <ResponsiveContainer width="100%" height={180}>
-            <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
-              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
-              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
-              <Bar dataKey="Sales" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E7566" : "#1D9E7533"} />)}</Bar>
-              <Bar dataKey="OpEx" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A55" : "#E24B4A22"} />)}</Bar>
-              <Line type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={2} dot={{ r: 2, fill: "#534AB7" }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Cascada P&L — YTD</div>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={wf} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
-              <XAxis dataKey="name" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v <= -1e6 ? `-${(Math.abs(v) / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
-              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
-              <Bar dataKey="start" stackId="a" fill="transparent" /><Bar dataKey="end" stackId="a" radius={[3, 3, 0, 0]}>{wf.map((e, i) => <Cell key={i} fill={e.isT ? (e.total >= 0 ? "#1D9E75" : "#E24B4A") : (e.val >= 0 ? "#1D9E7577" : "#E24B4A77")} />)}</Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
+          <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
+            {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <ResponsiveContainer width="60%" height={180}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
+                <div style={{ width: "40%", fontSize: 9 }}>{p.data.map((e, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span><span style={{ marginLeft: "auto", color: "#8A90A8", flexShrink: 0 }}>{F(e.value)}</span></div>)}</div>
+              </div>}
+          </div>
+        ))}
       </div>
 
-
+      {/* PARETO */}
       {/* MOLECULE × MONTH TABLE */}
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
         <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 2 }}>Gasto Real por Molécula — Mensual</div>
@@ -579,21 +602,6 @@ export default function Dashboard() {
         </table>
       </div>
 
-      {/* PIE CHARTS */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-        {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
-          <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
-            {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <ResponsiveContainer width="60%" height={180}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
-                <div style={{ width: "40%", fontSize: 9 }}>{p.data.map((e, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span><span style={{ marginLeft: "auto", color: "#8A90A8", flexShrink: 0 }}>{F(e.value)}</span></div>)}</div>
-              </div>}
-          </div>
-        ))}
-      </div>
-
-      {/* PARETO */}
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
         <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 10 }}>Pareto por Partner — {MO[cm - 1]} 2026</div>
         {pareto.length === 0 && <div style={{ fontSize: 10, color: "#8A90A8", padding: 16, textAlign: "center" }}>Sin gastos con partner en {MO[cm - 1]}</div>}
@@ -617,32 +625,32 @@ export default function Dashboard() {
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1a1a2e"/><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">BG</text></svg>
           <div>
-            <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:500,color:"#1a1a2e"}}>Balance General</div>
-            <div style={{fontSize:9,color:"#8A90A8",letterSpacing:2,textTransform:"uppercase"}}>Saldos acumulados al cierre de {MO[cm-1]} 2026</div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:500,color:"#1a1a2e"}}>Balance Sheet</div>
+            <div style={{fontSize:9,color:"#8A90A8",letterSpacing:2,textTransform:"uppercase"}}>Cumulative balances as of {MO[cm-1]} 2026</div>
           </div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:8,marginBottom:16}}>
-          {[{l:"TOTAL ACTIVOS",v:balData.totAct?.cum,c:"#1D9E75",mov:balData.totAct?.mov},{l:"TOTAL PASIVOS",v:balData.totPas?.cum,c:"#E24B4A",mov:balData.totPas?.mov},{l:"CAPITAL CONTABLE",v:balData.totCap?.cum,c:"#534AB7",mov:balData.totCap?.mov},{l:"RESULTADO PERÍODO",v:balData.perGan?.cum,c:balData.perGan?.cum<0?"#E24B4A":"#1D9E75",mov:balData.perGan?.mov}].map((k,i)=>(
+          {[{l:"TOTAL ASSETS",v:balData.totAct?.cum,c:"#1D9E75",mov:balData.totAct?.mov},{l:"TOTAL LIABILITIES",v:balData.totPas?.cum,c:"#E24B4A",mov:balData.totPas?.mov},{l:"EQUITY",v:balData.totCap?.cum,c:"#534AB7",mov:balData.totCap?.mov},{l:"NET INCOME (LOSS)",v:balData.perGan?.cum,c:balData.perGan?.cum<0?"#E24B4A":"#1D9E75",mov:balData.perGan?.mov}].map((k,i)=>(
             <div key={i} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 14px",borderTop:`3px solid ${k.c}`}}>
               <div style={{fontSize:7,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",marginBottom:3}}>{k.l}</div>
               <div style={{fontSize:18,fontWeight:500,color:k.v<0?"#E24B4A":"#1a1a2e",fontFamily:"'Fraunces',serif"}}>{Fn(k.v)}</div>
-              <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Mov. {MO[cm-1]}: <span style={{color:k.mov<0?"#E24B4A":"#1D9E75",fontWeight:500}}>{Fn(k.mov)}</span></div>
+              <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Mov {MO[cm-1]}: <span style={{color:k.mov<0?"#E24B4A":"#1D9E75",fontWeight:500}}>{Fn(k.mov)}</span></div>
             </div>
           ))}
         </div>
         <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
-          <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:4}}>Balance General — Detalle jerárquico</div>
-          <div style={{fontSize:9,color:"#8A90A8",marginBottom:8}}>Saldos acumulados por mes · Clic para expandir</div>
+          <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:4}}>Balance Sheet — Detail</div>
+          <div style={{fontSize:9,color:"#8A90A8",marginBottom:8}}>Monthly cumulative balances · Click to expand</div>
           <table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr>
             <th style={{...th,textAlign:"left",position:"sticky",left:0,background:"#fff",minWidth:160}}>Cuenta</th>
             {MO.map((m,i)=><th key={i} style={{...th,textAlign:"right",minWidth:64,color:i+1<=cm?"#085041":"#999",background:i+1<=cm?"#f0faf6":"#fafafa"}}>{m}</th>)}
           </tr></thead>
           <tbody>
-            {renderBalRows("Activos","#1D9E75")}
-            {renderBalRows("Pasivos","#E24B4A")}
-            {renderBalRows("Capital","#534AB7")}
+            {renderBalRows("Activos","#1D9E75","Assets")}
+            {renderBalRows("Pasivos","#E24B4A","Liabilities")}
+            {renderBalRows("Capital","#534AB7","Equity")}
             <tr style={{borderTop:"2px solid #E4E8F2",background:"#fafbfe"}}>
-              <td style={{...td,fontSize:9,color:"#8A90A8",fontStyle:"italic",position:"sticky",left:0,background:"#fafbfe"}}>A − P − C</td>
+              <td style={{...td,fontSize:9,color:"#8A90A8",fontStyle:"italic",position:"sticky",left:0,background:"#fafbfe"}}>A − L − E</td>
               {MO.map((m,mi)=>{const a=balData.totAct?bVal([0,0,0,0,0,...balData.totAct.vals],mi+1):0;const p=balData.totPas?bVal([0,0,0,0,0,...balData.totPas.vals],mi+1):0;const c=balData.totCap?bVal([0,0,0,0,0,...balData.totCap.vals],mi+1):0;const d=a-p-c;return <td key={mi} style={{...td,textAlign:"right",fontSize:9,fontWeight:500,color:Math.abs(d)<10000?"#1D9E75":"#E24B4A"}}>{Math.abs(d)<10000?"✓":Fn(d)}</td>})}
             </tr>
           </tbody></table>
