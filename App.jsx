@@ -230,46 +230,54 @@ export default function Dashboard() {
     return{enriched,totAct,totPas,totCap,perGan};
   },[cm]);
   const toggleB=k=>setExpB(p=>({...p,[k]:!p[k]}));
-  const renderBalSec=(section,sColor)=>{
+  const bCum=(row,m)=>{let s=0;for(let i=0;i<m;i++)s+=(row.vals[i]||0);return s;};
+  const renderBalRows=(section,sColor)=>{
     if(!balData)return null;
     const items=balData.enriched.filter(r=>r.section===section);
     const topRow=items.find(r=>r.depth===0&&!r.isTotal);
     const d1Rows=items.filter(r=>r.depth===1&&!r.isTotal);
-    return(<div style={{marginBottom:8}}>
-      {topRow&&<div style={{display:"flex",alignItems:"center",padding:"8px 6px",background:`${sColor}08`,borderBottom:`2px solid ${sColor}33`,cursor:"pointer"}} onClick={()=>toggleB(section)}>
-        <span style={{fontSize:8,marginRight:6,color:sColor}}>{expB[section]?"▼":"▶"}</span>
-        <span style={{flex:1,fontSize:11,fontWeight:600,color:sColor}}>{section==="Capital"?"Capital Contable":section}</span>
-        <span style={{width:90,textAlign:"right",fontSize:11,fontWeight:600,color:topRow.cum<0?"#E24B4A":"#1a1a2e"}}>{Fn(topRow.cum)}</span>
-      </div>}
-      {expB[section]&&d1Rows.map(d1=>{
-        const d1Key=`${section}|${d1.code}`;
-        const d2Rows=items.filter(r=>r.depth===2&&!r.isTotal&&items.indexOf(r)>items.indexOf(d1)&&(d1Rows.indexOf(d1)===d1Rows.length-1||items.indexOf(r)<items.indexOf(d1Rows[d1Rows.indexOf(d1)+1])));
-        return(<div key={d1Key}>
-          <div style={{display:"flex",alignItems:"center",padding:"6px 6px 6px 20px",background:"#fafbfe",cursor:"pointer",borderBottom:"1px solid #f0f2fa"}} onClick={()=>toggleB(d1Key)}>
-            <span style={{fontSize:7,marginRight:5,color:"#8A90A8"}}>{expB[d1Key]?"▼":"▶"}</span>
-            <span style={{flex:1,fontSize:10,fontWeight:500,color:"#1a1a2e"}}>{d1.name}</span>
-            <span style={{width:90,textAlign:"right",fontSize:10,fontWeight:500,color:d1.cum<0?"#E24B4A":"#1a1a2e"}}>{Fn(d1.cum)}</span>
-          </div>
-          {expB[d1Key]&&d2Rows.map(d2=>{
-            const d2Key=`${d1Key}|${d2.code}`;
-            const leafs=items.filter(r=>r.depth>=3&&!r.isTotal&&r.cum!==0&&items.indexOf(r)>items.indexOf(d2)&&(d2Rows.indexOf(d2)===d2Rows.length-1||items.indexOf(r)<items.indexOf(d2Rows[d2Rows.indexOf(d2)+1])));
-            return(<div key={d2Key}>
-              <div style={{display:"flex",alignItems:"center",padding:"5px 6px 5px 40px",background:"#f8f9fe",cursor:leafs.length?"pointer":"default",borderBottom:"1px solid #f0f2fa"}} onClick={()=>leafs.length&&toggleB(d2Key)}>
-                {leafs.length>0&&<span style={{fontSize:7,marginRight:4,color:"#B0B6CC"}}>{expB[d2Key]?"▼":"▶"}</span>}
-                <span style={{flex:1,fontSize:9,color:"#534AB7",fontWeight:500}}>{d2.name}</span>
-                <span style={{width:90,textAlign:"right",fontSize:9,fontWeight:500,color:d2.cum<0?"#E24B4A":"#1a1a2e"}}>{Fn(d2.cum)}</span>
-              </div>
-              {expB[d2Key]&&leafs.map((leaf,li)=>(
-                <div key={li} style={{display:"flex",alignItems:"center",padding:"4px 6px 4px 60px",borderBottom:"1px solid #f5f6fa"}}>
-                  <span style={{flex:1,fontSize:8,color:"#8A90A8"}}>{leaf.name}</span>
-                  <span style={{width:90,textAlign:"right",fontSize:8,color:leaf.cum<0?"#E24B4A":"#999"}}>{Fn(leaf.cum)}</span>
-                </div>
-              ))}
-            </div>);
-          })}
-        </div>);
-      })}
-    </div>);
+    const rows=[];
+    if(topRow)rows.push(
+      <tr key={section} style={{background:`${sColor}08`,cursor:"pointer"}} onClick={()=>toggleB(section)}>
+        <td style={{...td,fontWeight:600,color:sColor,position:"sticky",left:0,background:`${sColor}08`,borderBottom:`2px solid ${sColor}33`}}>
+          <span style={{fontSize:8,marginRight:5}}>{expB[section]?"▼":"▶"}</span>{section==="Capital"?"Capital Contable":section}
+        </td>
+        {MO.map((m,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:10,fontWeight:500,color:bCum(topRow,mi+1)<0?"#E24B4A":bCum(topRow,mi+1)===0?"#ccc":"#1a1a2e",borderBottom:`2px solid ${sColor}33`}}>{bCum(topRow,mi+1)===0?"—":Fn(bCum(topRow,mi+1))}</td>)}
+      </tr>
+    );
+    if(expB[section])d1Rows.forEach(d1=>{
+      const d1Key=`${section}|${d1.code}`;
+      const d2Rows=items.filter(r=>r.depth===2&&!r.isTotal&&items.indexOf(r)>items.indexOf(d1)&&(d1Rows.indexOf(d1)===d1Rows.length-1||items.indexOf(r)<items.indexOf(d1Rows[d1Rows.indexOf(d1)+1])));
+      rows.push(
+        <tr key={d1Key} style={{background:"#fafbfe",cursor:"pointer"}} onClick={()=>toggleB(d1Key)}>
+          <td style={{...td,paddingLeft:20,fontWeight:500,color:"#1a1a2e",position:"sticky",left:0,background:"#fafbfe",fontSize:10}}>
+            <span style={{fontSize:7,marginRight:4}}>{expB[d1Key]?"▼":"▶"}</span>{d1.name}
+          </td>
+          {MO.map((m,mi)=>{const v=bCum(d1,mi+1);return <td key={mi} style={{...td,textAlign:"right",fontSize:9,color:v<0?"#E24B4A":v===0?"#ddd":"#666"}}>{v===0?"":Fn(v)}</td>})}
+        </tr>
+      );
+      if(expB[d1Key])d2Rows.forEach(d2=>{
+        const d2Key=`${d1Key}|${d2.code}`;
+        const allChildren=items.filter(r=>r.depth>=3&&!r.isTotal&&r.cum!==0&&items.indexOf(r)>items.indexOf(d2)&&(d2Rows.indexOf(d2)===d2Rows.length-1||items.indexOf(r)<items.indexOf(d2Rows[d2Rows.indexOf(d2)+1])));const hasD4=allChildren.some(r=>r.depth===4);const leafs=hasD4?allChildren.filter(r=>r.depth===4):allChildren.filter(r=>r.depth===3);
+        rows.push(
+          <tr key={d2Key} style={{background:"#f8f9fe",cursor:leafs.length?"pointer":"default"}} onClick={()=>leafs.length&&toggleB(d2Key)}>
+            <td style={{...td,paddingLeft:40,fontSize:9,color:"#534AB7",fontWeight:500,position:"sticky",left:0,background:"#f8f9fe"}}>
+              {leafs.length>0&&<span style={{fontSize:7,marginRight:3}}>{expB[d2Key]?"▼":"▶"}</span>}{d2.name}
+            </td>
+            {MO.map((m,mi)=>{const v=bCum(d2,mi+1);return <td key={mi} style={{...td,textAlign:"right",fontSize:9,color:v<0?"#E24B4A":v===0?"#eee":"#888"}}>{v===0?"":Fn(v)}</td>})}
+          </tr>
+        );
+        if(expB[d2Key])leafs.forEach((leaf,li)=>{
+          rows.push(
+            <tr key={`${d2Key}|${li}`} style={{background:"#fff"}}>
+              <td style={{...td,paddingLeft:60,fontSize:8,color:"#8A90A8",position:"sticky",left:0,background:"#fff"}}>{leaf.name}</td>
+              {MO.map((m,mi)=>{const v=bCum(leaf,mi+1);return <td key={mi} style={{...td,textAlign:"right",fontSize:8,color:v<0?"#E24B4A":v===0?"#eee":"#aaa"}}>{v===0?"":Fn(v)}</td>})}
+            </tr>
+          );
+        });
+      });
+    });
+    return rows;
   };
 
   return (
@@ -624,18 +632,20 @@ export default function Dashboard() {
         </div>
         <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
           <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:4}}>Balance General — Detalle jerárquico</div>
-          <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Saldos acumulados · Clic para expandir</div>
-          <div style={{display:"flex",alignItems:"center",padding:"6px",borderBottom:"2px solid #E4E8F2"}}>
-            <span style={{flex:1,fontSize:9,color:"#8A90A8"}}>Cuenta</span>
-            <span style={{width:90,textAlign:"right",fontSize:9,color:"#8A90A8",fontWeight:500}}>Saldo {MO[cm-1]}</span>
-          </div>
-          {renderBalSec("Activos","#1D9E75")}
-          {renderBalSec("Pasivos","#E24B4A")}
-          {renderBalSec("Capital","#534AB7")}
-          <div style={{display:"flex",alignItems:"center",padding:"8px 6px",borderTop:"2px solid #E4E8F2",background:"#fafbfe",marginTop:4}}>
-            <span style={{flex:1,fontSize:9,color:"#8A90A8",fontStyle:"italic"}}>Activos − Pasivos − Capital = </span>
-            <span style={{fontSize:10,fontWeight:500,color:Math.abs((balData.totAct?.cum||0)-(balData.totPas?.cum||0)-(balData.totCap?.cum||0))<1?"#1D9E75":"#E24B4A"}}>{Fn((balData.totAct?.cum||0)-(balData.totPas?.cum||0)-(balData.totCap?.cum||0))}</span>
-          </div>
+          <div style={{fontSize:9,color:"#8A90A8",marginBottom:8}}>Saldos acumulados por mes · Clic para expandir</div>
+          <table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr>
+            <th style={{...th,textAlign:"left",position:"sticky",left:0,background:"#fff",minWidth:160}}>Cuenta</th>
+            {MO.map((m,i)=><th key={i} style={{...th,textAlign:"right",minWidth:64,color:i+1<=cm?"#085041":"#999",background:i+1<=cm?"#f0faf6":"#fafafa"}}>{m}</th>)}
+          </tr></thead>
+          <tbody>
+            {renderBalRows("Activos","#1D9E75")}
+            {renderBalRows("Pasivos","#E24B4A")}
+            {renderBalRows("Capital","#534AB7")}
+            <tr style={{borderTop:"2px solid #E4E8F2",background:"#fafbfe"}}>
+              <td style={{...td,fontSize:9,color:"#8A90A8",fontStyle:"italic",position:"sticky",left:0,background:"#fafbfe"}}>A − P − C</td>
+              {MO.map((m,mi)=>{const a=balData.totAct?bVal([0,0,0,0,0,...balData.totAct.vals],mi+1):0;const p=balData.totPas?bVal([0,0,0,0,0,...balData.totPas.vals],mi+1):0;const c=balData.totCap?bVal([0,0,0,0,0,...balData.totCap.vals],mi+1):0;const d=a-p-c;return <td key={mi} style={{...td,textAlign:"right",fontSize:9,fontWeight:500,color:Math.abs(d)<10000?"#1D9E75":"#E24B4A"}}>{Math.abs(d)<10000?"✓":Fn(d)}</td>})}
+            </tr>
+          </tbody></table>
         </div>
       </div>}
 
@@ -645,5 +655,6 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
 
