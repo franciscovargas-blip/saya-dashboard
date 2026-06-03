@@ -95,7 +95,8 @@ export default function Dashboard() {
   const [expOpex, setExpOpex] = useState({});
   const [expComp, setExpComp] = useState({});
   const [expB, setExpB] = useState({});
-  const [expMol, setExpMol] = useState({});
+  const [expArea, setExpArea] = useState({});
+  const [expPL, setExpPL] = useState({});
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
@@ -204,28 +205,128 @@ export default function Dashboard() {
 
 
 
-  // ═══ MOLECULE × MONTH TABLE ═══
-  const molTable = useMemo(() => {
+
+
+
+  // ═══ AREA × MONTH TABLE ═══
+  const areaTable = useMemo(() => {
     const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[2]));
-    const molNames = [...new Set(realOpex.map(r => mapMol(r[3])))].sort();
-    return molNames.map(mol => {
-      const molRows = realOpex.filter(r => mapMol(r[3]) === mol);
+    const areaNames = [...new Set(realOpex.map(r => r[4]))].filter(a => a !== "—").sort();
+    return areaNames.map(area => {
+      const areaRows = realOpex.filter(r => r[4] === area);
       const monthly = {};
-      ytdM.forEach(m => { monthly[m] = molRows.filter(r => r[2] === m).reduce((s, r) => s + r[8], 0); });
+      ytdM.forEach(m => { monthly[m] = areaRows.filter(r => r[2] === m).reduce((s, r) => s + r[8], 0); });
       const total = Object.values(monthly).reduce((s, v) => s + v, 0);
-      // Group by Clasificacion
+      // Group by Molecule
+      const molMap = {};
+      areaRows.forEach(r => {
+        const mol = mapMol(r[3]);
+        if (!molMap[mol]) molMap[mol] = { monthly: {}, total: 0, cls: {} };
+        ytdM.forEach(m => { if (!molMap[mol].monthly[m]) molMap[mol].monthly[m] = 0; });
+        molMap[mol].monthly[r[2]] = (molMap[mol].monthly[r[2]] || 0) + r[8];
+        molMap[mol].total += r[8];
+        // Sub-group by Clasificación
+        const cls = r[5] || "—";
+        if (!molMap[mol].cls[cls]) molMap[mol].cls[cls] = { monthly: {}, total: 0 };
+        ytdM.forEach(m => { if (!molMap[mol].cls[cls].monthly[m]) molMap[mol].cls[cls].monthly[m] = 0; });
+        molMap[mol].cls[cls].monthly[r[2]] = (molMap[mol].cls[cls].monthly[r[2]] || 0) + r[8];
+        molMap[mol].cls[cls].total += r[8];
+      });
+      return { area, monthly, total, mols: molMap };
+    });
+  }, [fd, ytdM]);
+  const toggleArea = k => setExpArea(p => ({ ...p, [k]: !p[k] }));
+
+
+
+  // ═══ AREA DE TRABAJO × MONTH TABLE ═══
+  const plLineTable = useMemo(() => {
+    const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[2]));
+    const atNames = [...new Set(realOpex.map(r => r[9] || "—"))].filter(a => a !== "—").sort();
+    return atNames.map(at => {
+      const atRows = realOpex.filter(r => (r[9] || "—") === at);
+      const monthly = {};
+      ytdM.forEach(m => { monthly[m] = atRows.filter(r => r[2] === m).reduce((s, r) => s + r[8], 0); });
+      const total = Object.values(monthly).reduce((s, v) => s + v, 0);
       const clsMap = {};
-      molRows.forEach(r => {
+      atRows.forEach(r => {
         const cls = r[5] || "—";
         if (!clsMap[cls]) clsMap[cls] = { monthly: {}, total: 0 };
         ytdM.forEach(m => { if (!clsMap[cls].monthly[m]) clsMap[cls].monthly[m] = 0; });
         clsMap[cls].monthly[r[2]] = (clsMap[cls].monthly[r[2]] || 0) + r[8];
         clsMap[cls].total += r[8];
       });
-      return { mol, monthly, total, cls: clsMap };
+      return { pl: at, monthly, total, cls: clsMap };
     });
   }, [fd, ytdM]);
-  const toggleMol = k => setExpMol(p => ({ ...p, [k]: !p[k] }));
+  const togglePL = k => setExpPL(p => ({ ...p, [k]: !p[k] }));
+
+  // ═══ CASH FLOW (MÉTODO DIRECTO) ═══
+  const OPEN_CASH = 4955698; // Saldo inicial de caja Ene 2026
+  const cashFlow = useMemo(() => {
+    if (!B || B.length === 0) return null;
+
+    // Helper: sum B movements for D4 accounts matching code prefixes
+    const bMov = (prefixes, m) => B.filter(r => {
+      if (r[4] || r[2] !== 4) return false;
+      const c3 = r[0]?.substring(0, 3) || "";
+      return prefixes.some(p => c3 === p);
+    }).reduce((s, r) => s + (r[5 + m - 1] || 0), 0);
+
+    // Sign: all balance movements * -1 for cash flow (except cash itself)
+    const cf = (prefixes, m) => bMov(prefixes, m) * -1;
+
+    const months = MO.map((name, i) => {
+      const m = i + 1;
+
+      // (+) Depreciation & Amortization (contra-assets: 171, 183)
+      const deprAmort = cf(["171", "183"], m);
+
+      // Operating Activities (working capital changes)
+      const inventory = cf(["115"], m);
+      const otherReceivables = cf(["121", "109"], m);
+      const vatPayable = cf(["113", "118", "119"], m);
+      const accountsPayable = cf(["201", "205", "120"], m);
+      const employeeBenefits = cf(["210"], m);
+      const payrollTaxes = cf(["211", "212"], m);
+      const incomeTax = cf(["216"], m);
+      const otherLiab = cf(["259"], m);
+      const totalOp = inventory + otherReceivables + vatPayable + accountsPayable + employeeBenefits + payrollTaxes + incomeTax + otherLiab;
+
+      // Investment Activities
+      const computers = cf(["156"], m);
+      const furniture = cf(["155"], m);
+      const intangibles = cf(["176"], m);
+      const capex = computers + furniture + intangibles;
+      const deposits = cf(["184"], m);
+      const stInvest = cf(["103"], m);
+      const totalInv = capex + deposits + stInvest;
+
+      // Financing Activities
+      const equity = cf(["301"], m);
+      const totalFin = equity;
+
+      // Change in Cash
+      const changeCash = deprAmort + totalOp + totalInv + totalFin;
+
+      // Beginning/Ending Balance
+      const beginBal = m === 1 ? OPEN_CASH : null; // computed in second pass
+      const cashActual = bMov(["102"], m); // actual cash movement from balance
+
+      return { name, m, deprAmort, inventory, otherReceivables, vatPayable, accountsPayable, employeeBenefits, payrollTaxes, incomeTax, otherLiab, totalOp, computers, furniture, intangibles, capex, deposits, stInvest, totalInv, equity, totalFin, changeCash, cashActual };
+    });
+
+    // Compute beginning/ending balances
+    let bal = OPEN_CASH;
+    months.forEach(mo => {
+      mo.beginBal = bal;
+      mo.endBal = bal + mo.changeCash;
+      bal = mo.endBal;
+    });
+
+    return months;
+  }, [cm]);
+
 
   // ═══ BALANCE GENERAL ═══
   const balData=useMemo(()=>{
@@ -558,27 +659,87 @@ export default function Dashboard() {
       </div>
 
       {/* PARETO */}
-      {/* MOLECULE × MONTH TABLE */}
+
+      {/* AREA × MONTH TABLE */}
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 2 }}>Gasto Real por Molécula — Mensual</div>
-        <div style={{ fontSize: 9, color: "#8A90A8", marginBottom: 8 }}>Clic para desglose por clasificación</div>
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 2 }}>Gasto Real por Área & Molécula — Mensual</div>
+        <div style={{ fontSize: 9, color: "#8A90A8", marginBottom: 8 }}>Área → Molécula → Clasificación · Clic para expandir</div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead><tr>
-            <th style={{ ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 130 }}>Molécula</th>
+            <th style={{ ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 150 }}>Área</th>
             {ytdM.map(m => <th key={m} style={{ ...th, textAlign: "right", minWidth: 64 }}>{MO[m - 1]}</th>)}
             <th style={{ ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" }}>Total YTD</th>
           </tr></thead>
           <tbody>
-            {molTable.map((row, ri) => {
-              const isExp = expMol[row.mol];
-              const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
-              const hasDrill = clsEntries.length > 0;
+            {areaTable.map((row, ri) => {
+              const isExp = expArea[row.area];
+              const molEntries = Object.entries(row.mols).sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
+              const hasDrill = molEntries.length > 0;
               return (<>
-                <tr key={ri} style={{ cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" }} onClick={() => hasDrill && toggleMol(row.mol)}>
+                <tr key={ri} style={{ cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" }} onClick={() => hasDrill && toggleArea(row.area)}>
                   <td style={{ ...td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 }}>
                     {hasDrill && <span style={{ fontSize: 8, marginRight: 4 }}>{isExp ? "▼" : "▶"}</span>}
                     <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" }} />
-                    {row.mol}
+                    {row.area}
+                  </td>
+                  {ytdM.map(m => <td key={m} style={{ ...td, textAlign: "right", fontSize: 10, color: (row.monthly[m] || 0) < 0 ? "#E24B4A" : (row.monthly[m] || 0) === 0 ? "#ccc" : "#1a1a2e" }}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
+                  <td style={{ ...td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" }}>{F(row.total)}</td>
+                </tr>
+                {isExp && molEntries.map(([mol, mData], mi) => {
+                  const molKey = `${row.area}|${mol}`;
+                  const isMolExp = expArea[molKey];
+                  const clsEntries = Object.entries(mData.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
+                  return (<>
+                    <tr key={molKey} style={{ background: "#f5f8fc", cursor: clsEntries.length ? "pointer" : "default" }} onClick={() => clsEntries.length && toggleArea(molKey)}>
+                      <td style={{ ...td, paddingLeft: 28, fontSize: 9, fontWeight: 500, color: "#185FA5", position: "sticky", left: 0, background: "#f5f8fc" }}>
+                        {clsEntries.length > 0 && <span style={{ fontSize: 7, marginRight: 3 }}>{isMolExp ? "▼" : "▶"}</span>}
+                        {mol}
+                      </td>
+                      {ytdM.map(m => <td key={m} style={{ ...td, textAlign: "right", fontSize: 9, color: (mData.monthly[m] || 0) < 0 ? "#E24B4A" : (mData.monthly[m] || 0) === 0 ? "#eee" : "#666" }}>{(mData.monthly[m] || 0) === 0 ? "" : F(mData.monthly[m])}</td>)}
+                      <td style={{ ...td, textAlign: "right", fontSize: 9, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: mData.total < 0 ? "#E24B4A" : "#185FA5" }}>{F(mData.total)}</td>
+                    </tr>
+                    {isMolExp && clsEntries.map(([cls, cData], ci) => (
+                      <tr key={`${molKey}|${ci}`} style={{ background: "#f8f9fe" }}>
+                        <td style={{ ...td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" }}>{cls}</td>
+                        {ytdM.map(m => <td key={m} style={{ ...td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" }}>{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
+                        <td style={{ ...td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" }}>{F(cData.total)}</td>
+                      </tr>
+                    ))}
+                  </>);
+                })}
+              </>);
+            })}
+            <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
+              <td style={{ ...td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
+              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
+              <td style={{ ...td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+      {/* AREA DE TRABAJO × MONTH TABLE */}
+      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 2 }}>Gasto Real por Área de Trabajo — Mensual</div>
+        <div style={{ fontSize: 9, color: "#8A90A8", marginBottom: 8 }}>Clic para desglose por clasificación</div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead><tr>
+            <th style={{ ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 160 }}>Área de Trabajo</th>
+            {ytdM.map(m => <th key={m} style={{ ...th, textAlign: "right", minWidth: 64 }}>{MO[m - 1]}</th>)}
+            <th style={{ ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" }}>Total YTD</th>
+          </tr></thead>
+          <tbody>
+            {plLineTable.map((row, ri) => {
+              const isExp = expPL[row.pl];
+              const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
+              const hasDrill = clsEntries.length > 0;
+              return (<>
+                <tr key={ri} style={{ cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" }} onClick={() => hasDrill && togglePL(row.pl)}>
+                  <td style={{ ...td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 }}>
+                    {hasDrill && <span style={{ fontSize: 8, marginRight: 4 }}>{isExp ? "▼" : "▶"}</span>}
+                    <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" }} />
+                    {row.pl}
                   </td>
                   {ytdM.map(m => <td key={m} style={{ ...td, textAlign: "right", fontSize: 10, color: (row.monthly[m] || 0) < 0 ? "#E24B4A" : (row.monthly[m] || 0) === 0 ? "#ccc" : "#1a1a2e" }}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
                   <td style={{ ...td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" }}>{F(row.total)}</td>
@@ -592,15 +753,15 @@ export default function Dashboard() {
                 ))}
               </>);
             })}
-            {/* TOTAL ROW */}
             <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
               <td style={{ ...td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
-              {ytdM.map(m => { const t = molTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
-              <td style={{ ...td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(molTable.reduce((s, r) => s + r.total, 0))}</td>
+              {ytdM.map(m => { const t = plLineTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
+              <td style={{ ...td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(plLineTable.reduce((s, r) => s + r.total, 0))}</td>
             </tr>
           </tbody>
         </table>
       </div>
+
 
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
         <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 10 }}>Pareto por Partner — {MO[cm - 1]} 2026</div>
@@ -619,6 +780,109 @@ export default function Dashboard() {
           </div>
         ); })}
       </div>
+
+      {/* ═══════ CASH FLOW ═══════ */}
+      {cashFlow && <div style={{borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16,marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+          <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0B6644"/><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">CF</text></svg>
+          <div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:500,color:"#1a1a2e"}}>Cash Flow</div>
+            <div style={{fontSize:9,color:"#8A90A8",letterSpacing:2,textTransform:"uppercase"}}>Direct Method · {MO[0]}–{MO[cm-1]} 2026</div>
+          </div>
+        </div>
+
+        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse"}}>
+            <thead><tr>
+              <th style={{...th,textAlign:"left",position:"sticky",left:0,background:"#fff",minWidth:220}}>Cash Flow</th>
+              {MO.slice(0,cm).map((m,i)=><th key={i} style={{...th,textAlign:"right",minWidth:80,background:"#f3e8f9",color:"#7B2D8E"}}>{m}</th>)}
+              <th style={{...th,textAlign:"right",fontWeight:500,color:"#1a1a2e",borderLeft:"2px solid #E4E8F2",background:"#f3e8f9"}}>YTD</th>
+            </tr></thead>
+            <tbody>
+              {/* ── DEPRECIATION ── */}
+              <tr>
+                <td style={{...td,fontWeight:500,fontStyle:"italic",color:"#1a1a2e",position:"sticky",left:0,background:"#fff"}}>(+) Depreciation & Amortization</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",color:mo.deprAmort===0?"#ccc":"#1a1a2e"}}>{mo.deprAmort===0?"—":F(mo.deprAmort)}</td>)}
+                <td style={{...td,textAlign:"right",fontWeight:500,borderLeft:"2px solid #E4E8F2"}}>{F(cashFlow.slice(0,cm).reduce((s,mo)=>s+mo.deprAmort,0))}</td>
+              </tr>
+
+              {/* ── OPERATING ── */}
+              <tr><td colSpan={cm+2} style={{padding:"8px 6px 3px",fontSize:10,fontWeight:700,color:"#1a1a2e",borderBottom:"1px solid #E4E8F2",textDecoration:"underline"}}>Operating Activities</td></tr>
+              {[
+                {label:"Inventory",k:"inventory"},
+                {label:"Other Receivables",k:"otherReceivables"},
+                {label:"VAT Payable (Receivable)",k:"vatPayable"},
+                {label:"Accounts Payable",k:"accountsPayable"},
+                {label:"Employee Benefits",k:"employeeBenefits"},
+                {label:"Payroll Taxes (IMSS / ISN)",k:"payrollTaxes"},
+                {label:"Income Tax Payable (ISR)",k:"incomeTax"},
+              ].map((item,i)=>(
+                <tr key={`op-${i}`}>
+                  <td style={{...td,paddingLeft:12,position:"sticky",left:0,background:"#fff",fontSize:10}}>{item.label}</td>
+                  {cashFlow.slice(0,cm).map((mo,mi)=>{const v=mo[item.k];return <td key={mi} style={{...td,textAlign:"right",fontSize:10,color:v<0?"#E24B4A":v===0?"#ccc":"#1a1a2e"}}>{v===0?"—":F(v)}</td>})}
+                  <td style={{...td,textAlign:"right",fontSize:10,fontWeight:500,borderLeft:"2px solid #E4E8F2"}}>{F(cashFlow.slice(0,cm).reduce((s,mo)=>s+mo[item.k],0))}</td>
+                </tr>
+              ))}
+
+              {/* ── INVESTING ── */}
+              <tr><td colSpan={cm+2} style={{padding:"8px 6px 3px",fontSize:10,fontWeight:700,color:"#1a1a2e",borderBottom:"1px solid #E4E8F2",textDecoration:"underline"}}>Investment Activities</td></tr>
+              <tr>
+                <td style={{...td,paddingLeft:12,position:"sticky",left:0,background:"#fff",fontSize:10}}>CAPEX</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:10,color:mo.capex<0?"#E24B4A":mo.capex===0?"#ccc":"#1a1a2e"}}>{mo.capex===0?"—":F(mo.capex)}</td>)}
+                <td style={{...td,textAlign:"right",fontWeight:500,borderLeft:"2px solid #E4E8F2"}}>{F(cashFlow.slice(0,cm).reduce((s,mo)=>s+mo.capex,0))}</td>
+              </tr>
+              {[
+                {label:"Computers",k:"computers"},
+                {label:"Furniture",k:"furniture"},
+                {label:"Intangible Assets",k:"intangibles"},
+              ].map((item,i)=>(
+                <tr key={`capex-${i}`} style={{background:"#fafbfe"}}>
+                  <td style={{...td,paddingLeft:28,position:"sticky",left:0,background:"#fafbfe",fontSize:9,fontStyle:"italic",color:"#666"}}>{item.label}</td>
+                  {cashFlow.slice(0,cm).map((mo,mi)=>{const v=mo[item.k];return <td key={mi} style={{...td,textAlign:"right",fontSize:9,color:v<0?"#E24B4A":v===0?"#eee":"#888"}}>{v===0?"":F(v)}</td>})}
+                  <td style={{...td,textAlign:"right",fontSize:9,borderLeft:"2px solid #E4E8F2",color:"#666"}}>{F(cashFlow.slice(0,cm).reduce((s,mo)=>s+mo[item.k],0))}</td>
+                </tr>
+              ))}
+              <tr>
+                <td style={{...td,paddingLeft:12,position:"sticky",left:0,background:"#fff",fontSize:10}}>Short-term Investments</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:10,color:mo.stInvest<0?"#E24B4A":mo.stInvest===0?"#ccc":"#1a1a2e"}}>{mo.stInvest===0?"—":F(mo.stInvest)}</td>)}
+                <td style={{...td,textAlign:"right",fontWeight:500,borderLeft:"2px solid #E4E8F2"}}>{F(cashFlow.slice(0,cm).reduce((s,mo)=>s+mo.stInvest,0))}</td>
+              </tr>
+
+              {/* ── FINANCING ── */}
+              <tr><td colSpan={cm+2} style={{padding:"8px 6px 3px",fontSize:10,fontWeight:700,color:"#1a1a2e",borderBottom:"1px solid #E4E8F2",textDecoration:"underline"}}>Financing Activities</td></tr>
+              <tr>
+                <td style={{...td,paddingLeft:12,position:"sticky",left:0,background:"#fff",fontSize:10}}>Loans / Borrowings</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:10,color:"#ccc"}}>—</td>)}
+                <td style={{...td,textAlign:"right",borderLeft:"2px solid #E4E8F2",color:"#ccc"}}>—</td>
+              </tr>
+              <tr>
+                <td style={{...td,paddingLeft:12,position:"sticky",left:0,background:"#fff",fontSize:10}}>Equity Increase (Decrease)</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",fontSize:10,color:mo.equity<0?"#E24B4A":mo.equity===0?"#ccc":"#1a1a2e"}}>{mo.equity===0?"—":F(mo.equity)}</td>)}
+                <td style={{...td,textAlign:"right",fontWeight:500,borderLeft:"2px solid #E4E8F2"}}>{F(cashFlow.slice(0,cm).reduce((s,mo)=>s+mo.equity,0))}</td>
+              </tr>
+
+              {/* ── TOTALS ── */}
+              <tr style={{height:8}}><td colSpan={cm+2}/></tr>
+              <tr style={{background:"#f3e8f9"}}>
+                <td style={{...td,fontWeight:700,color:"#7B2D8E",position:"sticky",left:0,background:"#f3e8f9"}}>Change in Cash</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",fontWeight:700,color:mo.changeCash<0?"#E24B4A":"#1D9E75"}}>{F(mo.changeCash)}</td>)}
+                <td style={{...td,textAlign:"right",fontWeight:700,borderLeft:"2px solid #E4E8F2",color:cashFlow.slice(0,cm).reduce((s,mo)=>s+mo.changeCash,0)<0?"#E24B4A":"#1D9E75"}}>{F(cashFlow.slice(0,cm).reduce((s,mo)=>s+mo.changeCash,0))}</td>
+              </tr>
+              <tr>
+                <td style={{...td,fontWeight:500,color:"#1a1a2e",position:"sticky",left:0,background:"#fff"}}>Beginning Balance</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",fontWeight:500}}>{F(mo.beginBal)}</td>)}
+                <td style={{...td,textAlign:"right",fontWeight:500,borderLeft:"2px solid #E4E8F2"}}>{F(cashFlow[0]?.beginBal)}</td>
+              </tr>
+              <tr style={{background:"#f3e8f9",borderTop:"2px solid #7B2D8E33"}}>
+                <td style={{...td,fontWeight:700,color:"#7B2D8E",fontSize:11,position:"sticky",left:0,background:"#f3e8f9"}}>Ending Balance</td>
+                {cashFlow.slice(0,cm).map((mo,mi)=><td key={mi} style={{...td,textAlign:"right",fontWeight:700,fontSize:11,color:"#7B2D8E"}}>{F(mo.endBal)}</td>)}
+                <td style={{...td,textAlign:"right",fontWeight:700,fontSize:11,borderLeft:"2px solid #E4E8F2",color:"#7B2D8E"}}>{F(cashFlow[cm-1]?.endBal)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>}
+
 
       {/* ═══════ BALANCE GENERAL ═══════ */}
       {balData&&<div style={{borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16,marginBottom:16}}>
