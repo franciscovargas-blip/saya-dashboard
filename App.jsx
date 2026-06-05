@@ -462,22 +462,29 @@ const reg = getOpex("Regulatory");
 const sh = getOpex("Software & Hardware");
 const mob = getOpex("Mobility");
   const qual = mode === "reales" ? 0 : gV(fd, "Quality", "Forecast", m); // Quality is forecast only
-  const totOpex = sw + sm + ta + pf + of_ + reg + sh + mob + qual;
+  const ops = getOpex("Operations");
+const oth = getOpex("Others");
+const totOpex = sw + sm + ta + pf + of_ + reg + sh + mob + qual + ops + oth;
   const totOpexPct = ns ? totOpex / ns : 0;
   const ebitda = gp - totOpex;
   const ebitdaPct = ns ? ebitda / ns : 0;
   const depr = getOpex("Depreciation & Amortization");
   const ebit = ebitda - depr;
   const ebitPct = ns ? ebit / ns : 0;
+  const fi = getOpex("Financial Income");
+  const fe = getOpex("Financial Expense");
+  const totFin = fi + fe;
+  const netProfit = ebit - totFin;
+  const netProfitPct = ns ? netProfit / ns : 0;
 
-  return { ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, qual, totOpex, totOpexPct, ebitda, ebitdaPct, depr, ebit, ebitPct };
+  return { ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, qual, ops, oth, totOpex, totOpexPct, ebitda, ebitdaPct, depr, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
 }
 
-const PL_KEYS = ["ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","totOpex","totOpexPct","ebitda","ebitdaPct","depr","ebit","ebitPct"];
-const PL_LABELS = {ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expenses",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Depreciation",ebit:"EBIT",ebitPct:"% EBIT"};
-const PCT_KEYS = new Set(["gmPct","totOpexPct","ebitdaPct","ebitPct"]);
-const BOLD_KEYS = new Set(["ns","gp","totOpex","ebitda","ebit"]);
-const OPEX_KEY_SET = new Set(["cogs","sw","sm","ta","pf","of","reg","sh","mob","qual"]);
+const PL_KEYS = ["ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
+const PL_LABELS = {ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expenses",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
+const PCT_KEYS = new Set(["gmPct","totOpexPct","ebitdaPct","ebitPct","netProfitPct"]);
+const BOLD_KEYS = new Set(["ns","gp","totOpex","ebitda","ebit","totFin","netProfit"]);
+const OPEX_KEY_SET = new Set(["cogs","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"]);
 
 export default function Dashboard() {
   const [cm, setCm] = useState(4);
@@ -569,8 +576,8 @@ export default function Dashboard() {
   const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others","Regulatory","Software & Hardware","Mobility"];
 
   // OpEx por lineas del PnL - solo Reales, drill-down por clasificacion
-  const OPEX_PL_KEYS = ["sw","sm","ta","pf","of","reg","sh","mob","qual"];
-  const OPEX_PL_FD_NAME = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality"};
+  const OPEX_PL_KEYS = ["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"];
+  const OPEX_PL_FD_NAME = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
   const opexClsData = useMemo(() => {
     const real = buildPL(fd, cm, cm, "reales");
     return OPEX_PL_KEYS
@@ -927,7 +934,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {(() => {
-              const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality"};
+              const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
               const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
               PL_KEYS.forEach((k) => {
@@ -936,8 +943,9 @@ export default function Dashboard() {
                 const isOpex = OPEX_KEY_SET.has(k);
                 const code = OPEX_CODE_MAP[k];
                 if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>);
+                if (k === "fi") tableRows.push(<tr key="fin-sep"><td colSpan={14} style={{301}}>Financial Items</td></tr>);
                 tableRows.push(
-                  <tr key={"row-"+k} style={{ background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
+                  <tr key={"row-"+k} style={k==="netProfit" ? { background:"#D1FAE5", fontWeight:700, borderTop:"2px solid #1D9E75" } : k==="totFin" ? { background:"#FEE2E2", fontWeight:700 } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
                     <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
                       {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
                       {PL_LABELS[k]}
@@ -1021,7 +1029,7 @@ export default function Dashboard() {
               <thead><tr>{["Línea", "Forecast", "Reales", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
               <tbody>
                 {(() => {
-                  const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality"};
+                  const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
                   const tRows = [];
                   comp.forEach((r, i) => {
                     const isOpex = OPEX_KEY_SET.has(r.k);
@@ -1029,7 +1037,7 @@ export default function Dashboard() {
                     const expKey = t.prefix + "-" + r.k;
                     const isExp = expComp[expKey];
                     tRows.push(
-                      <tr key={"r-"+i} style={{ background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
+                      <tr key={"r-"+i} style={r.k==="netProfit" ? { background:"#D1FAE5", fontWeight:700, borderTop:"2px solid #1D9E75" } : r.k==="totFin" ? { background:"#FEE2E2", fontWeight:700 } : { background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
                         <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
                           {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
                           {r.label}
