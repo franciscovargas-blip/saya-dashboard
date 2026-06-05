@@ -874,22 +874,27 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-          <div style= fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 >OpEx por Clasificación — {MO[cm-1]}</div>
-          <div style=display:"flex",alignItems:"center",gap:12,marginBottom:6,flexWrap:"wrap">
-            <span style=display:"flex",alignItems:"center",gap:4,fontSize:9,color:"#555"><span style=display:"inline-block",width:10,height:10,background:"#534AB7",borderRadius:2></span>Reales</span>
-            <span style=display:"flex",alignItems:"center",gap:4,fontSize:9,color:"#555"><span style=display:"inline-block",width:10,height:10,background:"#534AB733",border:"1px solid #534AB7",borderRadius:2></span>Forecast</span>
-            <span style=fontSize:9,color:"#888">• Anotación encima: % variación Real vs Forecast</span>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>OpEx por Clasificación — {MO[cm-1]}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "#555" }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, background: "#534AB7", borderRadius: 2, marginRight: 3 }}></span>Reales
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "#555" }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, background: "#534AB733", border: "1px solid #534AB7", borderRadius: 2, marginRight: 3 }}></span>Forecast
+            </span>
+            <span style={{ fontSize: 9, color: "#888" }}>• % variación Real vs Forecast</span>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={opexClsData} margin=top:20,right:5,bottom:40,left:-15 barCategoryGap="30%" barGap={2}>
-              <XAxis dataKey="name" tick= fontSize: 7, fill: "#8A90A8"  axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" />
-              <YAxis tick= fontSize: 7, fill: "#8A90A8"  axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
+            <BarChart data={opexClsData} margin={{ top: 20, right: 10, bottom: 50, left: -10 }} barCategoryGap="30%" barGap={2}>
+              <XAxis dataKey="name" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" />
+              <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"{CB} />
               <Tooltip
-                contentStyle= fontSize: 9, borderRadius: 6 
+                contentStyle={{ fontSize: 9, borderRadius: 6 }}
                 formatter={(v, name, props) => {
                   const lbl = name === "real" ? "Reales" : "Forecast";
                   const pct = props.payload.varPct;
-                  return [`$${(v / 1e3).toFixed(1)}K${name === "real" && pct !== null ? ` (${pct > 0 ? "+" : ""}${pct}% vs FC)` : ""}`, lbl];
+                  const suffix = name === "real" && pct !== null ? " (" + (pct > 0 ? "+" : "") + pct + "% vs FC)" : "";
+                  return ["$" + (v / 1e3).toFixed(1) + "K" + suffix, lbl];
                 }}
               />
               <ReferenceLine y={0} stroke="#E4E8F2" />
