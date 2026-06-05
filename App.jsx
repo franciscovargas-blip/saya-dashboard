@@ -800,6 +800,19 @@ export default function Dashboard() {
     return rows;
   };
 
+  const th = { padding: '4px 6px', fontSize: 9, fontWeight: 500, color: '#8A90A8', borderBottom: '2px solid #E4E8F2', whiteSpace: 'nowrap' };
+  const td = { padding: '3px 6px', fontSize: 10, borderBottom: '1px solid #F0F2F9', color: '#1a1a2e', whiteSpace: 'nowrap' };
+  const s = {
+    card: { background: '#fff', border: '1px solid #E4E8F2', borderRadius: 10, padding: 12, marginBottom: 16, overflowX: 'auto' },
+    cardTitle: { fontSize: 11, fontWeight: 500, color: '#1a1a2e', marginBottom: 2 },
+    cardSub: { fontSize: 9, color: '#8A90A8', marginBottom: 8 },
+    tbl: { width: '100%', borderCollapse: 'collapse' },
+    thL: { ...th, textAlign: 'left', position: 'sticky', left: 0, background: '#fff', minWidth: 150 },
+    thR: { ...th, textAlign: 'right', minWidth: 64 },
+    thTot: { ...th, textAlign: 'right', fontWeight: 500, color: '#1a1a2e', borderLeft: '2px solid #E4E8F2' },
+    td,
+  };
+
   return (
     <div style={{ fontFamily: "'DM Mono','Consolas',monospace", minHeight: "100vh" }}>
       {/* HEADER */}
