@@ -567,27 +567,22 @@ export default function Dashboard() {
   // Waterfall (legacy, kept for reference)
   const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others","Regulatory","Software & Hardware","Mobility"];
 
-  // OpEx por Clasificación — Reales vs Forecast grouped bar
+  // OpEx por lineas del PnL
+  const OPEX_PL_KEYS = ["sw","sm","ta","pf","of","reg","sh","mob","qual"];
   const opexClsData = useMemo(() => {
-    const map = {};
-    fd.filter(r => OC_ALL.includes(r[0]) && r[2] === cm).forEach(r => {
-      const cls = r[5] && r[5] !== '—' ? r[5] : 'Otros';
-      if (!map[cls]) map[cls] = { real: 0, fc: 0 };
-      if (r[1] === 'Reales') map[cls].real += Math.abs(r[8]);
-      else map[cls].fc += Math.abs(r[8]);
-    });
-    return Object.entries(map)
-      .map(([cls, d]) => ({
-        name: cls.length > 18 ? cls.slice(0, 17) + '…' : cls,
-        fullName: cls,
-        real: Math.round(d.real),
-        fc: Math.round(d.fc),
-        varPct: d.fc > 0 ? Math.round((d.real - d.fc) / d.fc * 100) : null,
-      }))
+    const real = buildPL(fd, cm, cm, "reales");
+    const fc   = buildPL(fd, cm, cm, "forecast");
+    return OPEX_PL_KEYS
+      .map(k => {
+        const r = Math.round(Math.abs(real[k] || 0));
+        const f = Math.round(Math.abs(fc[k]   || 0));
+        const vp = f > 0 ? Math.round((r - f) / f * 100) : null;
+        return { name: PL_LABELS[k], real: r, fc: f, varPct: vp };
+      })
       .filter(x => x.real > 0 || x.fc > 0)
-      .sort((a, b) => b.real - a.real)
-      .slice(0, 10);
+      .sort((a, b) => b.real - a.real);
   }, [fd, cm]);
+
 
   // Pies
   const pieYTD = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[2])).forEach(r => { const m = mapMol(r[3]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[8]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, ytdM]);
@@ -874,45 +869,31 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>OpEx por Clasificación — {MO[cm-1]}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>OpEx por Línea P&L — {MO[cm-1]}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "#555" }}>
               <span style={{ display: "inline-block", width: 10, height: 10, background: "#534AB7", borderRadius: 2, marginRight: 3 }}></span>Reales
             </span>
             <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "#555" }}>
               <span style={{ display: "inline-block", width: 10, height: 10, background: "#534AB733", border: "1px solid #534AB7", borderRadius: 2, marginRight: 3 }}></span>Forecast
             </span>
-            <span style={{ fontSize: 9, color: "#888" }}>• % variación Real vs Forecast</span>
+            <span style={{ fontSize: 9, color: "#888" }}>• % var. Reales vs Forecast</span>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={opexClsData} margin={{ top: 20, right: 10, bottom: 50, left: -10 }} barCategoryGap="30%" barGap={2}>
-              <XAxis dataKey="name" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" />
-              <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={opexClsData} layout="vertical" margin={{ top: 5, right: 55, bottom: 5, left: 110 }} barCategoryGap="25%" barGap={2}>
+              <XAxis type="number" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? (v/1e6).toFixed(1)+"M" : v >= 1e3 ? Math.round(v/1e3)+"K" : "0"} />
+              <YAxis type="category" dataKey="name" width={105} tick={{ fontSize: 8, fill: "#444" }} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={{ fontSize: 9, borderRadius: 6 }}
-                formatter={(v, name, props) => {
-                  const lbl = name === "real" ? "Reales" : "Forecast";
-                  const pct = props.payload.varPct;
-                  const suffix = name === "real" && pct !== null ? " (" + (pct > 0 ? "+" : "") + pct + "% vs FC)" : "";
-                  return ["$" + (v / 1e3).toFixed(1) + "K" + suffix, lbl];
-                }}
+                formatter={(v, name, props) => { const lbl = name === "real" ? "Reales" : "Forecast"; const pct = props.payload.varPct; const suffix = name === "real" && pct !== null ? " ("+(pct>0?"+":"")+pct+"% vs FC)" : ""; return ["$"+(v/1e3).toFixed(1)+"K"+suffix, lbl]; }}
               />
-              <ReferenceLine y={0} stroke="#E4E8F2" />
-              <Bar dataKey="fc" name="Forecast" fill="#534AB733" stroke="#534AB7" strokeWidth={0.5} radius={[3, 3, 0, 0]} />
-              <Bar dataKey="real" name="Reales" fill="#534AB7" radius={[3, 3, 0, 0]}>
+              <ReferenceLine x={0} stroke="#E4E8F2" />
+              <Bar dataKey="fc" name="Forecast" fill="#534AB733" stroke="#534AB7" strokeWidth={0.5} radius={[0,3,3,0]} />
+              <Bar dataKey="real" name="Reales" fill="#534AB7" radius={[0,3,3,0]}>
                 <LabelList
                   dataKey="varPct"
-                  position="top"
-                  content={(props) => {
-                    const { x, y, width, value } = props;
-                    if (value === null || value === undefined) return null;
-                    const color = value > 0 ? "#E24B4A" : "#1D9E75";
-                    return (
-                      <text x={x + width / 2} y={y - 4} textAnchor="middle" fontSize={8} fontWeight={700} fill={color}>
-                        {value > 0 ? "+" : ""}{value}%
-                      </text>
-                    );
-                  }}
+                  position="right"
+                  content={(props) => { const { x, y, width, height, value } = props; if (value === null || value === undefined) return null; const color = value > 0 ? "#E24B4A" : "#1D9E75"; return (<text x={x+width+4} y={y+height/2+4} fontSize={8} fontWeight={700} fill={color}>{value>0?"+":""}{value}%</text>); }}
                 />
               </Bar>
             </BarChart>
