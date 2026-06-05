@@ -937,13 +937,15 @@ export default function Dashboard() {
               const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
               const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
+  const SEP_STYLE = {padding:"6px 6px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500};
+
               PL_KEYS.forEach((k) => {
                 const isPct = PCT_KEYS.has(k);
                 const isBold = BOLD_KEYS.has(k);
                 const isOpex = OPEX_KEY_SET.has(k);
                 const code = OPEX_CODE_MAP[k];
-                if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", borderBottom: "1px solid #E4E8F2", fontWeight: 500 }}>Operating Expenses</td></tr>);
-                if (k === "fi") tableRows.push(<tr key="fin-sep"><td colSpan={14} style={{301}}>Financial Items</td></tr>);
+                if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={SEP_STYLE}>Operating Expenses</td></tr>);
+                if (k === "fi") tableRows.push(<tr key="fin-sep"><td colSpan={14} style={SEP_STYLE}>Financial Items</td></tr>);
                 tableRows.push(
                   <tr key={"row-"+k} style={k==="netProfit" ? { background:"#D1FAE5", fontWeight:700, borderTop:"2px solid #1D9E75" } : k==="totFin" ? { background:"#FEE2E2", fontWeight:700 } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
                     <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
