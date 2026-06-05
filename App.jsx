@@ -887,7 +887,7 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={opexClsData} margin={{ top: 20, right: 10, bottom: 50, left: -10 }} barCategoryGap="30%" barGap={2}>
               <XAxis dataKey="name" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} interval={0} angle={-35} textAnchor="end" />
-              <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"{CB} />
+              <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
               <Tooltip
                 contentStyle={{ fontSize: 9, borderRadius: 6 }}
                 formatter={(v, name, props) => {
