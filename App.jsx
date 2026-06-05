@@ -1132,7 +1132,7 @@ export default function Dashboard() {
               const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
               const hasDrill = clsEntries.length > 0;
               return (<React.Fragment key={ri}>
-                <tr style={{cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent"  onClick={() =}}> hasDrill && toggleArea(row.mol)}>
+                <tr style={{cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" onClick={() =}}> hasDrill && toggleArea(row.mol)}>
                   <td style={{...s.td, fontWeight: 500, color: "#1a1a2e", fontSize: 10}} >
                     {hasDrill && <span style={{fontSize: 8, marginRight: 4}} >{isExp ? "▼" : "▶"}</span>}
                     <span style={{display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" }} />
