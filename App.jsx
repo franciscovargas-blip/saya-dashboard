@@ -491,12 +491,42 @@ export default function Dashboard() {
   const [expArea, setExpArea] = useState({});
   const [expPL, setExpPL] = useState({});
   const [expCF, setExpCF] = useState({});
+  const [activeView, setActiveView] = useState("dashboard");
+  const [plYear, setPlYear] = useState(2026);
+  const [plViewAnual, setPlViewAnual] = useState("consolidado");
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
     if (selAreas.length > 0) d = d.filter(r => selAreas.includes(r[4]));
     return d;
   }, [selMols, selAreas]);
+  const years = useMemo(() => {
+    const ySet = new Set();
+    D.forEach(r => ySet.add(r[9] != null ? r[9] : 2026));
+    return [...ySet].sort();
+  }, []);
+  const fdAnual = useMemo(() => {
+    let d = D;
+    if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
+    if (selAreas.length > 0) d = d.filter(r => selAreas.includes(r[4]));
+    return d.filter(r => (r[9] != null ? r[9] : 2026) === plYear);
+  }, [selMols, selAreas, plYear]);
+  const plDataAnual = useMemo(() => {
+    const monthly = [];
+    for (let m = 1; m <= 12; m++) monthly.push(buildPL(fdAnual, m, cm, plViewAnual));
+    const totals = {};
+    PL_KEYS.forEach(k => {
+      if (PCT_KEYS.has(k)) {
+        const numKey = k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda";
+        const num = monthly.reduce((s, row) => s + row[numKey], 0);
+        const den = monthly.reduce((s, row) => s + row.ns, 0);
+        totals[k] = den ? num / den : 0;
+      } else {
+        totals[k] = monthly.reduce((s, row) => s + row[k], 0);
+      }
+    });
+    return { monthly, totals };
+  }, [fdAnual, cm, plViewAnual]);
   const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
   const allM = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -800,17 +830,6 @@ export default function Dashboard() {
     return rows;
   };
 
-  const s = {
-    card: { background: '#fff', border: '1px solid #E4E8F2', borderRadius: 10, padding: 12, marginBottom: 16, overflowX: 'auto' },
-    cardTitle: { fontSize: 11, fontWeight: 500, color: '#1a1a2e', marginBottom: 2 },
-    cardSub: { fontSize: 9, color: '#8A90A8', marginBottom: 8 },
-    tbl: { width: '100%', borderCollapse: 'collapse' },
-    thL: { ...th, textAlign: 'left', position: 'sticky', left: 0, background: '#fff', minWidth: 150 },
-    thR: { ...th, textAlign: 'right', minWidth: 64 },
-    thTot: { ...th, textAlign: 'right', fontWeight: 500, color: '#1a1a2e', borderLeft: '2px solid #E4E8F2' },
-    td,
-  };
-
   return (
     <div style={{ fontFamily: "'DM Mono','Consolas',monospace", minHeight: "100vh" }}>
       {/* HEADER */}
@@ -831,6 +850,13 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* TOP NAV TABS */}
+      <div style={{display:"flex",gap:0,marginBottom:12,borderBottom:"2px solid #E4E8F2"}}>
+        {[["dashboard","Inicio"],["plAnual","P&L Multi-Ano"]].map(([v,l]) => (
+          <button key={v} onClick={() => setActiveView(v)} style={{padding:"8px 20px",border:"none",cursor:"pointer",fontWeight:activeView===v?700:400,background:activeView===v?"#534AB7":"transparent",color:activeView===v?"#fff":"#534AB7",fontSize:13,borderRadius:"6px 6px 0 0"}}>{l}</button>
+        ))}
+      </div>
+
       {/* LEGEND */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
         <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: "#D4F0E6", color: "#085041" }}>● Reales ≤ {MO[cm - 1]}</span>
@@ -838,6 +864,7 @@ export default function Dashboard() {
         <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: view === "consolidado" ? "#D4F0E6" : view === "forecast" ? "#E6F1FB" : "#FCEBEB", color: view === "consolidado" ? "#085041" : view === "forecast" ? "#185FA5" : "#E24B4A" }}>Vista: {view.charAt(0).toUpperCase() + view.slice(1)}</span>
       </div>
 
+      {activeView === "dashboard" && <>
       {/* KPI CARDS */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))", gap: 8, marginBottom: 16 }}>
         {kpis.map((k, i) => (
@@ -1104,35 +1131,29 @@ export default function Dashboard() {
               const isExp = expArea[row.mol];
               const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
               const hasDrill = clsEntries.length > 0;
-              const trStyle = { cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" };
-              const tdStyle = { ...s.td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 };
-              const arrowStyle = { fontSize: 8, marginRight: 4 };
-              const dotStyle = { display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" };
-              const numTdStyle = (v) => ({ ...s.td, textAlign: "right", fontSize: 10, color: v < 0 ? "#E24B4A" : v === 0 ? "#ccc" : "#1a1a2e" });
-              const totTdStyle = { ...s.td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" };
-              return (<>
-                <tr key={ri} style={trStyle} onClick={() => hasDrill && toggleArea(row.mol)}>
-                  <td style={tdStyle}>
-                    {hasDrill && <span style={arrowStyle}>{isExp ? "▼" : "▶"}</span>}
-                    <span style={dotStyle} />
+              return (<React.Fragment key={ri}>
+                <tr style={{cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent"  onClick={() =}}> hasDrill && toggleArea(row.mol)}>
+                  <td style={{...s.td, fontWeight: 500, color: "#1a1a2e", fontSize: 10}} >
+                    {hasDrill && <span style={{fontSize: 8, marginRight: 4}} >{isExp ? "▼" : "▶"}</span>}
+                    <span style={{display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" }} />
                     {row.mol}
                   </td>
-                  {ytdM.map(m => <td key={m} style={numTdStyle(row.monthly[m] || 0)}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
-                  <td style={totTdStyle}>{F(row.total)}</td>
+                  {ytdM.map(m => <td key={m} style={{...s.td, textAlign: "right", fontSize: 10, color: (row.monthly[m] || 0) < 0 ? "#E24B4A" : (row.monthly[m] || 0) === 0 ? "#ccc" : "#1a1a2e"}} >{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
+                  <td style={{...s.td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e"}} >{F(row.total)}</td>
                 </tr>
                 {isExp && clsEntries.map(([cls, cData], ci) => (
-                  <tr key={`{row.mol}|{ci}`} style={{ background: "#f8f9fe" }}>
-                    <td style={{ ...s.td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" }}>{cls}</td>
-                    {ytdM.map(m => <td key={m} style={{ ...s.td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" }}>{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
-                    <td style={{ ...s.td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" }}>{F(cData.total)}</td>
+                  <tr key={`${row.mol}|${ci}`} style={{background: "#f8f9fe"}} >
+                    <td style={{...s.td, paddingLeft: 28, fontSize: 9, color: "#534AB7"}} >{cls}</td>
+                    {ytdM.map(m => <td key={m} style={{...s.td, textAlign: "right", fontSize: 9, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888"}} >{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
+                    <td style={{...s.td, textAlign: "right", fontSize: 9, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7"}} >{F(cData.total)}</td>
                   </tr>
                 ))}
-              </>);
+              </React.Fragment>);
             })}
-            <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
-              <td style={{ ...s.td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
-              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...s.td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
-              <td style={{ ...s.td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
+            <tr style={{borderTop: "2px solid #E4E8F2", background: "#fafbfe"}} >
+              <td style={{...s.td, fontWeight: 600, color: "#1a1a2e"}} >Total</td>
+              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{...s.td, textAlign: "right", fontWeight: 500}} >{F(t)}</td>; })}
+              <td style={{...s.td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2"}} >{F(areaTable.reduce((acc, r) => acc + r.total, 0))}</td>
             </tr>
           </tbody>
         </table>
@@ -1303,6 +1324,82 @@ export default function Dashboard() {
       </div>}
 
 
+
+      </>}
+
+      {activeView === "plAnual" && (
+        <div>
+          {/* Year + View slicer */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+            <div style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>
+              {"P&L Anual — "}{plViewAnual==="forecast"?"Forecast":plViewAnual==="reales"?"Reales":"Consolidado"}{" "}{plYear}
+            </div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <span style={{fontSize:11,color:"#8A90A8",marginRight:4}}>Ano:</span>
+              <div style={{display:"flex",gap:4}}>
+                {years.map(y => (
+                  <button key={y} onClick={() => setPlYear(y)}
+                    style={{padding:"4px 12px",borderRadius:6,border:"1px solid #E4E8F2",cursor:"pointer",}}
+                      fontWeight:plYear===y?700:400,background:plYear===y?"#534AB7":"#fff",
+                      color:plYear===y?"#fff":"#534AB7",fontSize:12>{y}</button>
+                ))}
+              </div>
+              <span style={{fontSize:11,color:"#8A90A8",marginLeft:8,marginRight:4}}>Vista:</span>
+              <div style={{display:"flex",gap:4}}>
+                {[["forecast","Forecast"],["reales","Reales"],["consolidado","Consolidado"]].map(([v,l]) => (
+                  <button key={v} onClick={() => setPlViewAnual(v)}
+                    style={{padding:"4px 12px",borderRadius:6,border:"1px solid #E4E8F2",cursor:"pointer",}}
+                      fontWeight:plViewAnual===v?700:400,background:plViewAnual===v?"#1D9E75":"#fff",
+                      color:plViewAnual===v?"#fff":"#1D9E75",fontSize:12>{l}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead><tr>
+                <th style={{padding:"6px 8px",fontSize:10,fontWeight:600,color:"#8A90A8",textAlign:"left",borderBottom:"1px solid #E4E8F2",minWidth:180}}>
+                  Linea P&L
+                </th>
+                {MO.map((m,i) => (
+                  <th key={i} style={{padding:"6px 6px",fontSize:10,fontWeight:600,color:"#8A90A8",textAlign:"right",borderBottom:"1px solid #E4E8F2",minWidth:64}}>{m}</th>
+                ))}
+                <th style={{padding:"6px 6px",fontSize:10,fontWeight:600,color:"#1a1a2e",textAlign:"right",borderBottom:"1px solid #E4E8F2",borderLeft:"2px solid #E4E8F2"}}>Total</th>
+              </tr></thead>
+              <tbody>
+                {(() => {
+                  const rowsA = [];
+                  PL_KEYS.forEach(k => {
+                    const isPct = PCT_KEYS.has(k);
+                    const isBold = BOLD_KEYS.has(k);
+                    if (k === "sw") rowsA.push(
+                      <tr key="opex-hdr-a"><td colSpan={14} style={{padding:"6px 8px",fontSize:10,fontWeight:700,color:"#8A90A8",background:"#F8F9FD",textTransform:"uppercase",letterSpacing:1}}>Operating Expenses</td></tr>
+                    );
+                    rowsA.push(
+                      <tr key={"an-"+k} style={{background:isBold?"#F8F9FD":"transparent"}}>
+                        <td style={{padding:"5px 8px",fontSize:11,fontWeight:isBold?700:400,color:"#1a1a2e",borderBottom:"1px solid #F0F2F8"}}>
+                          {PL_LABELS[k]}
+                        </td>
+                        {plDataAnual.monthly.map((row,mi) => (
+                          <td key={mi} style={{padding:"5px 6px",fontSize:11,textAlign:"right",color:row[k]<0?"#E24B4A":isBold?"#1a1a2e":"#3A3F5C",borderBottom:"1px solid #F0F2F8"}}>
+                            {fv(row[k],isPct)}
+                          </td>
+                        ))}
+                        <td style={{padding:"5px 6px",fontSize:11,textAlign:"right",fontWeight:700,color:plDataAnual.totals[k]<0?"#E24B4A":"#1a1a2e",borderBottom:"1px solid #F0F2F8",borderLeft:"2px solid #E4E8F2"}}>
+                          {fv(plDataAnual.totals[k],isPct)}
+                        </td>
+                      </tr>
+                    );
+                  });
+                  return rowsA;
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · P&L + Balance General · 2026</div>
     </div>
