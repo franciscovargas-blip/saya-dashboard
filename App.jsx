@@ -1079,43 +1079,49 @@ export default function Dashboard() {
       {/* PARETO */}
 
       {/* AREA × MONTH TABLE */}
-      <div style= background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" >
-        <div style= fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 2 >Gasto Real por Molécula — Mensual</div>
-        <div style= fontSize: 9, color: "#8A90A8", marginBottom: 8 >Molécula → Clasificación · Clic para expandir</div>
-        <table style= width: "100%", borderCollapse: "collapse" >
+      <div style={s.card}>
+        <div style={s.cardTitle}>Gasto Real por Molécula — Mensual</div>
+        <div style={s.cardSub}>Molécula → Clasificación · Clic para expandir</div>
+        <table style={s.tbl}>
           <thead><tr>
-            <th style= ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 150 >Molécula</th>
-            {ytdM.map(m => <th key={m} style= ...th, textAlign: "right", minWidth: 64 >{MO[m - 1]}</th>)}
-            <th style= ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" >Total YTD</th>
+            <th style={s.thL}>Molécula</th>
+            {ytdM.map(m => <th key={m} style={s.thR}>{MO[m - 1]}</th>)}
+            <th style={s.thTot}>Total YTD</th>
           </tr></thead>
           <tbody>
             {areaTable.map((row, ri) => {
               const isExp = expArea[row.mol];
               const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
               const hasDrill = clsEntries.length > 0;
+              const trStyle = { cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" };
+              const tdStyle = { ...s.td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 };
+              const arrowStyle = { fontSize: 8, marginRight: 4 };
+              const dotStyle = { display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" };
+              const numTdStyle = (v) => ({ ...s.td, textAlign: "right", fontSize: 10, color: v < 0 ? "#E24B4A" : v === 0 ? "#ccc" : "#1a1a2e" });
+              const totTdStyle = { ...s.td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" };
               return (<>
-                <tr key={ri} style= cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent"  onClick={() => hasDrill && toggleArea(row.mol)}>
-                  <td style= ...td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 >
-                    {hasDrill && <span style= fontSize: 8, marginRight: 4 >{isExp ? "▼" : "▶"}</span>}
-                    <span style= display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle"  />
+                <tr key={ri} style={trStyle} onClick={() => hasDrill && toggleArea(row.mol)}>
+                  <td style={tdStyle}>
+                    {hasDrill && <span style={arrowStyle}>{isExp ? "▼" : "▶"}</span>}
+                    <span style={dotStyle} />
                     {row.mol}
                   </td>
-                  {ytdM.map(m => <td key={m} style= ...td, textAlign: "right", fontSize: 10, color: (row.monthly[m] || 0) < 0 ? "#E24B4A" : (row.monthly[m] || 0) === 0 ? "#ccc" : "#1a1a2e" >{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
-                  <td style= ...td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" >{F(row.total)}</td>
+                  {ytdM.map(m => <td key={m} style={numTdStyle(row.monthly[m] || 0)}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
+                  <td style={totTdStyle}>{F(row.total)}</td>
                 </tr>
                 {isExp && clsEntries.map(([cls, cData], ci) => (
-                  <tr key={`${row.mol}|${ci}`} style= background: "#f8f9fe" >
-                    <td style= ...td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" >{cls}</td>
-                    {ytdM.map(m => <td key={m} style= ...td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" >{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
-                    <td style= ...td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" >{F(cData.total)}</td>
+                  <tr key={`{row.mol}|{ci}`} style={{ background: "#f8f9fe" }}>
+                    <td style={{ ...s.td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" }}>{cls}</td>
+                    {ytdM.map(m => <td key={m} style={{ ...s.td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" }}>{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
+                    <td style={{ ...s.td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" }}>{F(cData.total)}</td>
                   </tr>
                 ))}
               </>);
             })}
-            <tr style= borderTop: "2px solid #E4E8F2", background: "#fafbfe" >
-              <td style= ...td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" >Total</td>
-              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style= ...td, textAlign: "right", fontWeight: 500 >{F(t)}</td>; })}
-              <td style= ...td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" >{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
+            <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
+              <td style={{ ...s.td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
+              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...s.td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
+              <td style={{ ...s.td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
             </tr>
           </tbody>
         </table>
