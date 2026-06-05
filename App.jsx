@@ -491,6 +491,7 @@ export default function Dashboard() {
   const [expArea, setExpArea] = useState({});
   const [expPL, setExpPL] = useState({});
   const [expCF, setExpCF] = useState({});
+  const [expandedOpexLine, setExpandedOpexLine] = useState(null);
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
@@ -567,21 +568,30 @@ export default function Dashboard() {
   // Waterfall (legacy, kept for reference)
   const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others","Regulatory","Software & Hardware","Mobility"];
 
-  // OpEx por lineas del PnL
+  // OpEx por lineas del PnL - solo Reales, drill-down por clasificacion
   const OPEX_PL_KEYS = ["sw","sm","ta","pf","of","reg","sh","mob","qual"];
+  const OPEX_PL_FD_NAME = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality"};
   const opexClsData = useMemo(() => {
     const real = buildPL(fd, cm, cm, "reales");
-    const fc   = buildPL(fd, cm, cm, "forecast");
     return OPEX_PL_KEYS
-      .map(k => {
-        const r = Math.round(Math.abs(real[k] || 0));
-        const f = Math.round(Math.abs(fc[k]   || 0));
-        const vp = f > 0 ? Math.round((r - f) / f * 100) : null;
-        return { name: PL_LABELS[k], real: r, fc: f, varPct: vp };
-      })
-      .filter(x => x.real > 0 || x.fc > 0)
+      .map(k => ({
+        name: PL_LABELS[k],
+        fdName: OPEX_PL_FD_NAME[k],
+        real: Math.round(Math.abs(real[k] || 0)),
+      }))
+      .filter(x => x.real > 0)
       .sort((a, b) => b.real - a.real);
   }, [fd, cm]);
+  const opexDetailData = useMemo(() => {
+    if (!expandedOpexLine) return [];
+    const map = {};
+    fd.filter(r => r[0] === expandedOpexLine && r[1] === "Reales" && r[2] === cm)
+      .forEach(r => { const cls = r[5] || "Sin clasificacion"; if (!map[cls]) map[cls] = 0; map[cls] += Math.abs(r[8]); });
+    return Object.entries(map)
+      .map(([name, real]) => ({ name: name.length > 24 ? name.slice(0,23)+"…" : name, real: Math.round(real) }))
+      .filter(x => x.real > 0)
+      .sort((a, b) => b.real - a.real);
+  }, [fd, cm, expandedOpexLine]);
 
 
   // Pies
@@ -869,31 +879,34 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>OpEx por Línea P&L — {MO[cm-1]}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "#555" }}>
-              <span style={{ display: "inline-block", width: 10, height: 10, background: "#534AB7", borderRadius: 2, marginRight: 3 }}></span>Reales
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "#555" }}>
-              <span style={{ display: "inline-block", width: 10, height: 10, background: "#534AB733", border: "1px solid #534AB7", borderRadius: 2, marginRight: 3 }}></span>Forecast
-            </span>
-            <span style={{ fontSize: 9, color: "#888" }}>• % var. Reales vs Forecast</span>
+          <div style={{ fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:4 }}>
+            {expandedOpexLine ? ("Clasificacion: " + expandedOpexLine + " — " + MO[cm-1]) : ("OpEx por Línea P&L — " + MO[cm-1])}
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={opexClsData} layout="vertical" margin={{ top: 5, right: 55, bottom: 5, left: 110 }} barCategoryGap="25%" barGap={2}>
-              <XAxis type="number" tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? (v/1e6).toFixed(1)+"M" : v >= 1e3 ? Math.round(v/1e3)+"K" : "0"} />
-              <YAxis type="category" dataKey="name" width={105} tick={{ fontSize: 8, fill: "#444" }} axisLine={false} tickLine={false} />
+          {expandedOpexLine && (
+            <div onClick={() => setExpandedOpexLine(null)} style={{ display:"flex",alignItems:"center",gap:4,cursor:"pointer",marginBottom:6,fontSize:9,color:"#534AB7",fontWeight:600 }}>
+              ← Volver a todas las líneas
+            </div>
+          )}
+          <ResponsiveContainer width="100%" height={(expandedOpexLine ? opexDetailData.length : opexClsData.length) * 30 + 40}>
+            <BarChart
+              data={expandedOpexLine ? opexDetailData : opexClsData}
+              layout="vertical"
+              margin={{ top:4, right:65, bottom:4, left:120 }}
+              barCategoryGap="30%"
+              onClick={(data) => { if (!expandedOpexLine && data && data.activePayload) setExpandedOpexLine(data.activePayload[0].payload.fdName); }}
+            >
+              <XAxis type="number" tick={{ fontSize:7,fill:"#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":"0"} />
+              <YAxis type="category" dataKey="name" width={115} tick={{ fontSize:8,fill:"#333",cursor:"pointer" }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ fontSize: 9, borderRadius: 6 }}
-                formatter={(v, name, props) => { const lbl = name === "real" ? "Reales" : "Forecast"; const pct = props.payload.varPct; const suffix = name === "real" && pct !== null ? " ("+(pct>0?"+":"")+pct+"% vs FC)" : ""; return ["$"+(v/1e3).toFixed(1)+"K"+suffix, lbl]; }}
+                contentStyle={{ fontSize:9,borderRadius:6 }}
+                formatter={(v) => ["$"+(v/1e3).toFixed(1)+"K", "Reales"]}
               />
-              <ReferenceLine x={0} stroke="#E4E8F2" />
-              <Bar dataKey="fc" name="Forecast" fill="#534AB733" stroke="#534AB7" strokeWidth={0.5} radius={[0,3,3,0]} />
-              <Bar dataKey="real" name="Reales" fill="#534AB7" radius={[0,3,3,0]}>
+              <Bar dataKey="real" name="Reales" fill="#534AB7" radius={[0,3,3,0]} cursor={expandedOpexLine ? "default" : "pointer"}>
                 <LabelList
-                  dataKey="varPct"
+                  dataKey="real"
                   position="right"
-                  content={(props) => { const { x, y, width, height, value } = props; if (value === null || value === undefined) return null; const color = value > 0 ? "#E24B4A" : "#1D9E75"; return (<text x={x+width+4} y={y+height/2+4} fontSize={8} fontWeight={700} fill={color}>{value>0?"+":""}{value}%</text>); }}
+                  formatter={v => v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":""}
+                  style={{ fontSize:8,fill:"#555",fontWeight:600 }}
                 />
               </Bar>
             </BarChart>
