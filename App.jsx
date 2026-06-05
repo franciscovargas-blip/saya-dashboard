@@ -51,15 +51,15 @@ function buildPL(fd, m, cm, mode) {
     if (mode === "forecast") return gV(fd, pl, "Forecast", m);
     if (mode === "reales") return m <= cm ? gV(fd, pl, "Reales", m) : 0;
     // consolidado: reales up to cm (fallback to forecast if no reales), forecast after cm
-    if (m <= cm) { const re = gV(fd, pl, "Reales", m); return re !== 0 ? re : gV(fd, pl, "Forecast", m); }
+    if (m <= cm) return gV(fd, pl, "Reales", m);
     return gV(fd, pl, "Forecast", m);
   };
   // For OpEx lines (codes) - only have Reales data
   const getOpex = (pl) => {
     if (mode === "forecast") return gV(fd, pl, "Forecast", m);
     if (mode === "reales") return m <= cm ? gV(fd, pl, "Reales", m) : 0;
-    // consolidado: reales up to cm (fallback forecast), forecast after
-    if (m <= cm) { const re = gV(fd, pl, "Reales", m); return re !== 0 ? re : gV(fd, pl, "Forecast", m); }
+    // consolidado: reales up to cm, forecast after
+    if (m <= cm) return gV(fd, pl, "Reales", m);
     return gV(fd, pl, "Forecast", m);
   };
 
@@ -514,16 +514,19 @@ export default function Dashboard() {
                 );
                 // Drill-down for OpEx rows
                 if (isOpex && expOpex[k] && code) {
-                  const codeData = fd.filter(r => r[0] === code && (code === "COGS" ? true : r[1] === (code === "Quality" ? "Forecast" : "Reales")));
-                  // Group by Clasificacion
+                  const codeData = fd.filter(r => r[0] === code);
+                  // Group by Clasificacion — Reales ≤ cm, Forecast > cm
                   const clsMap = {};
                   codeData.forEach(r => {
+                    const m = r[2], origen = r[1];
+                    if (m <= cm && origen !== "Reales") return;
+                    if (m > cm && origen !== "Forecast") return;
                     const cls = r[5] || "—";
                     if (!clsMap[cls]) clsMap[cls] = { items: {}, m: Array(12).fill(0) };
-                    clsMap[cls].m[r[2] - 1] += r[8];
+                    clsMap[cls].m[m - 1] += r[8];
                     const com = r[6] || "—";
                     if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { m: Array(12).fill(0), p: r[7] };
-                    clsMap[cls].items[com].m[r[2] - 1] += r[8];
+                    clsMap[cls].items[com].m[m - 1] += r[8];
                   });
                   Object.entries(clsMap).filter(([c]) => c !== "—").forEach(([cls, data]) => {
                     const clsKey = k + "|" + cls;
@@ -605,7 +608,13 @@ export default function Dashboard() {
                     );
                     // Drill-down for OpEx in comparison tables
                     if (isOpex && isExp && code) {
-                      const codeData = fd.filter(row => row[0] === code && (code === "COGS" ? true : row[1] === (code === "Quality" ? "Forecast" : "Reales")) && t.months.includes(row[2]));
+                      const codeData = fd.filter(row => {
+                        if (row[0] !== code || !t.months.includes(row[2])) return false;
+                        const m = row[2], origen = row[1];
+                        if (m <= cm && origen !== "Reales") return false;
+                        if (m > cm && origen !== "Forecast") return false;
+                        return true;
+                      });
                       const clsMap = {};
                       codeData.forEach(row => {
                         const cls = row[5] || "—";
@@ -956,5 +965,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-
