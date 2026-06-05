@@ -947,7 +947,7 @@ export default function Dashboard() {
                 if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={SEP_STYLE}>Operating Expenses</td></tr>);
                 if (k === "fi") tableRows.push(<tr key="fin-sep"><td colSpan={14} style={SEP_STYLE}>Financial Items</td></tr>);
                 tableRows.push(
-                  <tr key={"row-"+k} style={k==="netProfit" ? { background:"#D1FAE5", fontWeight:700, borderTop:"2px solid #1D9E75" } : k==="totFin" ? { background:"#FEE2E2", fontWeight:700 } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
+                  <tr key={"row-"+k} style={k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
                     <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
                       {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
                       {PL_LABELS[k]}
@@ -1039,7 +1039,7 @@ export default function Dashboard() {
                     const expKey = t.prefix + "-" + r.k;
                     const isExp = expComp[expKey];
                     tRows.push(
-                      <tr key={"r-"+i} style={r.k==="netProfit" ? { background:"#D1FAE5", fontWeight:700, borderTop:"2px solid #1D9E75" } : r.k==="totFin" ? { background:"#FEE2E2", fontWeight:700 } : { background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
+                      <tr key={"r-"+i} style={r.k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : r.k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
                         <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
                           {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
                           {r.label}
