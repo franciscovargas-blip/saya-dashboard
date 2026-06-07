@@ -557,11 +557,18 @@ export default function Dashboard() {
     PL_KEYS.forEach(k => { ytdTotals[k] = ytdM.reduce((s, m) => s + buildPL(fd, m, cm, "consolidado")[k], 0); });
     const nsYTD = ytdTotals.ns, nsFY = allM.reduce((s, m) => s + buildPL(fd, m, cm, "consolidado").ns, 0);
     const opexYTD = ytdTotals.totOpex;
+    const intangRow = B.find(r => r[0] === "176-00-000" && r[4] === 0);
+    const intangYTD = intangRow ? ytdM.reduce((s, m) => s + (intangRow[4 + m] || 0), 0) : 0;
+    const intangCM = intangRow ? (intangRow[4 + cm] || 0) : 0;
     return [
       { l: "NET SALES YTD", v: F(nsYTD), s: `Mes ${MO[cm-1]}: ${F(c.ns)}`, c: "#185FA5" },
       { l: "GROSS MARGIN YTD", v: F(ytdTotals.gp), s: nsYTD ? `${P(ytdTotals.gp / nsYTD)} del NS` : "Pre-revenue", c: "#1D9E75" },
       { l: "OPEX YTD", v: F(opexYTD), s: `${nsYTD ? P(opexYTD/nsYTD) : "-"} vs NS YTD`, c: "#E24B4A" },
       { l: `OPEX ${MO[cm-1]}`, v: F(c.totOpex), s: `${c.ns ? P(c.totOpex/c.ns) : "-"} vs NS`, c: "#E24B4A" },
+      { l: "EBITDA YTD", v: F(ytdTotals.ebitda), s: `Mes ${MO[cm-1]}: ${F(c.ebitda)}`, c: ytdTotals.ebitda < 0 ? "#E24B4A" : "#1D9E75" },
+      { l: "NET PROFIT YTD", v: F(ytdTotals.netProfit), s: `Mes ${MO[cm-1]}: ${F(c.netProfit)}`, c: ytdTotals.netProfit < 0 ? "#E24B4A" : "#1D9E75" },
+      { l: "INTANGIBLE ASSETS YTD", v: F(intangYTD), s: `Mes ${MO[cm-1]}: ${F(intangCM)}`, c: "#7C3AED" },
+      { l: "INTANGIBLES % DE OPEX", v: opexYTD ? P(intangYTD / opexYTD) : "-", s: `YTD vs Total OpEx`, c: "#7C3AED" },
     ];
   }, [fd, cm, ytdM]);
 
@@ -583,7 +590,7 @@ export default function Dashboard() {
         real: Math.round(Math.abs(real[k] || 0)),
       }))
       .filter(x => x.real > 0)
-      .sort((a, b) => a.real - b.real);
+      .sort((a, b) => b.real - a.real);
   }, [fd, cm]);
   const opexDetailData = useMemo(() => {
     if (!expandedOpexLine) return [];
