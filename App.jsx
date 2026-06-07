@@ -558,14 +558,10 @@ export default function Dashboard() {
     const nsYTD = ytdTotals.ns, nsFY = allM.reduce((s, m) => s + buildPL(fd, m, cm, "consolidado").ns, 0);
     const opexYTD = ytdTotals.totOpex;
     return [
-      { l: `SALES ${MO[cm-1]}`, v: F(c.ns), s: `YTD ${F(nsYTD)}`, c: "#1D9E75" },
-      { l: "NET SALES FY", v: F(nsFY), s: "Forecast anual", c: "#0B6644" },
-      { l: `EBITDA ${MO[cm-1]}`, v: F(c.ebitda), s: `YTD ${F(ytdTotals.ebitda)}`, c: c.ebitda < 0 ? "#E24B4A" : "#1D9E75" },
-      { l: "GROSS PROFIT YTD", v: F(ytdTotals.gp), s: nsYTD ? `Margen ${P(ytdTotals.gp / nsYTD)}` : "Pre-revenue", c: "#185FA5" },
-      { l: `OPEX ${MO[cm-1]}`, v: F(c.totOpex), s: `YTD ${F(opexYTD)}`, c: "#E24B4A" },
-      { l: "BURN RATE YTD", v: F(opexYTD - (nsYTD > 0 ? nsYTD : 0)), s: "OpEx - Revenue", c: "#8B5CF6" },
-      { l: "COGS YTD", v: F(ytdTotals.cogs), s: `FY ${F(allM.reduce((s, m) => s + buildPL(fd, m, cm, "consolidado").cogs, 0))}`, c: "#BA7517" },
-      { l: `EBIT ${MO[cm-1]}`, v: F(c.ebit), s: `YTD ${F(ytdTotals.ebit)}`, c: c.ebit < 0 ? "#E24B4A" : "#1D9E75" },
+      { l: "NET SALES YTD", v: F(nsYTD), s: `Mes ${MO[cm-1]}: ${F(c.ns)}`, c: "#185FA5" },
+      { l: "GROSS MARGIN YTD", v: F(ytdTotals.gp), s: nsYTD ? `${P(ytdTotals.gp / nsYTD)} del NS` : "Pre-revenue", c: "#1D9E75" },
+      { l: "OPEX YTD", v: F(opexYTD), s: `${nsYTD ? P(opexYTD/nsYTD) : "-"} vs NS YTD`, c: "#E24B4A" },
+      { l: `OPEX ${MO[cm-1]}`, v: F(c.totOpex), s: `${c.ns ? P(c.totOpex/c.ns) : "-"} vs NS`, c: "#E24B4A" },
     ];
   }, [fd, cm, ytdM]);
 
@@ -587,7 +583,7 @@ export default function Dashboard() {
         real: Math.round(Math.abs(real[k] || 0)),
       }))
       .filter(x => x.real > 0)
-      .sort((a, b) => b.real - a.real);
+      .sort((a, b) => a.real - b.real);
   }, [fd, cm]);
   const opexDetailData = useMemo(() => {
     if (!expandedOpexLine) return [];
@@ -945,7 +941,7 @@ export default function Dashboard() {
                 const isOpex = OPEX_KEY_SET.has(k);
                 const code = OPEX_CODE_MAP[k];
                 if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={SEP_STYLE}>Operating Expenses</td></tr>);
-                if (k === "fi") tableRows.push(<tr key="fin-sep"><td colSpan={14} style={SEP_STYLE}>Financial Items</td></tr>);
+                /* fin-sep removed */
                 tableRows.push(
                   <tr key={"row-"+k} style={k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
                     <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
