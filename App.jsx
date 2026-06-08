@@ -947,16 +947,16 @@ return (
               <span style={{display:"inline-block",transform:showCFNotes?"rotate(90deg)":"none",transition:"transform 0.2s"}}>&#9654;</span>
               Notas: cuentas utilizadas por renglon
             </button>
-            {{showCFNotes && (
+            {showCFNotes && (
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:8,marginTop:10}}>
-                {{cf.notes.filter(n=>n.accounts.length>0).map((n,i)=>(
-                  <div key={{i}} style={{background:"#F9FAFB",borderRadius:6,padding:"8px 10px",border:"1px solid #E4E8F2"}}>
-                    <div style={{fontWeight:700,fontSize:9,color:"#1A1D2E",marginBottom:4}}>{{n.section}}</div>
-                    {{n.accounts.map((a,j)=><div key={{j}} style={{fontSize:8,color:"#6B7280",fontFamily:"monospace",lineHeight:1.6}}>{{a}}</div>)}}
+                {cf.notes.filter(n=>n.accounts.length>0).map((n,i)=>(
+                  <div key={i} style={{background:"#F9FAFB",borderRadius:6,padding:"8px 10px",border:"1px solid #E4E8F2"}}>
+                    <div style={{fontWeight:700,fontSize:9,color:"#1A1D2E",marginBottom:4}}>{n.section}</div>
+                    {n.accounts.map((a,j)=><div key={j} style={{fontSize:8,color:"#6B7280",fontFamily:"monospace",lineHeight:1.6}}>{a}</div>)}
                   </div>
                 ))}}
               </div>
-            )}}
+            )}
           </div>
           </div>
         </div>
