@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie, LabelList } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie, LabelList, Legend } from "recharts";
 
 
 
@@ -551,6 +551,7 @@ export default function Dashboard() {
               <YAxis yAxisId="left" orientation="left" tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v => v>=1e6?`${(v/1e6).toFixed(1)}M`:v>=1e3?`${Math.round(v/1e3)}K`:"0"} />
               <YAxis yAxisId="right" orientation="right" tick={{fontSize:7,fill:"#534AB7"}} axisLine={false} tickLine={false} tickFormatter={v => Math.abs(v)>=1e6?`${(v/1e6).toFixed(1)}M`:Math.abs(v)>=1e3?`${Math.round(v/1e3)}K`:"0"} width={46} />
               <Tooltip formatter={(v,name)=>[`$${Math.abs(v)>=1e6?(v/1e6).toFixed(2)+"M":Math.abs(v)>=1e3?(v/1e3).toFixed(1)+"K":Math.round(v)}`,name]} contentStyle={{fontSize:9,borderRadius:6}} />
+              <Legend verticalAlign="top" align="right" iconSize={8} wrapperStyle={{paddingBottom:4}} formatter={(value) => <span style={{fontSize:9,color:"#555",marginRight:6}}>{value}</span>} payload={[{value:"Sales",type:"square",color:"#1D9E75"},{value:"OpEx",type:"square",color:"#E24B4A"},{value:"EBITDA",type:"line",color:"#534AB7"}]} />
               <ReferenceLine yAxisId="left" y={0} stroke="#E4E8F2" />
               <ReferenceLine yAxisId="right" y={0} stroke="#534AB755" strokeDasharray="4 2" />
               <Bar yAxisId="left" dataKey="Sales" radius={[3,3,0,0]}>{chartData.map((e,i)=><Cell key={i} fill={e.cur?"#1D9E7566":"#1D9E7533"} />)}</Bar>
