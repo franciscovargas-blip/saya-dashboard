@@ -918,27 +918,27 @@ return (
         const cN = v => ({color:v<0?"#C0392B":v>0?"#1a1a2e":"#bbb",textAlign:"right",fontSize:11,padding:"3px 8px"});
         return (
           <React.Fragment key={key}>
-            <tr style=cursor:hasD?"pointer":"default",background:"#fff" onClick={() => hasD && toggleCF(key)}>
-              <td style=fontSize:11,padding:"4px 8px",paddingLeft:24,color:"#334155">
-                {hasD && <span style=marginRight:4,fontSize:9,color:"#6B7280">{isExp?"▼":"►"}</span>}
+            <tr style={{cursor:hasD?"pointer":"default",background:"#fff"}} onClick={() => hasD && toggleCF(key)}>
+              <td style={{fontSize:11,padding:"4px 8px",paddingLeft:24,color:"#334155"}}>
+                {hasD && <span style={{marginRight:4,fontSize:9,color:"#6B7280"}}>{isExp?"▼":"►"}</span>}
                 {label}
               </td>
               {vals.map((v,i) => <td key={i} style={cN(v)}>{Fk(v)}</td>)}
-              <td style=color:tot<0?"#C0392B":"#1a1a2e",textAlign:"right",fontSize:11,fontWeight:600,padding:"3px 8px",borderLeft:"1px solid #E2E8F0">{Fk(tot)}</td>
+              <td style={{color:tot<0?"#C0392B":"#1a1a2e",textAlign:"right",fontSize:11,fontWeight:600,padding:"3px 8px",borderLeft:"1px solid #E2E8F0"}}>{Fk(tot)}</td>
             </tr>
             {isExp && dets
               .filter(a => a.vals.slice(0,cm).some(v => v !== 0))
               .map((a, ai) => (
-                <tr key={ai} style=background:"#F8FAFC">
-                  <td style=fontSize:10,padding:"3px 8px",paddingLeft:40,color:"#64748B">
-                    <span style=marginRight:4,color:"#CBD5E1">└</span>{a.name}
+                <tr key={ai} style={{background:"#F8FAFC"}}>
+                  <td style={{fontSize:10,padding:"3px 8px",paddingLeft:40,color:"#64748B"}}>
+                    <span style={{marginRight:4,color:"#CBD5E1"}}>└</span>{a.name}
                   </td>
                   {a.vals.slice(0,cm).map((v,mi) => (
-                    <td key={mi} style=color:v<0?"#C0392B":"#475569",textAlign:"right",fontSize:10,padding:"2px 8px">
+                    <td key={mi} style={{color:v<0?"#C0392B":"#475569",textAlign:"right",fontSize:10,padding:"2px 8px"}}>
                       {v===0?"":Fk(v)}
                     </td>
                   ))}
-                  <td style=color:"#475569",textAlign:"right",fontSize:10,padding:"2px 8px",borderLeft:"1px solid #E2E8F0">
+                  <td style={{color:"#475569",textAlign:"right",fontSize:10,padding:"2px 8px",borderLeft:"1px solid #E2E8F0"}}>
                     {Fk(a.vals.slice(0,cm).reduce((s,v)=>s+v,0))}
                   </td>
                 </tr>
@@ -951,12 +951,12 @@ return (
         const vals = rows.map(mo => (mo[key]||0));
         const tot  = vals.reduce((s,v)=>s+v,0);
         return (
-          <tr key={key} style=background:"#EFF6FF",borderTop:"2px solid #BFDBFE">
-            <td style=fontSize:11,padding:"5px 8px",paddingLeft:16,fontWeight:700,color:"#1E40AF">{label}</td>
+          <tr key={key} style={{background:"#EFF6FF",borderTop:"2px solid #BFDBFE"}}>
+            <td style={{fontSize:11,padding:"5px 8px",paddingLeft:16,fontWeight:700,color:"#1E40AF"}}>{label}</td>
             {vals.map((v,i)=>(
-              <td key={i} style=textAlign:"right",fontSize:11,fontWeight:700,color:v<0?"#C0392B":"#1E40AF",padding:"5px 8px">{Fk(v)}</td>
+              <td key={i} style={{textAlign:"right",fontSize:11,fontWeight:700,color:v<0?"#C0392B":"#1E40AF",padding:"5px 8px"}}>{Fk(v)}</td>
             ))}
-            <td style=textAlign:"right",fontSize:11,fontWeight:700,color:tot<0?"#C0392B":"#1E40AF",padding:"5px 8px",borderLeft:"1px solid #BFDBFE">{Fk(tot)}</td>
+            <td style={{textAlign:"right",fontSize:11,fontWeight:700,color:tot<0?"#C0392B":"#1E40AF",padding:"5px 8px",borderLeft:"1px solid #BFDBFE"}}>{Fk(tot)}</td>
           </tr>
         );
       };
@@ -966,28 +966,28 @@ return (
         const fw = purple ? 700 : 500;
         const col = v => purple ? (v<0?"#7C3AED":"#6D28D9") : "#7C3AED";
         return (
-          <tr key={key} style=background:bg,borderTop:purple?"2px solid #C4B5FD":"none">
-            <td style=fontSize:11,padding:"5px 8px",paddingLeft:16,fontWeight:fw,color:"#5B21B6">{label}</td>
+          <tr key={key} style={{background:bg,borderTop:purple?"2px solid #C4B5FD":"none"}}>
+            <td style={{fontSize:11,padding:"5px 8px",paddingLeft:16,fontWeight:fw,color:"#5B21B6"}}>{label}</td>
             {vals.map((v,i)=>(
-              <td key={i} style=textAlign:"right",fontSize:11,fontWeight:fw,color:col(v),padding:"5px 8px">{Fk(v)}</td>
+              <td key={i} style={{textAlign:"right",fontSize:11,fontWeight:fw,color:col(v),padding:"5px 8px"}}>{Fk(v)}</td>
             ))}
-            <td style=textAlign:"right",fontSize:11,fontWeight:fw,color:"#9CA3AF",padding:"5px 8px",borderLeft:"1px solid #E9D5FF">{"—"}</td>
+            <td style={{textAlign:"right",fontSize:11,fontWeight:fw,color:"#9CA3AF",padding:"5px 8px",borderLeft:"1px solid #E9D5FF"}}>{"—"}</td>
           </tr>
         );
       };
       const secH = (label) => (
         <tr key={"h"+label}>
-          <td colSpan={cm+2} style=fontSize:10,fontWeight:700,letterSpacing:1,color:"#fff",background:"#334155",padding:"5px 10px",textTransform:"uppercase">{label}</td>
+          <td colSpan={cm+2} style={{fontSize:10,fontWeight:700,letterSpacing:1,color:"#fff",background:"#334155",padding:"5px 10px",textTransform:"uppercase"}}>{label}</td>
         </tr>
       );
       return (
-        <div style=overflowX:"auto",marginTop:12>
-          <table style=borderCollapse:"collapse",width:"100%",fontSize:11>
+        <div style={{overflowX:"auto",marginTop:12}}>
+          <table style={{borderCollapse:"collapse",width:"100%",fontSize:11}}>
             <thead>
-              <tr style=background:"#1E293B">
-                <th style=textAlign:"left",padding:"6px 10px",color:"#fff",fontSize:11,fontWeight:600,minWidth:200>Concepto</th>
-                {rows.map(mo => <th key={mo.m} style=textAlign:"right",padding:"6px 8px",color:"#94A3B8",fontSize:10,fontWeight:500>{MO[mo.m-1]}</th>)}
-                <th style=textAlign:"right",padding:"6px 8px",color:"#38BDF8",fontSize:10,fontWeight:600,borderLeft:"1px solid #334155">TOTAL</th>
+              <tr style={{background:"#1E293B"}}>
+                <th style={{textAlign:"left",padding:"6px 10px",color:"#fff",fontSize:11,fontWeight:600,minWidth:200}}>Concepto</th>
+                {rows.map(mo => <th key={mo.m} style={{textAlign:"right",padding:"6px 8px",color:"#94A3B8",fontSize:10,fontWeight:500}}>{MO[mo.m-1]}</th>)}
+                <th style={{textAlign:"right",padding:"6px 8px",color:"#38BDF8",fontSize:10,fontWeight:600,borderLeft:"1px solid #334155"}}>TOTAL</th>
               </tr>
             </thead>
             <tbody>
@@ -1017,12 +1017,12 @@ return (
               {balRow("endBal",    "Saldo Final",   false)}
             </tbody>
           </table>
-          <div style=fontSize:10,color:"#94A3B8",marginTop:6,paddingLeft:4>
+          <div style={{fontSize:10,color:"#94A3B8",marginTop:6,paddingLeft:4}}>
             * Haz clic en cualquier línea para expandir el detalle de cuentas
           </div>
         </div>
       );
-    })() : <div style=color:"#6B7280",fontSize:12,padding:16>Cargando datos de balance...</div>}
+    })() : <div style={{color:"#6B7280",fontSize:12,padding:16}}>Cargando datos de balance...</div>}
           {[{l:"TOTAL ASSETS",v:balData.totAct?.cum,c:"#1D9E75",mov:balData.totAct?.mov},{l:"TOTAL LIABILITIES",v:balData.totPas?.cum,c:"#E24B4A",mov:balData.totPas?.mov},{l:"EQUITY",v:balData.totCap?.cum,c:"#534AB7",mov:balData.totCap?.mov},{l:"NET INCOME (LOSS)",v:balData.perGan?.cum,c:balData.perGan?.cum<0?"#E24B4A":"#1D9E75",mov:balData.perGan?.mov}].map((k,i)=>(
             <div key={i} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 14px",borderTop:`3px solid ${k.c}`}}>
               <div style={{fontSize:7,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",marginBottom:3}}>{k.l}</div>
