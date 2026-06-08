@@ -954,10 +954,9 @@ return (
                     <div style={{fontWeight:700,fontSize:9,color:"#1A1D2E",marginBottom:4}}>{n.section}</div>
                     {n.accounts.map((a,j)=><div key={j} style={{fontSize:8,color:"#6B7280",fontFamily:"monospace",lineHeight:1.6}}>{a}</div>)}
                   </div>
-                ))}}
+                ))}
               </div>
             )}
-          </div>
           </div>
         </div>
       );
