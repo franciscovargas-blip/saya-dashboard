@@ -345,86 +345,78 @@ export default function Dashboard() {
 
   const cashFlow = useMemo(() => {
     if (!B || B.length === 0) return null;
-
-    // Categorize D4 accounts by type using section + code
-    const categorize = (r) => {
-      const code = r[0] || "", section = r[3] || "", name = (r[1]||"").toLowerCase();
-      const c3 = code.substring(0,3);
-      if (c3 === "101" || c3 === "102") return "cash";
-      if (name.includes("depreci") || name.includes("amortiz")) return "deprec";
-      if (section === "Activos" && parseInt(c3) >= 150) return "fixed";
-      if (section === "Activos") return "curr_asset";
-      if (section === "Pasivos") return "curr_liab";
-      if (r[1] === "Período ganancias") return "net_income";
-      if (section === "Capital") return "equity";
-      return "other";
-    };
-
-    // Get D4 non-total accounts with data
-    const accounts = B.filter(r => r[2] === 4 && !r[4] && r.slice(5).some(v => v !== 0))
-      .map(r => ({ ...r, cat: categorize(r), name: r[1], code: r[0], vals: r.slice(5) }));
-
-    // Período ganancias (D0, not D4)
-    const niRow = B.find(r => r[1] === "Período ganancias");
-
-    // Group accounts by CF category
-    const groups = {};
-    accounts.forEach(a => { if (!groups[a.cat]) groups[a.cat] = []; groups[a.cat].push(a); });
-
-    // Build monthly CF
-    const months = MO.map((mName, mi) => {
-      // Net Income
-      const netIncome = niRow ? (niRow[5 + mi] || 0) : 0;
-
-      // Depreciation & Amortization (contra-assets, movement is negative when D&A increases)
-      // Add back: multiply by -1 (negative movement → positive add-back)
-      const depAccts = groups.deprec || [];
-      const deprAmort = depAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0) * -1;
-
-      // Changes in working capital
-      // Current Assets (excl cash): increase uses cash → multiply by -1
-      const caAccts = groups.curr_asset || [];
-      const wc_assets = caAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0) * -1;
-
-      // Current Liabilities: increase generates cash → use as-is (positive = increase)
-      const clAccts = groups.curr_liab || [];
-      const wc_liabs = clAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0);
-
-      const totalOp = netIncome + deprAmort + wc_assets + wc_liabs;
-
-      // Investing: Fixed assets (excl depreciation) increase uses cash → multiply by -1
-      const faAccts = groups.fixed || [];
-      const capex = faAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0) * -1;
-      const totalInv = capex;
-
-      // Financing: Equity increase = inflow → use as-is
-      const eqAccts = groups.equity || [];
-      const equityChg = eqAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0);
-      const totalFin = equityChg;
-
-      // Net change & cash verification
-      const netChange = totalOp + totalInv + totalFin;
-      const cashActual = (groups.cash || []).reduce((s, a) => s + (a.vals[mi] || 0), 0);
-
-      return { name: mName, m: mi+1, netIncome, deprAmort, wc_assets, wc_liabs, totalOp, capex, totalInv, equityChg, totalFin, netChange, cashActual };
+    // suma cuentas hoja (no totales) con prefijo dado para el mes mi
+    // B[5]=saldo 31-Ene (NO movimiento); B[6..]=movimientos mensuales
+    const bLeaf = (pfx, mi) => B
+      .filter(r => !r[4] && (r[0]||"").startsWith(pfx))
+      .reduce((s, r) => s + (r[5+mi]||0), 0);
+    // detalle de subcuentas (depth>=3, no total) para filas expandibles
+    const bDet = (...pfxs) => B
+      .filter(r => !r[4] && r[2] >= 3 && pfxs.some(p => (r[0]||"").startsWith(p)))
+      .map(r => ({ name: r[1], code: r[0], vals: Array.from({length:12}, (_,i) => r[5+i]||0) }));
+    // cuentas de caja (filas total, depth=2)
+    const r102 = B.find(r => r[0]==="102-00-000" && r[4]===1);
+    const r103 = B.find(r => r[0]==="103-00-000" && r[4]===1);
+    const mos = Array.from({length:12}, (_, mi) => {
+      const m = mi + 1;
+      // ─ CAMBIO REAL EN CAJA desde cuentas 102+103 ───────────────────────────
+      const c102 = r102 ? (r102[5+mi]||0) : 0;
+      const c103 = r103 ? (r103[5+mi]||0) : 0;
+      // Enero: B[5] = saldo final al 31-Ene. Cambio = saldo_final - saldo_apertura (OPEN_CASH)
+      // Feb en adelante: B[5+mi] = movimiento mensual directo
+      const netChange = mi === 0 ? (c102 + c103) - OPEN_CASH : (c102 + c103);
+      // ─ ACTIVIDADES DE OPERACIÓN (movimientos de Balance) ──────────────────
+      // Activos corrientes: aumento activo = salida de caja → negar
+      const inventory  = -(bLeaf("115", mi));  // Inventario
+      const otherRecv  = -(bLeaf("121", mi));  // Otros activos CP
+      const vatItem    = -(bLeaf("113", mi) + bLeaf("119", mi)); // IVA a favor / pendiente
+      const prepaid    = -(bLeaf("109", mi));  // Pagos anticipados
+      const advProv    = -(bLeaf("120", mi));  // Anticipo proveedores
+      // Pasivos corrientes: aumento pasivo = entrada de caja → positivo
+      const acctsPay   = bLeaf("201", mi);     // Proveedores
+      const otherCred  = bLeaf("205", mi);     // Acreedores diversos
+      const empBenef   = bLeaf("210", mi);     // Provisión sueldos
+      const payTaxPaid = bLeaf("216", mi) + bLeaf("217", mi); // Impuestos retenidos
+      const imssProvis = bLeaf("211", mi) + bLeaf("212", mi); // IMSS/ISN provisión
+      const totalOp    = inventory + otherRecv + vatItem + prepaid + advProv +
+                         acctsPay + otherCred + empBenef + payTaxPaid + imssProvis;
+      // ─ ACTIVIDADES DE INVERSIÓN ─────────────────────────────────────────────
+      // Activo fijo: aumento activo = salida de caja → negar
+      const capexComp   = -(bLeaf("156", mi)); // Equipo de cómputo
+      const capexFurn   = -(bLeaf("155", mi)); // Mobiliario y equipo
+      const capexIntang = -(bLeaf("176", mi)); // Intangibles
+      const capexDepos  = -(bLeaf("184", mi)); // Depósitos en garantía
+      const totalInv    = capexComp + capexFurn + capexIntang + capexDepos;
+      // ─ ACTIVIDADES DE FINANCIAMIENTO ─────────────────────────────────────
+      const equityChg  = bLeaf("301", mi);     // Capital social
+      const totalFin   = equityChg;
+      return { m, inventory, otherRecv, vatItem, prepaid, advProv,
+               acctsPay, otherCred, empBenef, payTaxPaid, imssProvis, totalOp,
+               capexComp, capexFurn, capexIntang, capexDepos, totalInv,
+               equityChg, totalFin, netChange };
     });
-
-    // Beginning/Ending balances
+    // Saldos acumulados: begin/end por mes
     let bal = OPEN_CASH;
-    months.forEach(mo => { mo.beginBal = bal; mo.endBal = bal + mo.netChange; bal = mo.endBal; });
-
-    // Account details for drill-down
+    mos.forEach(mo => { mo.beginBal = bal; mo.endBal = bal + mo.netChange; bal = mo.endBal; });
+    // Detalles por cuenta para filas expandibles
     const details = {
-      netIncome: niRow ? [{ name: "Período ganancias", vals: niRow.slice(5).map(v => v) }] : [],
-      deprec: (groups.deprec || []).map(a => ({ name: a.name, vals: a.vals.map(v => v * -1) })),
-      curr_asset: (groups.curr_asset || []).map(a => ({ name: a.name, vals: a.vals.map(v => v * -1) })),
-      curr_liab: (groups.curr_liab || []).map(a => ({ name: a.name, vals: a.vals.map(v => v) })),
-      fixed: (groups.fixed || []).map(a => ({ name: a.name, vals: a.vals.map(v => v * -1) })),
-      equity: (groups.equity || []).map(a => ({ name: a.name, vals: a.vals.map(v => v) })),
-      cash: (groups.cash || []).map(a => ({ name: a.name, vals: a.vals.map(v => v) })),
+      inventory:   bDet("115"),
+      otherRecv:   bDet("121"),
+      vatItem:     bDet("113","119"),
+      prepaid:     bDet("109"),
+      advProv:     bDet("120"),
+      acctsPay:    bDet("201"),
+      otherCred:   bDet("205"),
+      empBenef:    bDet("210"),
+      payTaxPaid:  bDet("216","217"),
+      imssProvis:  bDet("211","212"),
+      capexComp:   bDet("156"),
+      capexFurn:   bDet("155"),
+      capexIntang: bDet("176"),
+      capexDepos:  bDet("184"),
+      equityChg:   bDet("301"),
     };
-
-    return { months, details };
+    return { months: mos, details };
   }, [cm]);
 
 
