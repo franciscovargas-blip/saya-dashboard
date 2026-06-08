@@ -874,10 +874,10 @@ return (
         const vals = rows.map(mo => (mo[key]||0));
         const tot = vals.reduce((s,v)=>s+v,0);
         return (
-          <tr key={{label}} style={{{714}}}>
-            <td style={{{{{...{{{715}}},paddingLeft:indent}}}>{{label}}</td>
-            {{vals.map((v,i)=><td key={{i}} style={{{{{...{{{717}}},color:neg(v)}}}>{{Fk(v)}}</td>)}}
-            <td style={{{{{...{{{718}}},color:neg(tot)}}}>{{Fk(tot)}}</td>
+          <tr key={label} style={{background:"#F7F9FC",borderBottom:"1px solid #E4E8F2"}}>
+            <td style={{padding:"6px 10px",fontSize:12,paddingLeft:indent}}>{label}</td>
+                        {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"6px 8px",fontSize:12,color:neg(v)}}>{Fk(v)}</td>)}
+            <td style={{textAlign:"right",padding:"6px 8px",fontSize:12,fontWeight:600,color:neg(tot)}}>{Fk(tot)}</td>
           </tr>
         );
       };
