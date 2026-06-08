@@ -1373,8 +1373,8 @@ export default function Dashboard() {
   <div style={{padding:'20px',overflowX:'auto'}}>
     <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
     <div style={{fontSize:11,color:"#8A90A8",marginBottom:4}}>
-      <span style={{display:"inline-block",width:10,height:10,borderRadius:50%,background:"#1D9E75",marginRight:4,verticalAlign:"middle"}}></span>Reales  
-      <span style={{display:"inline-block",width:10,height:10,borderRadius:50%,background:"#B0B8C8",marginRight:4,verticalAlign:"middle"}}></span>Forecast
+      <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#1D9E75",marginRight:4,verticalAlign:"middle"}}></span>Reales  
+      <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#B0B8C8",marginRight:4,verticalAlign:"middle"}}></span>Forecast
     </div>
     {/* P&L table - years as columns */}
     {(() => {
