@@ -871,13 +871,13 @@ export default function Dashboard() {
         };
         
 return (
-  <div style=borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16>
+  <div style={{borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16}}>
     {/* Header */}
-    <div style=display:"flex",alignItems:"center",gap:10,marginBottom:16>
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
       <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0B6644"/><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">CF</text></svg>
       <div>
-        <div style=fontWeight:700,fontSize:14,color:"#1A1D2E">Estado de Flujo de Efectivo</div>
-        <div style=fontSize:11,color:"#8A90A8">Metodo Indirecto NIF B-2 &middot; {MO[0]}&ndash;{MO[cm-1]} 2026</div>
+        <div style={{fontWeight:700,fontSize:14,color:"#1A1D2E"}}>Estado de Flujo de Efectivo</div>
+        <div style={{fontSize:11,color:"#8A90A8"}}>Metodo Indirecto NIF B-2 &middot; {MO[0]}&ndash;{MO[cm-1]} 2026</div>
       </div>
     </div>
     {cashFlow ? (() => {
@@ -890,10 +890,10 @@ return (
         const vals = rows.map(mo => mo[key]);
         const tot = vals.reduce((s,v)=>s+v,0);
         return (
-          <tr key={label} style=background:sec?"#F0F4FF":"#F7F9FC",borderTop:"2px solid #E4E8F2">
-            <td style=padding:"6px 10px",fontWeight:700,fontSize:11,color:"#1A1D2E",paddingLeft:10>{label}</td>
-            {vals.map((v,i)=><td key={i} style=textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(v)>{Fk(v)}</td>)}
-            <td style=textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(tot)>{Fk(tot)}</td>
+          <tr key={label} style={{background:sec?"#F0F4FF":"#F7F9FC",borderTop:"2px solid #E4E8F2"}}>
+            <td style={{padding:"6px 10px",fontWeight:700,fontSize:11,color:"#1A1D2E",paddingLeft:10}}>{label}</td>
+            {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(v)}}>{Fk(v)}</td>)}
+            <td style={{textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(tot)}}>{Fk(tot)}</td>
           </tr>
         );
       };
@@ -903,20 +903,20 @@ return (
         const isExp = expCF[detKey];
         const detailRows = (cf.details[detKey]||[]);
         return [
-          <tr key={label} onClick={()=>toggleCF(detKey)} style=cursor:"pointer",background:"#fff",borderBottom:"1px solid #F0F4FF">
-            <td style=padding:"5px 10px",fontSize:10,color:"#374151",paddingLeft:indent||20,display:"flex",alignItems:"center",gap:4>
-              <span style=fontSize:8,color:"#9CA3AF">{isExp?"▼":"▶"}</span>{label}
+          <tr key={label} onClick={()=>toggleCF(detKey)} style={{cursor:"pointer",background:"#fff",borderBottom:"1px solid #F0F4FF"}}>
+            <td style={{padding:"5px 10px",fontSize:10,color:"#374151",paddingLeft:indent||20,display:"flex",alignItems:"center",gap:4}}>
+              <span style={{fontSize:8,color:"#9CA3AF"}}>{isExp?"▼":"▶"}</span>{label}
             </td>
-            {vals.map((v,i)=><td key={i} style=textAlign:"right",padding:"5px 8px",fontSize:10,color:neg(v)>{Fk(v)}</td>)}
-            <td style=textAlign:"right",padding:"5px 8px",fontSize:10,color:neg(tot)>{Fk(tot)}</td>
+            {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"5px 8px",fontSize:10,color:neg(v)}}>{Fk(v)}</td>)}
+            <td style={{textAlign:"right",padding:"5px 8px",fontSize:10,color:neg(tot)}}>{Fk(tot)}</td>
           </tr>,
           ...( isExp ? detailRows.map((dr,di)=>{
             const dVals = rows.map((_,mi)=>dr.vals[mi]||0);
             const dTot = dVals.reduce((s,v)=>s+v,0);
-            return <tr key={di+"d"} style=background:"#F9FAFB",borderBottom:"1px solid #F4F6FB">
-              <td style=padding:"4px 10px",fontSize:9,color:"#6B7280",paddingLeft:32,fontStyle:"italic">{dr.code} {dr.name}</td>
-              {dVals.map((v,i)=><td key={i} style=textAlign:"right",padding:"4px 8px",fontSize:9,color:neg(v)>{Fk(v)}</td>)}
-              <td style=textAlign:"right",padding:"4px 8px",fontSize:9,color:neg(dTot)>{Fk(dTot)}</td>
+            return <tr key={di+"d"} style={{background:"#F9FAFB",borderBottom:"1px solid #F4F6FB"}}>
+              <td style={{padding:"4px 10px",fontSize:9,color:"#6B7280",paddingLeft:32,fontStyle:"italic"}}>{dr.code} {dr.name}</td>
+              {dVals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"4px 8px",fontSize:9,color:neg(v)}}>{Fk(v)}</td>)}
+              <td style={{textAlign:"right",padding:"4px 8px",fontSize:9,color:neg(dTot)}}>{Fk(dTot)}</td>
             </tr>;
           }) : [])
         ];
@@ -924,26 +924,26 @@ return (
       const balRow = (key, label, dark) => {
         const vals = rows.map(mo => mo[key]);
         return (
-          <tr key={label} style=background:dark?"#1A1D2E":"#2D3150",borderTop:"2px solid #374151">
-            <td style=padding:"7px 10px",fontWeight:700,fontSize:11,color:"#F3F4F6">{label}</td>
-            {vals.map((v,i)=><td key={i} style=textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:v<0?"#F87171":"#6EE7B7">{Fk(v)}</td>)}
-            <td style=textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:"#9CA3AF">—</td>
+          <tr key={label} style={{background:dark?"#1A1D2E":"#2D3150",borderTop:"2px solid #374151"}}>
+            <td style={{padding:"7px 10px",fontWeight:700,fontSize:11,color:"#F3F4F6"}}>{label}</td>
+            {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:v<0?"#F87171":"#6EE7B7"}}>{Fk(v)}</td>)}
+            <td style={{textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:"#9CA3AF"}}>—</td>
           </tr>
         );
       };
       const sectionHeader = (label, color) => (
-        <tr key={"sec-"+label} style=background:color||"#EEF2FF">
-          <td colSpan={cm+2} style=padding:"5px 10px",fontWeight:700,fontSize:10,color:"#374151",letterSpacing:"0.05em",textTransform:"uppercase">{label}</td>
+        <tr key={"sec-"+label} style={{background:color||"#EEF2FF"}}>
+          <td colSpan={cm+2} style={{padding:"5px 10px",fontWeight:700,fontSize:10,color:"#374151",letterSpacing:"0.05em",textTransform:"uppercase"}}>{label}</td>
         </tr>
       );
       return (
-        <div style=overflowX:"auto">
-          <table style=width:"100%",borderCollapse:"collapse",fontSize:10,tableLayout:"auto">
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:10,tableLayout:"auto"}}>
             <thead>
-              <tr style=background:"#1A1D2E">
-                <th style=textAlign:"left",padding:"7px 10px",fontSize:10,color:"#9CA3AF",fontWeight:600,minWidth:180>Concepto</th>
-                {rows.map(mo=><th key={mo.m} style=textAlign:"right",padding:"7px 8px",fontSize:10,color:"#9CA3AF",fontWeight:600,whiteSpace:"nowrap">{MO[mo.m-1]}</th>)}
-                <th style=textAlign:"right",padding:"7px 8px",fontSize:10,color:"#F59E0B",fontWeight:700>TOTAL</th>
+              <tr style={{background:"#1A1D2E"}}>
+                <th style={{textAlign:"left",padding:"7px 10px",fontSize:10,color:"#9CA3AF",fontWeight:600,minWidth:180}}>Concepto</th>
+                {rows.map(mo=><th key={mo.m} style={{textAlign:"right",padding:"7px 8px",fontSize:10,color:"#9CA3AF",fontWeight:600,whiteSpace:"nowrap"}}>{MO[mo.m-1]}</th>)}
+                <th style={{textAlign:"right",padding:"7px 8px",fontSize:10,color:"#F59E0B",fontWeight:700}}>TOTAL</th>
               </tr>
             </thead>
             <tbody>
@@ -971,11 +971,11 @@ return (
               {balRow("netChange",  "CAMBIO EN EFECTIVO",              true)}
               {balRow("beginBal",   "SALDO INICIAL",                   false)}
               {balRow("endBal",     "SALDO FINAL",                     false)}
-              <tr style=background:"#0B6644">
-                <td style=padding:"5px 10px",fontSize:9,color:"#6EE7B7",fontWeight:600>Verificacion: Efectivo en Balance</td>
+              <tr style={{background:"#0B6644"}}>
+                <td style={{padding:"5px 10px",fontSize:9,color:"#6EE7B7",fontWeight:600}}>Verificacion: Efectivo en Balance</td>
                 {rows.map(mo=>{
                   const diff = mo.cashActual - mo.endBal;
-                  return <td key={mo.m} style=textAlign:"right",padding:"5px 8px",fontSize:9,color:Math.abs(diff)<1000?"#6EE7B7":"#F87171">{Fk(mo.cashActual)}</td>;
+                  return <td key={mo.m} style={{textAlign:"right",padding:"5px 8px",fontSize:9,color:Math.abs(diff)<1000?"#6EE7B7":"#F87171"}}>{Fk(mo.cashActual)}</td>;
                 })}
                 <td></td>
               </tr>
@@ -983,14 +983,14 @@ return (
           </table>
 
           {/* NOTAS */}
-          <div style=marginTop:20,borderTop:"1px solid #E4E8F2",paddingTop:14>
-            <div style=fontWeight:700,fontSize:11,color:"#374151",marginBottom:10>Notas: Cuentas utilizadas por renglon</div>
-            <div style=display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8>
+          <div style={{marginTop:20,borderTop:"1px solid #E4E8F2",paddingTop:14}}>
+            <div style={{fontWeight:700,fontSize:11,color:"#374151",marginBottom:10}}>Notas: Cuentas utilizadas por renglon</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>
               {cf.notes.filter(n=>n.accounts.length>0).map((n,i)=>(
-                <div key={i} style=background:"#F9FAFB",borderRadius:6,padding:"8px 10px",border:"1px solid #E4E8F2">
-                  <div style=fontWeight:600,fontSize:9,color:"#1A1D2E",marginBottom:4>{n.section}</div>
+                <div key={i} style={{background:"#F9FAFB",borderRadius:6,padding:"8px 10px",border:"1px solid #E4E8F2"}}>
+                  <div style={{fontWeight:600,fontSize:9,color:"#1A1D2E",marginBottom:4}}>{n.section}</div>
                   {n.accounts.map((a,j)=>(
-                    <div key={j} style=fontSize:8,color:"#6B7280",fontFamily:"monospace",lineHeight:1.6>{a}</div>
+                    <div key={j} style={{fontSize:8,color:"#6B7280",fontFamily:"monospace",lineHeight:1.6}}>{a}</div>
                   ))}
                 </div>
               ))}
@@ -998,7 +998,7 @@ return (
           </div>
         </div>
       );
-    })() : <div style=color:"#6B7280",fontSize:12,padding:16>Cargando datos de balance...</div>}
+    })() : <div style={{color:"#6B7280",fontSize:12,padding:16}}>Cargando datos de balance...</div>}
   </div>
 );
 );
