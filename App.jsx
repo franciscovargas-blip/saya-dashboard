@@ -1,13 +1,44 @@
 import React, { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie, LabelList } from "recharts";
 
-function makePyramidBar(maxVal) {
-  return function PyramidBar(props) {
-    var x=props.x, y=props.y, width=props.width, height=props.height, value=props.value;
-    var w = Math.round(width * (value / (maxVal||1)));
-    var bx = x + (width - w) / 2;
-    return React.createElement('rect', {x:bx, y:y, width:w, height:height, fill:'#534AB7', rx:3});
-  };
+
+
+function OpexFunnel(props) {
+  var data = props.data;
+  var onClickBar = props.onClickBar;
+  var expanded = props.expanded;
+  if (!data || data.length === 0) return null;
+  var total = data.reduce(function(s,r){return s+r.real;},0);
+  var maxVal = data[0].real || 1;
+  var BAR_H = 28, GAP = 5, LABEL_W = 130, PCT_W = 44, VAL_W = 70, BAR_AREA = 300;
+  var colors = ['#534AB7','#6B5FD0','#7E72DC','#9186E8','#A49AF4','#B7B0F5','#CAC8F8'];
+  var ce = React.createElement;
+  return ce('div',{style:{width:'100%'}},
+    ce('div',{style:{display:'flex',alignItems:'center',marginBottom:4,paddingLeft:LABEL_W}},
+      ce('div',{style:{flex:'0 0 '+BAR_AREA+'px',textAlign:'center',fontSize:9,color:'#8A90A8',fontWeight:500}},'% del total'),
+      ce('div',{style:{width:PCT_W,textAlign:'center',fontSize:9,color:'#8A90A8',fontWeight:500}},'%'),
+      ce('div',{style:{width:VAL_W,textAlign:'right',fontSize:9,color:'#8A90A8',fontWeight:500,paddingRight:4}},'Gasto')
+    ),
+    data.map(function(row,i){
+      var pct = total ? row.real/total : 0;
+      var barW = Math.round(BAR_AREA*(row.real/maxVal));
+      var barX = Math.round((BAR_AREA-barW)/2);
+      var color = colors[Math.min(i,colors.length-1)];
+      var valStr = row.real>=1e6?(row.real/1e6).toFixed(1)+'M':row.real>=1e3?Math.round(row.real/1e3)+'K':String(row.real);
+      var pctStr = (pct*100).toFixed(1)+'%';
+      return ce('div',{key:i,style:{display:'flex',alignItems:'center',marginBottom:GAP,cursor:expanded?'default':'pointer'},
+          onClick:function(){ if(!expanded&&onClickBar)onClickBar(row.fdName); }},
+        ce('div',{style:{width:LABEL_W,fontSize:9,color:'#444',textAlign:'right',paddingRight:10,flexShrink:0,lineHeight:1.3}},row.name),
+        ce('div',{style:{flex:'0 0 '+BAR_AREA+'px',position:'relative',height:BAR_H}},
+          ce('div',{style:{position:'absolute',left:0,right:0,top:0,bottom:0,background:'#F0F2FA',borderRadius:4}}),
+          ce('div',{style:{position:'absolute',left:barX,width:barW,top:0,height:BAR_H,background:color,borderRadius:4}}),
+          pct>0.05?ce('div',{style:{position:'absolute',left:0,right:0,top:0,height:BAR_H,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:'#fff',pointerEvents:'none'}},pctStr):null
+        ),
+        ce('div',{style:{width:PCT_W,textAlign:'center',fontSize:9,color:'#534AB7',fontWeight:600,flexShrink:0}},pctStr),
+        ce('div',{style:{width:VAL_W,textAlign:'right',fontSize:9,fontWeight:600,color:'#1E2A3A',flexShrink:0,paddingRight:4}},valStr)
+      );
+    })
+  );
 }
 
 const MO=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -230,9 +261,6 @@ export default function Dashboard() {
       .filter(x => x.real > 0)
       .sort((a, b) => b.real - a.real);
   }, [fd, cm, expandedOpexLine]);
-  const pyramidBarShape = React.useMemo(() => makePyramidBar(
-    (opexClsData[0] ? opexClsData[0].real : 1)
-  ), [opexClsData]);
 
 
 
@@ -542,30 +570,7 @@ export default function Dashboard() {
               ← Volver a todas las líneas
             </div>
           )}
-          <ResponsiveContainer width="100%" height={(expandedOpexLine ? opexDetailData.length : opexClsData.length) * 30 + 40}>
-            <BarChart
-              data={expandedOpexLine ? opexDetailData : opexClsData}
-              layout="vertical"
-              margin={{ top:4, right:65, bottom:4, left:120 }}
-              barCategoryGap="20%"
-              onClick={(data) => { if (!expandedOpexLine && data && data.activePayload) setExpandedOpexLine(data.activePayload[0].payload.fdName); }}
-            >
-              <XAxis type="number" tick={{ fontSize:7,fill:"#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":"0"} />
-              <YAxis type="category" dataKey="name" width={115} tick={{ fontSize:8,fill:"#333",cursor:"pointer" }} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{ fontSize:9,borderRadius:6 }}
-                formatter={(v) => ["$"+(v/1e3).toFixed(1)+"K", "Reales"]}
-              />
-              <Bar dataKey="real" name="Reales" fill="#534AB7" cursor={expandedOpexLine ? "default" : "pointer"} shape={!expandedOpexLine ? pyramidBarShape : undefined}>
-                <LabelList
-                  dataKey="real"
-                  position="right"
-                  formatter={v => v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":""}
-                  style={{ fontSize:8,fill:"#555",fontWeight:600 }}
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          React.createElement(OpexFunnel, {data: expandedOpexLine ? opexDetailData : opexClsData, onClickBar: function(fdName){ setExpandedOpexLine(fdName); }, expanded: !!expandedOpexLine})
         </div>
       </div>
 
@@ -1063,7 +1068,7 @@ export default function Dashboard() {
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
                       {pnlYears.map(yr => {
                         const isExp = expPnlAnn[yr];
-                        const modeForYr = "forecast";
+                        const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
                         const fyVal = allM.reduce((s,m) => s + buildPL(fd,yr,m,cm,modeForYr)[k], 0);
                         const fyNs = allM.reduce((a,m)=>a+buildPL(fd,yr,m,cm,modeForYr).ns,0);
                         const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+buildPL(fd,yr,m,cm,modeForYr)[k.replace("Pct","")],0)/fyNs : null;
@@ -1073,10 +1078,10 @@ export default function Dashboard() {
                               {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
-                              const isReal = false; // Summary tab siempre forecast
-                              const v = buildPL(fd,yr,m,cm,modeForYr)[k];
-                              const vNs = buildPL(fd,yr,m,cm,modeForYr).ns;
-                              const vPct = isPct && vNs ? buildPL(fd,yr,m,cm,modeForYr)[k.replace("Pct","")]/vNs : null;
+                              const mNum = Number(m); const isReal = view==="reales" || (view==="consolidado" && mNum <= cm);
+                              const mMode = isReal ? "reales" : "forecast"; const v = buildPL(fd,yr,m,cm,mMode)[k];
+                              const vNs = buildPL(fd,yr,m,cm,mMode).ns;
+                              const vPct = isPct && vNs ? buildPL(fd,yr,m,cm,mMode)[k.replace("Pct","")]/vNs : null;
                               return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
                             })}
                           </React.Fragment>
@@ -1101,7 +1106,7 @@ export default function Dashboard() {
             if(annualEBITDA.length>1){let r=0.2;for(let i=0;i<200;i++){const fv=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const df=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(df)<1e-12)break;const r2=r-fv/df;if(Math.abs(r2-r)<1e-8){r=r2;break;}r=r2;}irr=r;}
             const ip=irr!==null?irr*100:null;
             const badge=ip===null?null:ip<45?{t:'Riesgo Alto — No es viable',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
-            const Fk=v=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(v);
+            const Fk=v=>{const abs=Math.abs(v);const sign=v<0?'-':'';return sign+(abs>=1e6?(abs/1e6).toFixed(2)+'M':abs>=1e3?Math.round(abs/1e3).toLocaleString('es-MX')+'K':Math.round(abs).toLocaleString('es-MX'));}
             return(
               <div style={{display:'flex',gap:16,flexWrap:'wrap',margin:'20px 0 8px 0',padding:'0 2px'}}>
                 <div style={{flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
