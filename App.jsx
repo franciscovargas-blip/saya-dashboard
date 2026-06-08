@@ -339,93 +339,69 @@ export default function Dashboard() {
   }, [fd, ytdM]);
   const togglePL = k => setExpPL(p => ({ ...p, [k]: !p[k] }));
 
-  // ═══ CASH FLOW (MÉTODO INDIRECTO) ═══
+    // ═══ CASH FLOW (MÉTODO DIRECTO NIF B-2) ═══
   const OPEN_CASH = 4955698;
   const toggleCF = k => setExpCF(p => ({ ...p, [k]: !p[k] }));
 
   const cashFlow = useMemo(() => {
     if (!B || B.length === 0) return null;
-
-    // Categorize D4 accounts by type using section + code
-    const categorize = (r) => {
-      const code = r[0] || "", section = r[3] || "", name = (r[1]||"").toLowerCase();
-      const c3 = code.substring(0,3);
-      if (c3 === "101" || c3 === "102") return "cash";
-      if (name.includes("depreci") || name.includes("amortiz")) return "deprec";
-      if (section === "Activos" && parseInt(c3) >= 150) return "fixed";
-      if (section === "Activos") return "curr_asset";
-      if (section === "Pasivos") return "curr_liab";
-      if (r[1] === "Período ganancias") return "net_income";
-      if (section === "Capital") return "equity";
-      return "other";
-    };
-
-    // Get D4 non-total accounts with data
-    const accounts = B.filter(r => r[2] === 4 && !r[4] && r.slice(5).some(v => v !== 0))
-      .map(r => ({ ...r, cat: categorize(r), name: r[1], code: r[0], vals: r.slice(5) }));
-
-    // Período ganancias (D0, not D4)
-    const niRow = B.find(r => r[1] === "Período ganancias");
-
-    // Group accounts by CF category
-    const groups = {};
-    accounts.forEach(a => { if (!groups[a.cat]) groups[a.cat] = []; groups[a.cat].push(a); });
-
-    // Build monthly CF
-    const months = MO.map((mName, mi) => {
-      // Net Income
-      const netIncome = niRow ? (niRow[5 + mi] || 0) : 0;
-
-      // Depreciation & Amortization (contra-assets, movement is negative when D&A increases)
-      // Add back: multiply by -1 (negative movement → positive add-back)
-      const depAccts = groups.deprec || [];
-      const deprAmort = depAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0) * -1;
-
-      // Changes in working capital
-      // Current Assets (excl cash): increase uses cash → multiply by -1
-      const caAccts = groups.curr_asset || [];
-      const wc_assets = caAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0) * -1;
-
-      // Current Liabilities: increase generates cash → use as-is (positive = increase)
-      const clAccts = groups.curr_liab || [];
-      const wc_liabs = clAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0);
-
-      const totalOp = netIncome + deprAmort + wc_assets + wc_liabs;
-
-      // Investing: Fixed assets (excl depreciation) increase uses cash → multiply by -1
-      const faAccts = groups.fixed || [];
-      const capex = faAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0) * -1;
-      const totalInv = capex;
-
-      // Financing: Equity increase = inflow → use as-is
-      const eqAccts = groups.equity || [];
-      const equityChg = eqAccts.reduce((s, a) => s + (a.vals[mi] || 0), 0);
+    // Direct method: sum from PL data (D array) for Reales months
+    const mos = Array.from({length:12}, (_,mi) => {
+      const m = mi + 1;
+      const g = (pl) => {
+        const rows = D.filter(r => r[1]==="Reales" && r[2]===CUR_YEAR && r[3]===m && r[0]===pl);
+        return rows.reduce((s,r)=>s+r[9],0);
+      };
+      // Operating - direct
+      const cobros       =  g("Net Sales");              // (+) inflows from customers
+      const pagCOGS      = -g("COGS");                   // (-) payments to suppliers/COGS
+      const pagNomina    = -g("Salaries & Wages");        // (-) payroll
+      const pagMarketing = -(g("Sales & Marketing"));     // (-)
+      const pagViaje     = -(g("Travel & Accomodation")); // (-)
+      const pagProfes    = -(g("Professional Fees"));     // (-)
+      const pagOficina   = -(g("Office Expense"));        // (-)
+      const pagSoftware  = -(g("Software & Hardware") + g("IT (Software-Hardware)")); // (-)
+      const pagOpera     = -(g("Operations"));            // (-)
+      const pagOtros     = -(g("Others") + g("Regulatory") + g("Mobility")); // (-)
+      const totalOp = cobros + pagCOGS + pagNomina + pagMarketing + pagViaje + pagProfes + pagOficina + pagSoftware + pagOpera + pagOtros;
+      // Investing - from balance changes
+      const sum = (code3) => { const a = B.find(r => (r[0]||"").startsWith(code3)); return a ? (a[5+mi]||0) : 0; };
+      const capex_comp   = -(sum("156"));
+      const capex_furn   = -(sum("155"));
+      const capex_intang = -(sum("176"));
+      const capex_depos  = -(sum("184"));
+      const totalInv = capex_comp + capex_furn + capex_intang + capex_depos;
+      // Financing - equity changes from B
+      const equityRow = B.find(r => r[3]==="Capital" && !r[4]);
+      const equityChg = equityRow ? (equityRow[5+mi]||0) : 0;
       const totalFin = equityChg;
-
-      // Net change & cash verification
       const netChange = totalOp + totalInv + totalFin;
-      const cashActual = (groups.cash || []).reduce((s, a) => s + (a.vals[mi] || 0), 0);
-
-      return { name: mName, m: mi+1, netIncome, deprAmort, wc_assets, wc_liabs, totalOp, capex, totalInv, equityChg, totalFin, netChange, cashActual };
+      const cashRow = B.find(r => (r[0]||"").startsWith("102") || (r[0]||"").startsWith("103"));
+      const cashActual = cashRow ? (cashRow[5+mi]||0) : 0;
+      return { m, cobros, pagCOGS, pagNomina, pagMarketing, pagViaje, pagProfes, pagOficina, pagSoftware, pagOpera, pagOtros, totalOp, capex_comp, capex_furn, capex_intang, capex_depos, totalInv, equityChg, totalFin, netChange, cashActual };
     });
-
-    // Beginning/Ending balances
     let bal = OPEN_CASH;
-    months.forEach(mo => { mo.beginBal = bal; mo.endBal = bal + mo.netChange; bal = mo.endBal; });
-
-    // Account details for drill-down
-    const details = {
-      netIncome: niRow ? [{ name: "Período ganancias", vals: niRow.slice(5).map(v => v) }] : [],
-      deprec: (groups.deprec || []).map(a => ({ name: a.name, vals: a.vals.map(v => v * -1) })),
-      curr_asset: (groups.curr_asset || []).map(a => ({ name: a.name, vals: a.vals.map(v => v * -1) })),
-      curr_liab: (groups.curr_liab || []).map(a => ({ name: a.name, vals: a.vals.map(v => v) })),
-      fixed: (groups.fixed || []).map(a => ({ name: a.name, vals: a.vals.map(v => v * -1) })),
-      equity: (groups.equity || []).map(a => ({ name: a.name, vals: a.vals.map(v => v) })),
-      cash: (groups.cash || []).map(a => ({ name: a.name, vals: a.vals.map(v => v) })),
-    };
-
-    return { months, details };
+    mos.forEach(mo => { mo.beginBal = bal; mo.endBal = bal + mo.netChange; bal = mo.endBal; });
+    const notes = [
+      {section:"A) Cobros a clientes", accounts:["Net Sales (D array, Reales)"]},
+      {section:"(-) Pagos costo de ventas", accounts:["COGS (D array, Reales)"]},
+      {section:"(-) Pagos de nomina", accounts:["Salaries & Wages (D array, Reales)"]},
+      {section:"(-) Marketing & Ventas", accounts:["Sales & Marketing (D array, Reales)"]},
+      {section:"(-) Viaje & Hospedaje", accounts:["Travel & Accomodation (D array, Reales)"]},
+      {section:"(-) Servicios Profesionales", accounts:["Professional Fees (D array, Reales)"]},
+      {section:"(-) Gastos de Oficina", accounts:["Office Expense (D array, Reales)"]},
+      {section:"(-) Software & Hardware", accounts:["Software & Hardware, IT (D array, Reales)"]},
+      {section:"(-) Operaciones", accounts:["Operations (D array, Reales)"]},
+      {section:"(-) Otros gastos", accounts:["Others, Regulatory, Mobility (D array, Reales)"]},
+      {section:"(-) CAPEX Equipo Computo", accounts:["Cuenta 156 del Balance"]},
+      {section:"(-) CAPEX Mobiliario", accounts:["Cuenta 155 del Balance"]},
+      {section:"(-) Intangibles", accounts:["Cuenta 176 del Balance"]},
+      {section:"(-) Depositos en Garantia", accounts:["Cuenta 184 del Balance"]},
+      {section:"Financiamiento - Capital", accounts:["Cuentas de Capital del Balance (r[3]===Capital)"]},
+    ];
+    return {months:mos, notes};
   }, [cm]);
+
 
 
   // ═══ BALANCE GENERAL ═══
@@ -896,85 +872,110 @@ export default function Dashboard() {
             ))}
           </>);
         };
+        
+return (
+  <div style={{borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16}}>
+    {/* Header */}
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+      <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0B6644"/><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">CF</text></svg>
+      <div>
+        <div style={{fontWeight:700,fontSize:14,color:"#1A1D2E"}}>Estado de Flujo de Efectivo</div>
+        <div style={{fontSize:11,color:"#8A90A8"}}>Metodo Directo NIF B-2 &middot; {MO[0]}&ndash;{MO[cm-1]} 2026</div>
+      </div>
+    </div>
+    {cashFlow ? (() => {
+      const cf = cashFlow;
+      const mos = cf.months.slice(0,cm);
+      const Fk = v => { if(v===0||v===null||v===undefined) return "—"; const neg=v<0; const s="$"+Math.abs(Math.round(v)).toLocaleString("en-US"); return neg?"-"+s:s; };
+      const neg = v => v < 0 ? "#C0392B" : v > 0 ? "#10B981" : "#6B7280";
+      const rows = cf.months.slice(0,cm);
+      const totRow = (key, label, sec) => {
+        const vals = rows.map(mo => mo[key]);
+        const tot = vals.reduce((s,v)=>s+v,0);
         return (
-        <div style={{ borderTop: "2px solid #E4E8F2", marginTop: 8, paddingTop: 16, marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0B6644" /><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">CF</text></svg>
-            <div>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 500, color: "#1a1a2e" }}>Cash Flow Statement</div>
-              <div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Indirect Method · {MO[0]}–{MO[cm - 1]} 2026</div>
-            </div>
-          </div>
-          <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr>
-                <th style={{ ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 240 }}>Cash Flow</th>
-                {MO.slice(0, cm).map((m, i) => <th key={i} style={{ ...th, textAlign: "right", minWidth: 80 }}>{m}</th>)}
-                <th style={{ ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" }}>YTD</th>
-              </tr></thead>
-              <tbody>
-                {/* ── OPERATING ACTIVITIES ── */}
-                <tr><td colSpan={cm + 2} style={{ padding: "8px 6px 3px", fontSize: 10, fontWeight: 700, color: "#1D9E75", letterSpacing: 1, textTransform: "uppercase", borderBottom: "2px solid #1D9E7533" }}>Operating Activities</td></tr>
-
-                {cfRow("netIncome", "Net Income (Loss)", "netIncome", 12, { fontWeight: 500 })}
-                {cfRow("deprAmort", "(+) Depreciation & Amortization", "deprec", 12, { fontStyle: "italic" })}
-
-                <tr><td colSpan={cm + 2} style={{ padding: "6px 6px 2px", fontSize: 9, color: "#8A90A8", fontStyle: "italic" }}>Changes in Working Capital</td></tr>
-                {cfRow("wc_assets", "(Δ) Operating Current Assets", "curr_asset", 16)}
-                {cfRow("wc_liabs", "(Δ) Operating Current Liabilities", "curr_liab", 16)}
-
-                <tr style={{ borderTop: "2px solid #1D9E7533", background: "#f0faf6" }}>
-                  <td style={{ ...td, fontWeight: 600, color: "#1D9E75", position: "sticky", left: 0, background: "#f0faf6" }}>Net Cash from Operations</td>
-                  {mo.slice(0, cm).map((m, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontWeight: 600, color: m.totalOp < 0 ? "#E24B4A" : "#1D9E75" }}>{F(m.totalOp)}</td>)}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2", color: mo.slice(0, cm).reduce((s, m) => s + m.totalOp, 0) < 0 ? "#E24B4A" : "#1D9E75" }}>{F(mo.slice(0, cm).reduce((s, m) => s + m.totalOp, 0))}</td>
-                </tr>
-
-                {/* ── INVESTING ACTIVITIES ── */}
-                <tr><td colSpan={cm + 2} style={{ padding: "10px 6px 3px", fontSize: 10, fontWeight: 700, color: "#185FA5", letterSpacing: 1, textTransform: "uppercase", borderBottom: "2px solid #185FA533" }}>Investing Activities</td></tr>
-                {cfRow("capex", "Capital Expenditures (CAPEX)", "fixed", 12)}
-
-                <tr style={{ borderTop: "2px solid #185FA533", background: "#f5f8fc" }}>
-                  <td style={{ ...td, fontWeight: 600, color: "#185FA5", position: "sticky", left: 0, background: "#f5f8fc" }}>Net Cash from Investing</td>
-                  {mo.slice(0, cm).map((m, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontWeight: 600, color: m.totalInv < 0 ? "#E24B4A" : "#185FA5" }}>{F(m.totalInv)}</td>)}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2", color: mo.slice(0, cm).reduce((s, m) => s + m.totalInv, 0) < 0 ? "#E24B4A" : "#185FA5" }}>{F(mo.slice(0, cm).reduce((s, m) => s + m.totalInv, 0))}</td>
-                </tr>
-
-                {/* ── FINANCING ACTIVITIES ── */}
-                <tr><td colSpan={cm + 2} style={{ padding: "10px 6px 3px", fontSize: 10, fontWeight: 700, color: "#534AB7", letterSpacing: 1, textTransform: "uppercase", borderBottom: "2px solid #534AB733" }}>Financing Activities</td></tr>
-                {cfRow("equityChg", "Equity Contributions", "equity", 12)}
-
-                <tr style={{ borderTop: "2px solid #534AB733", background: "#EEEDFE" }}>
-                  <td style={{ ...td, fontWeight: 600, color: "#534AB7", position: "sticky", left: 0, background: "#EEEDFE" }}>Net Cash from Financing</td>
-                  {mo.slice(0, cm).map((m, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontWeight: 600, color: m.totalFin < 0 ? "#E24B4A" : "#534AB7" }}>{F(m.totalFin)}</td>)}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2", color: mo.slice(0, cm).reduce((s, m) => s + m.totalFin, 0) < 0 ? "#E24B4A" : "#534AB7" }}>{F(mo.slice(0, cm).reduce((s, m) => s + m.totalFin, 0))}</td>
-                </tr>
-
-                {/* ── TOTALS ── */}
-                <tr style={{ height: 6 }}><td colSpan={cm + 2} /></tr>
-                <tr style={{ borderTop: "3px solid #1a1a2e", background: "#f0f2fa" }}>
-                  <td style={{ ...td, fontWeight: 700, color: "#1a1a2e", fontSize: 11, position: "sticky", left: 0, background: "#f0f2fa" }}>Net Change in Cash</td>
-                  {mo.slice(0, cm).map((m, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontWeight: 700, fontSize: 11, color: m.netChange < 0 ? "#E24B4A" : "#1D9E75" }}>{F(m.netChange)}</td>)}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 700, fontSize: 11, borderLeft: "2px solid #E4E8F2", color: mo.slice(0, cm).reduce((s, m) => s + m.netChange, 0) < 0 ? "#E24B4A" : "#1D9E75" }}>{F(mo.slice(0, cm).reduce((s, m) => s + m.netChange, 0))}</td>
-                </tr>
-                <tr>
-                  <td style={{ ...td, fontWeight: 500, position: "sticky", left: 0, background: "#fff" }}>Cash — Beginning Balance</td>
-                  {mo.slice(0, cm).map((m, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontWeight: 500 }}>{F(m.beginBal)}</td>)}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2" }}>{F(mo[0]?.beginBal)}</td>
-                </tr>
-                <tr style={{ background: "#f0faf6", borderTop: "2px solid #1D9E7533" }}>
-                  <td style={{ ...td, fontWeight: 700, color: "#0B6644", fontSize: 11, position: "sticky", left: 0, background: "#f0faf6" }}>Cash — Ending Balance</td>
-                  {mo.slice(0, cm).map((m, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontWeight: 700, fontSize: 11, color: "#0B6644" }}>{F(m.endBal)}</td>)}
-                  <td style={{ ...td, textAlign: "right", fontWeight: 700, fontSize: 11, borderLeft: "2px solid #E4E8F2", color: "#0B6644" }}>{F(mo[cm - 1]?.endBal)}</td>
-                </tr>
-                <tr style={{ background: "#fafbfe" }}>
-                  <td style={{ ...td, fontSize: 8, color: "#8A90A8", fontStyle: "italic", position: "sticky", left: 0, background: "#fafbfe" }}>Cash per Balance Sheet (verification)</td>
-                  {mo.slice(0, cm).map((m, mi) => { const diff = m.endBal - (OPEN_CASH + mo.slice(0, mi + 1).reduce((s, x) => s + x.cashActual, 0)); return <td key={mi} style={{ ...td, textAlign: "right", fontSize: 8, color: Math.abs(diff) < 10000 ? "#1D9E75" : "#E24B4A" }}>{F(OPEN_CASH + mo.slice(0, mi + 1).reduce((s, x) => s + x.cashActual, 0))}</td> })}
-                  <td style={{ ...td, textAlign: "right", fontSize: 8, borderLeft: "2px solid #E4E8F2", color: "#8A90A8" }}>{F(OPEN_CASH + mo.slice(0, cm).reduce((s, m) => s + m.cashActual, 0))}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>);
+          <tr key={label} style={{background:sec?"#F0F4FF":"#F7F9FC",borderTop:"2px solid #E4E8F2"}}>
+            <td style={{padding:"6px 10px",fontWeight:700,fontSize:11,color:"#1A1D2E",paddingLeft:10}}>{label}</td>
+            {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(v)}}>{Fk(v)}</td>)}
+            <td style={{textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(tot)}}>{Fk(tot)}</td>
+          </tr>
+        );
+      };
+      const cfRow = (key, label, _dk, indent) => {
+        const vals = rows.map(mo => (mo[key]||0));
+        const tot = vals.reduce((s,v)=>s+v,0);
+        return (
+          <tr key={label} style={{background:"#F7F9FC",borderBottom:"1px solid #E4E8F2"}}>
+            <td style={{padding:"6px 10px",fontSize:12,paddingLeft:indent}}>{label}</td>
+                        {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"6px 8px",fontSize:12,color:neg(v)}}>{Fk(v)}</td>)}
+            <td style={{textAlign:"right",padding:"6px 8px",fontSize:12,fontWeight:600,color:neg(tot)}}>{Fk(tot)}</td>
+          </tr>
+        );
+      };
+      const balRow = (key, label, dark) => {
+        const vals = rows.map(mo => mo[key]);
+        return (
+          <tr key={label} style={{background:dark?"#1A1D2E":"#2D3150",borderTop:"2px solid #374151"}}>
+            <td style={{padding:"7px 10px",fontWeight:700,fontSize:11,color:"#F3F4F6"}}>{label}</td>
+            {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:v<0?"#F87171":"#6EE7B7"}}>{Fk(v)}</td>)}
+            <td style={{textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:"#9CA3AF"}}>—</td>
+          </tr>
+        );
+      };
+      const sectionHeader = (label, color) => (
+        <tr key={"sec-"+label} style={{background:color||"#EEF2FF"}}>
+          <td colSpan={cm+2} style={{padding:"5px 10px",fontWeight:700,fontSize:10,color:"#374151",letterSpacing:"0.05em",textTransform:"uppercase"}}>{label}</td>
+        </tr>
+      );
+      return (
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:10,tableLayout:"auto"}}>
+            <thead>
+              <tr style={{background:"#1A1D2E"}}>
+                <th style={{textAlign:"left",padding:"7px 10px",fontSize:10,color:"#9CA3AF",fontWeight:600,minWidth:180}}>Concepto</th>
+                {rows.map(mo=><th key={mo.m} style={{textAlign:"right",padding:"7px 8px",fontSize:10,color:"#9CA3AF",fontWeight:600,whiteSpace:"nowrap"}}>{MO[mo.m-1]}</th>)}
+                <th style={{textAlign:"right",padding:"7px 8px",fontSize:10,color:"#F59E0B",fontWeight:700}}>TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sectionHeader("A) Actividades de Operacion","#EFF6FF")}
+              {cfRow("cobros",      "(+) Cobros a Clientes",           null, 20)}
+              {cfRow("pagCOGS",     "(-) Costo de Ventas Pagado",      null, 20)}
+              {cfRow("pagNomina",   "(-) Nomina Pagada",               null, 20)}
+              {cfRow("pagMarketing","(-) Marketing & Ventas",          null, 20)}
+              {cfRow("pagViaje",    "(-) Viaje & Hospedaje",           null, 20)}
+              {cfRow("pagProfes",   "(-) Servicios Profesionales",     null, 20)}
+              {cfRow("pagOficina",  "(-) Gastos de Oficina",           null, 20)}
+              {cfRow("pagSoftware", "(-) Software & Hardware",         null, 20)}
+              {cfRow("pagOpera",    "(-) Operaciones",                 null, 20)}
+              {cfRow("pagOtros",    "(-) Otros Gastos",                null, 20)}
+              {totRow("totalOp",    "= FLUJO OPERATIVO",               true)}
+              {sectionHeader("B) Actividades de Inversion","#FFF7ED")}
+              {cfRow("capex_comp",  "(-) Equipo de Computo",           "capex_comp",  20)}
+              {cfRow("capex_furn",  "(-) Mobiliario y Equipo",         "capex_furn",  20)}
+              {cfRow("capex_intang","(-) Intangibles y Software",      "capex_intang",20)}
+              {cfRow("capex_depos", "(-) Depositos en Garantia",       "capex_depos", 20)}
+              {totRow("totalInv",   "= FLUJO DE INVERSION",            true)}
+              {sectionHeader("C) Actividades de Financiamiento","#F0FDF4")}
+              {cfRow("equityChg",   "Capital Social / Aportaciones",   "equityChg",   20)}
+              {totRow("totalFin",   "= FLUJO DE FINANCIAMIENTO",       true)}
+              {balRow("netChange",  "CAMBIO EN EFECTIVO",              true)}
+              {balRow("beginBal",   "SALDO INICIAL",                   false)}
+              {balRow("endBal",     "SALDO FINAL",                     false)}
+              <tr style={{background:"#0B6644"}}>
+                <td style={{padding:"5px 10px",fontSize:9,color:"#6EE7B7",fontWeight:600}}>Verificacion: Efectivo en Balance</td>
+                {rows.map(mo=>{
+                  const diff = mo.cashActual - mo.endBal;
+                  return <td key={mo.m} style={{textAlign:"right",padding:"5px 8px",fontSize:9,color:Math.abs(diff)<1000?"#6EE7B7":"#F87171"}}>{Fk(mo.cashActual)}</td>;
+                })}
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      );
+    })() : <div style={{color:"#6B7280",fontSize:12,padding:16}}>Cargando datos de balance...</div>}
+  </div>
+);
       })()}
 
 
