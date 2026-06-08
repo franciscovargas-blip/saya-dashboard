@@ -867,7 +867,7 @@ export default function Dashboard() {
 
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["dashboard","Dashboard"],["pnl-anual","P&L por Año"]].map(([t,lb]) => (
+        {[["dashboard","Financial Statements"],["pnl-anual","P&L por Año"]].map(([t,lb]) => (
           <button key={t} onClick={() => setMainTab(t)} style={{padding:"8px 18px",border:"none",background:"none",borderBottom: mainTab===t ? "2.5px solid #534AB7" : "2px solid transparent",color: mainTab===t ? "#534AB7" : "#8A90A8",fontWeight: mainTab===t ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"}}>{lb}</button>
         ))}
       </div>
@@ -1370,79 +1370,82 @@ export default function Dashboard() {
       }
 
       {mainTab === "pnl-anual" && (
-  <div style={{padding:'20px',overflowX:'auto'}}>
-    <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
-    <div style={{fontSize:11,color:"#8A90A8",marginBottom:4}}>
-      <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#1D9E75",marginRight:4,verticalAlign:"middle"}}></span>Reales  
-      <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#B0B8C8",marginRight:4,verticalAlign:"middle"}}></span>Forecast
-    </div>
-    {/* P&L table - years as columns */}
-    {(() => {
-      const years = [2026];
-      const SEP_ANN = {padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"};
-      const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:12,color:"#1E2A3A",minWidth:180,position:"sticky",left:0,background:"#fff",zIndex:1};
-      const thYr = {textAlign:"right",padding:"8px 12px",background:"#F4F6FB",fontWeight:700,fontSize:12,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none"};
-      const thMon = (isReal) => ({textAlign:"right",padding:"6px 6px",background: isReal ? "#EEF6F2" : "#F5F6FA",fontWeight:500,fontSize:10,borderBottom:"2px solid #E4E8F2",color: isReal ? "#1D9E75" : "#8A90A8",whiteSpace:"nowrap"});
-      const tdYr = (isBold, k) => ({textAlign:"right",padding:"6px 12px",borderBottom:"1px solid #F0F2F8",fontWeight: isBold?700:400});
-      const tdMon = (isReal, isBold) => ({textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight: isBold?600:400,color: isReal ? "#1E2A3A" : "#A0A8B8",background: isReal ? "transparent" : "#FAFBFE"});
-      return (
-        <div style={{overflowX:'auto'}}>
-        <table style={{borderCollapse:"collapse",width:"100%",fontSize:12,tableLayout:"auto"}}>
-          <thead><tr>
-            <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:11,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,zIndex:2,minWidth:180}}>Línea P&L</th>
-            {years.map(yr => {
-              const isExp = expPnlAnn[yr];
-              return (<React.Fragment key={yr}>
-                <th style={thYr} onClick={() => setExpPnlAnn(p => ({...p,[yr]:!p[yr]}))}>
-                  {isExp ? "▼" : "►"} {yr}
-                </th>
-                {isExp && MO.map((m,mi) => {
-                  const isReal = yr < 2026 || (yr === 2026 && mi+1 <= cm);
-                  return <th key={mi} style={thMon(isReal)}>{m}</th>;
-                })}
-              </React.Fragment>);
-            })}
-          </tr></thead>
-          <tbody>
-            {(() => {
-            const rows = [];
-            PL_KEYS.forEach(k => {
-              const isPct = PCT_KEYS.has(k);
-              const isBold = BOLD_KEYS.has(k);
-              if (k === "sw") rows.push(<tr key="sep-sw"><td colSpan={999} style={SEP_ANN}>Operating Expenses</td></tr>);
-              const rowStyle = k==="netProfit" ? {background:"#F3E8FF",borderTop:"3px solid #7C3AED",color:"#4C1D95"}                : k==="totFin" ? {background:"#fafbfe",borderTop:"1px solid #E4E8F2"}                : {background: isBold ? "#FAFBFE" : "transparent"};
-              rows.push(
-                <tr key={k} style={rowStyle}>
-                  <td style={tdLbl}>{PL_LABELS[k]}</td>
-                  {years.map(yr => {
-                    const isExp = expPnlAnn[yr];
-                    const fyVal = allM.reduce((s,m) => s + buildPL(fd,m,cm,"consolidado")[k], 0);
-                    const fyPct = isPct ? (allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado").ns,0) ?
-                      allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado")[k.replace("Pct","")],0) /
-                      allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado").ns,0) : 0) : null;
-                    return (<React.Fragment key={yr}>
-                      <td style={{...tdYr(isBold,k),fontWeight:isBold?700:400,color:k==="netProfit"?"#4C1D95":undefined}}>
-                        {isPct ? P(fyPct) : fv(fyVal,false)}
-                      </td>
-                      {isExp && allM.map((m,mi) => {
-                        const isReal = yr < 2026 || (yr === 2026 && m <= cm);
-                        const v = buildPL(fd,m,cm,"consolidado")[k];
-                        return <td key={mi} style={{...tdMon(isReal,isBold),color:k==="netProfit"?"#4C1D95":undefined}}>{fv(v,isPct)}</td>;
+        <div style={{padding:"20px",overflowX:"hidden"}}>
+          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
+          <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
+            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
+            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
+          </div>
+          <div style={{overflowX:"auto"}}>
+          <table style={{borderCollapse:"collapse",width:"100%",fontSize:12}}>
+            <thead>
+              <tr>
+                <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:11,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
+                {[2026].map(yr => (
+                  <React.Fragment key={yr}>
+                    <th
+                      style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:12,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
+                      onClick={() => setExpPnlAnn(p => ({...p,[yr]:!p[yr]}))}
+                    >
+                      {expPnlAnn[yr] ? "▼" : "►"} {yr}
+                    </th>
+                    {expPnlAnn[yr] && MO.map((mo,mi) => {
+                      const isReal = yr < 2026 || (yr===2026 && mi+1<=cm);
+                      return <th key={mi} style={{textAlign:"right",padding:"5px 6px",background:isReal?"#EEF6F2":"#F5F6FA",fontWeight:500,fontSize:10,borderBottom:"2px solid #E4E8F2",color:isReal?"#1D9E75":"#8A90A8",whiteSpace:"nowrap"}}>{mo}</th>;
+                    })}
+                  </React.Fragment>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PL_KEYS.map((k,ki) => {
+                const isPct = PCT_KEYS.has(k);
+                const isBold = BOLD_KEYS.has(k);
+                const rowStyle = k==="netProfit"
+                  ? {background:"#F3E8FF",borderTop:"3px solid #7C3AED",color:"#4C1D95"}
+                  : k==="totFin"
+                    ? {background:"#fafbfe",borderTop:"1px solid #E4E8F2"}
+                    : {background: isBold ? "#F4F6FB" : "transparent"};
+                const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:12,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
+                return (
+                  <React.Fragment key={k}>
+                    {k==="sw" && (
+                      <tr key="sep-sw">
+                        <td colSpan={1+[2026].length*(expPnlAnn[2026]?13:1)} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
+                      </tr>
+                    )}
+                    <tr style={rowStyle}>
+                      <td style={tdLbl}>{PL_LABELS[k]}</td>
+                      {[2026].map(yr => {
+                        const isExp = expPnlAnn[yr];
+                        const fyVal = allM.reduce((s,m) => s + buildPL(fd,m,cm,"consolidado")[k], 0);
+                        const fyNs = allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado").ns,0);
+                        const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado")[k.replace("Pct","")],0)/fyNs : null;
+                        return (
+                          <React.Fragment key={yr}>
+                            <td style={{textAlign:"right",padding:"6px 12px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,color:k==="netProfit"?"#4C1D95":undefined}}>
+                              {isPct ? P(fyPct) : fv(fyVal, false)}
+                            </td>
+                            {isExp && allM.map((m,mi) => {
+                              const isReal = yr < 2026 || (yr===2026 && m<=cm);
+                              const v = buildPL(fd,m,cm,"consolidado")[k];
+                              const vNs = buildPL(fd,m,cm,"consolidado").ns;
+                              const vPct = isPct && vNs ? buildPL(fd,m,cm,"consolidado")[k.replace("Pct","")]/vNs : null;
+                              return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{fv(v,isPct)}</td>;
+                            })}
+                          </React.Fragment>
+                        );
                       })}
-                    </React.Fragment>);
-                  })}
-                </tr>
-              );
-            });
-            return rows;
-          })()}
-          </tbody>
-        </table>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+          </div>
         </div>
-      );
-    })()}
-  </div>
-)}
+      )}
+
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · P&L + Balance General · 2026</div>
     </div>
   );
