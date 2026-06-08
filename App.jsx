@@ -568,7 +568,7 @@ export default function Dashboard() {
       { l: "EBITDA YTD", v: F(ytdTotals.ebitda), s: `Mes ${MO[cm-1]}: ${F(c.ebitda)}`, c: ytdTotals.ebitda < 0 ? "#E24B4A" : "#1D9E75" },
       { l: "NET PROFIT YTD", v: F(ytdTotals.netProfit), s: `Mes ${MO[cm-1]}: ${F(c.netProfit)}`, c: ytdTotals.netProfit < 0 ? "#E24B4A" : "#1D9E75" },
       { l: "INTANGIBLE ASSETS YTD", v: F(intangYTD), s: `Mes ${MO[cm-1]}: ${F(intangCM)}`, c: "#7C3AED" },
-      { l: "INTANGIBLES % DE OPEX", v: c.totOpex ? P(intangCM / c.totOpex) : "-", s: `Mes ${MO[cm-1]} vs OpEx`, c: "#7C3AED" },
+      { l: "INTANGIBLES % DE OPEX", v: opexYTD ? P(intangYTD / opexYTD) : "-", s: `Mes ${MO[cm-1]}: ${c.totOpex ? P(intangCM / c.totOpex) : "-"}`, c: "#7C3AED" },
     ];
   }, [fd, cm, ytdM]);
 
