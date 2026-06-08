@@ -1424,14 +1424,14 @@ export default function Dashboard() {
                         return (
                           <React.Fragment key={yr}>
                             <td style={{textAlign:"right",padding:"6px 12px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,color:k==="netProfit"?"#4C1D95":undefined}}>
-                              {isPct ? P(fyPct) : fv(fyVal, false)}
+                              {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
                               const isReal = yr < 2026 || (yr===2026 && m<=cm);
                               const v = buildPL(fd,m,cm,"consolidado")[k];
                               const vNs = buildPL(fd,m,cm,"consolidado").ns;
                               const vPct = isPct && vNs ? buildPL(fd,m,cm,"consolidado")[k.replace("Pct","")]/vNs : null;
-                              return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{fv(v,isPct)}</td>;
+                              return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
                             })}
                           </React.Fragment>
                         );
