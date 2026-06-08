@@ -499,6 +499,8 @@ export default function Dashboard() {
   const [expPL, setExpPL] = useState({});
   const [expCF, setExpCF] = useState({});
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
+  const [mainTab, setMainTab] = useState("dashboard");
+  const [expPnlAnn, setExpPnlAnn] = useState({});
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
@@ -863,6 +865,14 @@ export default function Dashboard() {
         <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: view === "consolidado" ? "#D4F0E6" : view === "forecast" ? "#E6F1FB" : "#FCEBEB", color: view === "consolidado" ? "#085041" : view === "forecast" ? "#185FA5" : "#E24B4A" }}>Vista: {view.charAt(0).toUpperCase() + view.slice(1)}</span>
       </div>
 
+      {/* MAIN TABS */
+      <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
+        {[["dashboard","Dashboard"],["pnl-anual","PáL por Año"]].map(([t,lb]) => (
+          <button key={t} onClick={() => setMainTab(t)} style={{padding:"8px 18px",border:"none",background:"none",borderBottom: mainTab===t ? "2.5px solid #534AB7" : "2px solid transparent",color: mainTab===t ? "#534AB7" : "#8A90A8",fontWeight: mainTab===t ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"}}>{lb}</button>
+        ))}
+      </div>
+
+      {mainTab === "dashboard" && <>
       {/* KPI CARDS */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))", gap: 8, marginBottom: 16 }}>
         {kpis.map((k, i) => (
@@ -1356,6 +1366,90 @@ export default function Dashboard() {
 
 
 
+      </>
+      }
+
+      {mainTab === "pnl-anual" && (
+        <div style={{padding:"20px", overflowX:"auto"}}>
+          <div style={{fontSize:15, fontWeight:700, color:"#1E2A3A", marginBottom:4}}>P&L por Año — 2026</div>
+          <div style={{fontSize:11, color:"#8A90A8", marginBottom:14}}>Vista: {view.charAt(0).toUpperCase()+view.slice(1)} · Haz clic en una fila para expandir por mes</div>
+          <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:300}}>
+            <thead>
+              <tr>
+                <th style={{textAlign:"left", padding:"8px 10px", background:"#F4F6FB", color:"#8A90A8", fontWeight:600, fontSize:11, minWidth:200, borderBottom:"2px solid #E4E8F2"}}>Línea P&L</th>
+                <th style={{textAlign:"right", padding:"8px 10px", background:"#F4F6FB", color:"#185FA5", fontWeight:700, fontSize:11, borderBottom:"2px solid #E4E8F2"}}>FY 2026</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                const SEP2 = {padding:"6px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"};
+                const tdLabel = {padding:"7px 10px",borderBottom:"1px solid #F0F2F8",color:"#1E2A3A",fontSize:12};
+                const tdVal = {padding:"7px 10px",textAlign:"right",borderBottom:"1px solid #F0F2F8",fontSize:12};
+                const arrowSt = {display:"inline-block",width:14,fontSize:9,color:"#8A90A8",marginRight:2};
+                const rows2 = [];
+                PL_KEYS.forEach(k => {
+                  const isPct = PCT_KEYS.has(k);
+                  const isBold = BOLD_KEYS.has(k);
+                  const fyVal = plData.totals[k];
+                  const isExp = expPnlAnn[k];
+                  if (k === "sw") rows2.push(<tr key="ann-sep"><td colSpan={2} style={SEP2}>Operating Expenses</td></tr>);
+                  const rowStyle = k==="netProfit"
+                    ? {background:"#F3E8FF",fontWeight:700,borderTop:"3px solid #7C3AED",color:"#4C1D95",cursor:"pointer"}
+                    : k==="totFin"
+                      ? {background:"#fafbfe",fontWeight:700,borderTop:"1px solid #E4E8F2",cursor:"pointer"}
+                      : {background: isBold ? "#F4F6FB" : "transparent", cursor:"pointer"};
+                  rows2.push(
+                    <tr key={"ann-"+k} style={rowStyle} onClick={() => setExpPnlAnn(p => ({...p, [k]: !p[k]}))}>
+                      <td style={tdLabel}>
+                        <span style={arrowSt}>{isExp ? "▼" : "►"}</span>
+                        {PL_LABELS[k]}
+                      </td>
+                      <td style={{...tdVal, fontWeight: isBold ? 700 : 400}}>
+                        {fv(fyVal, isPct)}
+                      </td>
+                    </tr>
+                  );
+                  if (isExp) {
+                    const thSt = {textAlign:"right",padding:"4px 6px",fontWeight:600,fontSize:10};
+                    const tdMon = (mi) => ({textAlign:"right",padding:"5px 6px",color: mi < cm ? "#1E2A3A" : "#B0B8C8",background: mi===cm-1?"#EEF2FF":"transparent"});
+                    rows2.push(
+                      <tr key={"ann-exp-"+k}>
+                        <td colSpan={2} style={{padding:"0 0 8px 0", background:"#F7F9FC", borderBottom:"1px solid #E4E8F2"}}>
+                          <div style={{overflowX:"auto", padding:"6px 12px"}}>
+                          <table style={{width:"100%", borderCollapse:"collapse", fontSize:11}}>
+                            <thead>
+                              <tr style={{background:"#EEF2FF"}}>
+                                <th style={{textAlign:"left", padding:"4px 10px", color:"#534AB7", fontWeight:700, fontSize:10, width:130}}>{PL_LABELS[k]}</th>
+                                {MO.map((m,mi) => <th key={mi} style={{...thSt,color: mi<cm?"#534AB7":"#A0A8B8"}}>{m}</th>)}
+                                <th style={{textAlign:"right", padding:"4px 8px", color:"#185FA5", fontWeight:700, fontSize:10}}>Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td style={{padding:"5px 10px", color:"#8A90A8", fontSize:10}}>Mensual</td>
+                                {plData.monthly.map((row, mi) => (
+                                  <td key={mi} style={tdMon(mi)}>
+                                    {fv(row[k], isPct)}
+                                  </td>
+                                ))}
+                                <td style={{textAlign:"right", padding:"5px 6px", fontWeight:700, color:"#185FA5"}}>{fv(fyVal, isPct)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+                });
+                return rows2;
+              })()}
+            </tbody>
+          </table>
+          </div>
+        </div>
+      )}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · P&L + Balance General · 2026</div>
     </div>
   );
