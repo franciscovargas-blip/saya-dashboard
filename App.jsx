@@ -1440,7 +1440,7 @@ export default function Dashboard() {
         </table>
         </div>
       );
-    }
+    })()}
   </div>
 )}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Financial Intelligence · P&L + Balance General · 2026</div>
