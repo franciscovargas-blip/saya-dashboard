@@ -865,7 +865,7 @@ export default function Dashboard() {
         <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: view === "consolidado" ? "#D4F0E6" : view === "forecast" ? "#E6F1FB" : "#FCEBEB", color: view === "consolidado" ? "#085041" : view === "forecast" ? "#185FA5" : "#E24B4A" }}>Vista: {view.charAt(0).toUpperCase() + view.slice(1)}</span>
       </div>
 
-      {/* MAIN TABS */
+      {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
         {[["dashboard","Dashboard"],["pnl-anual","PáL por Año"]].map(([t,lb]) => (
           <button key={t} onClick={() => setMainTab(t)} style={{padding:"8px 18px",border:"none",background:"none",borderBottom: mainTab===t ? "2.5px solid #534AB7" : "2px solid transparent",color: mainTab===t ? "#534AB7" : "#8A90A8",fontWeight: mainTab===t ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"}}>{lb}</button>
