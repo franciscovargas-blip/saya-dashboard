@@ -1001,7 +1001,6 @@ return (
     })() : <div style={{color:"#6B7280",fontSize:12,padding:16}}>Cargando datos de balance...</div>}
   </div>
 );
-);
       })()}
 
 
