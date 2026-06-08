@@ -988,22 +988,21 @@ export default function Dashboard() {
               </div>
 
             {/* ── METODOLOGÍA DESPLEGABLE ── */}
-            <div style=marginTop:16,borderTop:'2px dashed #E4E8F2',paddingTop:14>
+            <div style={{marginTop:16,borderTop:'2px dashed #E4E8F2',paddingTop:14}}>
               <button
                 onClick={() => setShowCFMeta(p => !p)}
-                style=display:'flex',alignItems:'center',gap:10,background:'none',border:'1px solid #D0D5E8',borderRadius:8,padding:'8px 16px',cursor:'pointer',fontSize:13,color:'#1a1a2e',width:'100%',justifyContent:'space-between'
-              >
-                <span style=display:'flex',alignItems:'center',gap:8>
-                  <span style=fontSize:16>📋</span>
-                  <span style=fontWeight:600>Metodología — ¿Cómo se calcula cada línea del flujo?</span>
+                style={{display:'flex',alignItems:'center',gap:10,background:'none',border:'1px solid #D0D5E8',borderRadius:8,padding:'8px 16px',cursor:'pointer',fontSize:13,color:'#1a1a2e',width:'100%',justifyContent:'space-between'}}>
+                <span style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:16}}>📋</span>
+                  <span style={{fontWeight:600}}>Metodología — ¿Cómo se calcula cada línea del flujo?</span>
                 </span>
-                <span style=fontSize:11,color:'#8A90A8'>{showCFMeta ? '▲ Ocultar' : '▼ Ver detalle'}</span>
+                <span style={{fontSize:11,color:'#8A90A8'}}>{showCFMeta ? '▲ Ocultar' : '▼ Ver detalle'}</span>
               </button>
 
               {showCFMeta && (
-                <div style=marginTop:14,padding:'16px 20px',background:'#F8F9FD',borderRadius:10,border:'1px solid #E4E8F2',fontSize:12>
+                <div style={{marginTop:14,padding:'16px 20px',background:'#F8F9FD',borderRadius:10,border:'1px solid #E4E8F2',fontSize:12}}>
 
-                  <p style=marginBottom:16,color:'#3D4366',lineHeight:1.6,padding:'10px 14px',background:'#EEF4FF',borderRadius:8,borderLeft:'3px solid #185FA5'>
+                  <p style={{marginBottom:16,color:'#3D4366',lineHeight:1.6,padding:'10px 14px',background:'#EEF4FF',borderRadius:8,borderLeft:'3px solid #185FA5'}}>
                     El flujo se construye con el <strong>método indirecto NIF B-2</strong>: toma el cambio real en caja
                     (cuentas <strong>102 + 103</strong> del Balance) y lo desglosa por tipo de actividad.
                     Para <strong>Enero</strong>, cambio = saldo final − saldo apertura (<strong>$4,955,698</strong>).
@@ -1041,25 +1040,25 @@ export default function Dashboard() {
                       ['Capital Social / Aportaciones','301-xx-xxx','Aportaciones de accionistas o reembolsos de capital.','Aumento = entrada → positivo; Disminución → negativo'],
                     ]
                   }].map((sec,si) => (
-                    <div key={si} style=marginBottom:20>
+                    <div key={si} style={{marginBottom:20}}>
                       <div style={{fontWeight:700,fontSize:12,color:sec.color,marginBottom:8,paddingBottom:4,borderBottom:`2px solid ${sec.color}33`}}>
                         {sec.title}
                       </div>
-                      <table style=width:'100%',borderCollapse:'collapse',fontSize:11>
+                      <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
                         <thead>
-                          <tr style=background:'#F0F2FA'>
+                          <tr style={{background:'#F0F2FA'}}>
                             {['Línea del Flujo','Cuentas SAP','Descripción','Convención de signo'].map((h,hi)=>(
-                              <th key={hi} style=padding:'5px 10px',textAlign:'left',fontWeight:600,color:'#3D4366',borderBottom:'1px solid #D0D5E8'>{h}</th>
+                              <th key={hi} style={{padding:'5px 10px',textAlign:'left',fontWeight:600,color:'#3D4366',borderBottom:'1px solid #D0D5E8'}}>{h}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
                           {sec.rows.map(([l,c,d,s],ri) => (
-                            <tr key={ri} style=background: ri%2===0 ? '#fff' : '#F8F9FD'>
-                              <td style=padding:'5px 10px',fontWeight:600,color:'#1a1a2e',whiteSpace:'nowrap',borderBottom:'1px solid #EEF0F8'>{l}</td>
-                              <td style=padding:'5px 10px',fontFamily:'monospace',fontSize:10,color:'#534AB7',borderBottom:'1px solid #EEF0F8'>{c}</td>
-                              <td style=padding:'5px 10px',color:'#3D4366',borderBottom:'1px solid #EEF0F8'>{d}</td>
-                              <td style=padding:'5px 10px',color:'#6B7280',fontSize:10,borderBottom:'1px solid #EEF0F8'>{s}</td>
+                            <tr key={ri} style={{background: ri%2===0 ? '#fff' : '#F8F9FD'}}>
+                              <td style={{padding:'5px 10px',fontWeight:600,color:'#1a1a2e',whiteSpace:'nowrap',borderBottom:'1px solid #EEF0F8'}}>{l}</td>
+                              <td style={{padding:'5px 10px',fontFamily:'monospace',fontSize:10,color:'#534AB7',borderBottom:'1px solid #EEF0F8'}}>{c}</td>
+                              <td style={{padding:'5px 10px',color:'#3D4366',borderBottom:'1px solid #EEF0F8'}}>{d}</td>
+                              <td style={{padding:'5px 10px',color:'#6B7280',fontSize:10,borderBottom:'1px solid #EEF0F8'}}>{s}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1068,11 +1067,11 @@ export default function Dashboard() {
                   ))}
 
                   {/* TOTALES Y SALDOS */}
-                  <div style=marginTop:8,padding:'12px 16px',background:'#fff',borderRadius:8,border:'1px solid #E4E8F2'>
-                    <div style=fontWeight:700,fontSize:12,color:'#1a1a2e',marginBottom:10,paddingBottom:4,borderBottom:'2px solid #E4E8F244'>
+                  <div style={{marginTop:8,padding:'12px 16px',background:'#fff',borderRadius:8,border:'1px solid #E4E8F2'}}>
+                    <div style={{fontWeight:700,fontSize:12,color:'#1a1a2e',marginBottom:10,paddingBottom:4,borderBottom:'2px solid #E4E8F244'}}>
                       Totales y Saldos de Caja
                     </div>
-                    <div style=display:'flex',flexDirection:'column',gap:7>
+                    <div style={{display:'flex',flexDirection:'column',gap:7}}>
                       {[
                         ['= Flujo Operativo',        'Suma de las 10 líneas de operación.'],
                         ['= Flujo de Inversión',     'Suma de las 4 líneas de CAPEX y depósitos en garantía.'],
@@ -1081,9 +1080,9 @@ export default function Dashboard() {
                         ['Saldo Inicial',            'Saldo al inicio del mes = Saldo Final del mes anterior. Enero parte de $4,955,698.'],
                         ['Saldo Final',              'Saldo Inicial + Δ Cambio en Efectivo.'],
                       ].map(([k,v],i)=>(
-                        <div key={i} style=display:'flex',gap:10,alignItems:'baseline'>
-                          <span style=fontWeight:600,fontSize:11,color:'#0B6644',minWidth:190,whiteSpace:'nowrap'>{k}</span>
-                          <span style=fontSize:11,color:'#3D4366'>{v}</span>
+                        <div key={i} style={{display:'flex',gap:10,alignItems:'baseline'}}>
+                          <span style={{fontWeight:600,fontSize:11,color:'#0B6644',minWidth:190,whiteSpace:'nowrap'}}>{k}</span>
+                          <span style={{fontSize:11,color:'#3D4366'}}>{v}</span>
                         </div>
                       ))}
                     </div>
