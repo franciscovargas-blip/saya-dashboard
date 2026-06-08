@@ -154,6 +154,7 @@ export default function Dashboard() {
   const [expArea, setExpArea] = useState({});
   const [expPL, setExpPL] = useState({});
   const [expCF, setExpCF] = useState({});
+  const [showCFMeta, setShowCFMeta] = useState(false);
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
   const [mainTab, setMainTab] = useState("dashboard");
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
@@ -985,6 +986,113 @@ export default function Dashboard() {
               <div style={{fontSize: 9, color: '#8A90A8', marginTop: 6}}>
                 * Haz clic en cualquier línea para expandir el detalle de cuentas
               </div>
+
+            {/* ── METODOLOGÍA DESPLEGABLE ── */}
+            <div style=marginTop:16,borderTop:'2px dashed #E4E8F2',paddingTop:14>
+              <button
+                onClick={() => setShowCFMeta(p => !p)}
+                style=display:'flex',alignItems:'center',gap:10,background:'none',border:'1px solid #D0D5E8',borderRadius:8,padding:'8px 16px',cursor:'pointer',fontSize:13,color:'#1a1a2e',width:'100%',justifyContent:'space-between'
+              >
+                <span style=display:'flex',alignItems:'center',gap:8>
+                  <span style=fontSize:16>📋</span>
+                  <span style=fontWeight:600>Metodología — ¿Cómo se calcula cada línea del flujo?</span>
+                </span>
+                <span style=fontSize:11,color:'#8A90A8'>{showCFMeta ? '▲ Ocultar' : '▼ Ver detalle'}</span>
+              </button>
+
+              {showCFMeta && (
+                <div style=marginTop:14,padding:'16px 20px',background:'#F8F9FD',borderRadius:10,border:'1px solid #E4E8F2',fontSize:12>
+
+                  <p style=marginBottom:16,color:'#3D4366',lineHeight:1.6,padding:'10px 14px',background:'#EEF4FF',borderRadius:8,borderLeft:'3px solid #185FA5'>
+                    El flujo se construye con el <strong>método indirecto NIF B-2</strong>: toma el cambio real en caja
+                    (cuentas <strong>102 + 103</strong> del Balance) y lo desglosa por tipo de actividad.
+                    Para <strong>Enero</strong>, cambio = saldo final − saldo apertura (<strong>$4,955,698</strong>).
+                    De <strong>Febrero en adelante</strong>, se usa el movimiento mensual directo de cada cuenta.
+                  </p>
+
+                  {[{
+                    title: 'A) Actividades de Operación',
+                    color: '#0B6644',
+                    rows: [
+                      ['Inventario',               '115-xx-xxx',              'Movimiento mensual de todas las subcuentas de inventario (solo hojas, sin totales).', 'Activo ↑ = salida de caja → se niega (×−1)'],
+                      ['Otros Activos CP',          '121-xx-xxx',              'Otras cuentas de activo circulante a corto plazo.',                                   'Activo ↑ = salida → se niega'],
+                      ['IVA a Favor / Pendiente',  '113-xx-xxx + 119-xx-xxx', 'IVA acreditable pendiente de compensar o recuperar ante el SAT.',                    'Activo ↑ = salida → se niega'],
+                      ['Pagos Anticipados',         '109-xx-xxx',              'Anticipos y prepagos de servicios aún no devengados.',                                'Activo ↑ = salida → se niega'],
+                      ['Anticipo Proveedores',      '120-xx-xxx',              'Recursos entregados a proveedores a cuenta de compras futuras.',                      'Activo ↑ = salida → se niega'],
+                      ['Proveedores',               '201-xx-xxx',              'Cuentas por pagar a proveedores comerciales.',                                        'Pasivo ↑ = fuente de caja → positivo'],
+                      ['Acreedores Diversos',       '205-xx-xxx',              'Otras cuentas por pagar: servicios, honorarios, etc.',                               'Pasivo ↑ = fuente → positivo'],
+                      ['Provisión Sueldos',         '210-xx-xxx',              'Sueldos y prestaciones devengados pendientes de pago.',                               'Pasivo ↑ = fuente → positivo'],
+                      ['Impuestos Retenidos',       '216-xx-xxx + 217-xx-xxx', 'ISR, IVA y demás retenciones por enterar al SAT.',                                   'Pasivo ↑ = fuente → positivo'],
+                      ['IMSS / ISN Provisión',      '211-xx-xxx + 212-xx-xxx', 'Cuotas IMSS e Impuesto Sobre Nómina provisionados.',                                 'Pasivo ↑ = fuente → positivo'],
+                    ]
+                  },{
+                    title: 'B) Actividades de Inversión',
+                    color: '#185FA5',
+                    rows: [
+                      ['(-) Equipo de Cómputo',      '156-xx-xxx', 'Adquisición o disposición de equipo de cómputo y periféricos.',     'Activo fijo ↑ = inversión = salida → se niega'],
+                      ['(-) Mobiliario y Equipo',    '155-xx-xxx', 'Muebles, equipo de oficina y equipo de laboratorio.',              'Activo fijo ↑ = inversión = salida → se niega'],
+                      ['(-) Intangibles / Software', '176-xx-xxx', 'Licencias, software y otros intangibles capitalizados.',           'Activo ↑ = salida → se niega'],
+                      ['(-) Depósitos en Garantía',  '184-xx-xxx', 'Depósitos dados en garantía por arrendamientos u otros contratos.', 'Activo ↑ = salida → se niega'],
+                    ]
+                  },{
+                    title: 'C) Actividades de Financiamiento',
+                    color: '#534AB7',
+                    rows: [
+                      ['Capital Social / Aportaciones','301-xx-xxx','Aportaciones de accionistas o reembolsos de capital.','Aumento = entrada → positivo; Disminución → negativo'],
+                    ]
+                  }].map((sec,si) => (
+                    <div key={si} style=marginBottom:20>
+                      <div style={{fontWeight:700,fontSize:12,color:sec.color,marginBottom:8,paddingBottom:4,borderBottom:`2px solid ${sec.color}33`}}>
+                        {sec.title}
+                      </div>
+                      <table style=width:'100%',borderCollapse:'collapse',fontSize:11>
+                        <thead>
+                          <tr style=background:'#F0F2FA'>
+                            {['Línea del Flujo','Cuentas SAP','Descripción','Convención de signo'].map((h,hi)=>(
+                              <th key={hi} style=padding:'5px 10px',textAlign:'left',fontWeight:600,color:'#3D4366',borderBottom:'1px solid #D0D5E8'>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sec.rows.map(([l,c,d,s],ri) => (
+                            <tr key={ri} style=background: ri%2===0 ? '#fff' : '#F8F9FD'>
+                              <td style=padding:'5px 10px',fontWeight:600,color:'#1a1a2e',whiteSpace:'nowrap',borderBottom:'1px solid #EEF0F8'>{l}</td>
+                              <td style=padding:'5px 10px',fontFamily:'monospace',fontSize:10,color:'#534AB7',borderBottom:'1px solid #EEF0F8'>{c}</td>
+                              <td style=padding:'5px 10px',color:'#3D4366',borderBottom:'1px solid #EEF0F8'>{d}</td>
+                              <td style=padding:'5px 10px',color:'#6B7280',fontSize:10,borderBottom:'1px solid #EEF0F8'>{s}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+
+                  {/* TOTALES Y SALDOS */}
+                  <div style=marginTop:8,padding:'12px 16px',background:'#fff',borderRadius:8,border:'1px solid #E4E8F2'>
+                    <div style=fontWeight:700,fontSize:12,color:'#1a1a2e',marginBottom:10,paddingBottom:4,borderBottom:'2px solid #E4E8F244'>
+                      Totales y Saldos de Caja
+                    </div>
+                    <div style=display:'flex',flexDirection:'column',gap:7>
+                      {[
+                        ['= Flujo Operativo',        'Suma de las 10 líneas de operación.'],
+                        ['= Flujo de Inversión',     'Suma de las 4 líneas de CAPEX y depósitos en garantía.'],
+                        ['= Flujo de Financiamiento','Suma de los movimientos de capital social.'],
+                        ['Δ Cambio en Efectivo',     'Variación real de caja: movimiento mensual de cuentas 102 + 103. Enero = saldo final − $4,955,698 (apertura).'],
+                        ['Saldo Inicial',            'Saldo al inicio del mes = Saldo Final del mes anterior. Enero parte de $4,955,698.'],
+                        ['Saldo Final',              'Saldo Inicial + Δ Cambio en Efectivo.'],
+                      ].map(([k,v],i)=>(
+                        <div key={i} style=display:'flex',gap:10,alignItems:'baseline'>
+                          <span style=fontWeight:600,fontSize:11,color:'#0B6644',minWidth:190,whiteSpace:'nowrap'>{k}</span>
+                          <span style=fontSize:11,color:'#3D4366'>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+            </div>
+
             </div>
           </div>
         );
