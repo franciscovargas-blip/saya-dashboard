@@ -867,9 +867,11 @@ export default function Dashboard() {
 
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["dashboard","Financial Statements"],["pnl-anual","P&L por Año"]].map(([t,lb]) => (
-          <button key={t} onClick={() => setMainTab(t)} style={{padding:"8px 18px",border:"none",background:"none",borderBottom: mainTab===t ? "2.5px solid #534AB7" : "2px solid transparent",color: mainTab===t ? "#534AB7" : "#8A90A8",fontWeight: mainTab===t ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"}}>{lb}</button>
-        ))}
+        {[["dashboard","Financial Statements"],["pnl-anual","P&L por Año"]].map(([t,lb]) => {
+          const active = mainTab === t;
+          const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
+          return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
+        })}
       </div>
 
       {mainTab === "dashboard" && <>
