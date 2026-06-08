@@ -484,7 +484,7 @@ export default function Dashboard() {
 
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["dashboard","Financial Statements"],["pnl-anual","P&L por Año"]].map(([t,lb]) => {
+        {[["dashboard","Financial Statements"],["pnl-anual","Summary"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -1037,7 +1037,7 @@ export default function Dashboard() {
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
                       {pnlYears.map(yr => {
                         const isExp = expPnlAnn[yr];
-                        const modeForYr = yr === CUR_YEAR ? view : "forecast";
+                        const modeForYr = "forecast";
                         const fyVal = allM.reduce((s,m) => s + buildPL(fd,yr,m,cm,modeForYr)[k], 0);
                         const fyNs = allM.reduce((a,m)=>a+buildPL(fd,yr,m,cm,modeForYr).ns,0);
                         const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+buildPL(fd,yr,m,cm,modeForYr)[k.replace("Pct","")],0)/fyNs : null;
@@ -1047,7 +1047,7 @@ export default function Dashboard() {
                               {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
-                              const isReal = yr < 2026 || (yr===2026 && m<=cm);
+                              const isReal = false; // Summary tab siempre forecast
                               const v = buildPL(fd,yr,m,cm,modeForYr)[k];
                               const vNs = buildPL(fd,yr,m,cm,modeForYr).ns;
                               const vPct = isPct && vNs ? buildPL(fd,yr,m,cm,modeForYr)[k.replace("Pct","")]/vNs : null;
@@ -1063,6 +1063,43 @@ export default function Dashboard() {
             </tbody>
           </table>
           </div>
+
+          {/* ─── KPI cards ─── */}
+          {(()=>{
+            const RATE=0.1151;
+            const annualEBITDA=pnlYears.map(yr=>allM.reduce((s,m)=>s+buildPL(fd,yr,m,cm,'forecast').ebitda,0));
+            const inv2y=annualEBITDA.slice(0,2).reduce((s,v)=>s+v,0);
+            const ebitdaTotal=annualEBITDA.reduce((s,v)=>s+v,0);
+            const npv=annualEBITDA.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
+            let irr=null;
+            if(annualEBITDA.length>1){let r=0.2;for(let i=0;i<200;i++){const f=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const df=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(df)<1e-12)break;const r2=r-f/df;if(Math.abs(r2-r)<1e-8){r=r2;break;}r=r2;}irr=r;}
+            const ip=irr!==null?irr*100:null;
+            const badge=ip===null?null:ip<45?{t:'Riesgo Alto — No es viable',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
+            const Fk=v=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(v);
+            return(
+              <div style=display:'flex',gap:16,flexWrap:'wrap',margin:'20px 0 8px 0',padding:'0 2px'>
+                <div style=flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
+                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>Investment First 2 Years</div>
+                  <div style=fontSize:19,fontWeight:700,color:inv2y<0?'#E24B4A':'#1D9E75'>{Fk(inv2y)}</div>
+                </div>
+                <div style=flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
+                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>EBITDA Acumulado</div>
+                  <div style=fontSize:19,fontWeight:700,color:ebitdaTotal<0?'#E24B4A':'#1D9E75'>{Fk(ebitdaTotal)}</div>
+                </div>
+                <div style=flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
+                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>NPV 11.51%</div>
+                  <div style=fontSize:19,fontWeight:700,color:npv<0?'#E24B4A':'#1D9E75'>{Fk(npv)}</div>
+                </div>
+                <div style=flex:'1 1 240px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
+                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>IRR %</div>
+                  <div style=display:'flex',alignItems:'center',gap:10>
+                    <span style=fontSize:19,fontWeight:700,color:badge?badge.c:'#1E2A3A'>{ip!==null?ip.toFixed(2)+' %':'\u2014'}</span>
+                    {badge&&<span style={{fontSize:11,fontWeight:600,color:badge.c,background:badge.bg,border:`1px solid ${badge.bc}`,borderRadius:6,padding:'3px 9px'}}>{badge.t}</span>}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
