@@ -943,7 +943,7 @@ return (
           </table>
           {/* NOTAS DESPLEGABLE */}
           <div style={{marginTop:16,borderTop:"1px solid #E4E8F2",paddingTop:12}}>
-            <button onClick={{()=>setShowCFNotes(p=>!p)}} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",padding:"4px 0",fontSize:11,fontWeight:700,color:"#374151"}}>
+            <button onClick={()=>setShowCFNotes(p=>!p)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",padding:"4px 0",fontSize:11,fontWeight:700,color:"#374151"}}>
               <span style={{display:"inline-block",transform:showCFNotes?"rotate(90deg)":"none",transition:"transform 0.2s"}}>&#9654;</span>
               Notas: cuentas utilizadas por renglon
             </button>
