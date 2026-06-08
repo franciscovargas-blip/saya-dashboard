@@ -546,12 +546,16 @@ export default function Dashboard() {
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
           <ResponsiveContainer width="100%" height={180}>
-            <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
-              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
-              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
-              <Bar dataKey="Sales" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E7566" : "#1D9E7533"} />)}</Bar>
-              <Bar dataKey="OpEx" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A55" : "#E24B4A22"} />)}</Bar>
-              <Line type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={2} dot={{ r: 2, fill: "#534AB7" }} />
+            <ComposedChart data={chartData} margin={{top:5,right:10,bottom:0,left:-10}}>
+              <XAxis dataKey="name" tick={{fontSize:8,fill:"#8A90A8"}} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="left" orientation="left" tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v => v>=1e6?`${(v/1e6).toFixed(1)}M`:v>=1e3?`${Math.round(v/1e3)}K`:"0"} />
+              <YAxis yAxisId="right" orientation="right" tick={{fontSize:7,fill:"#534AB7"}} axisLine={false} tickLine={false} tickFormatter={v => Math.abs(v)>=1e6?`${(v/1e6).toFixed(1)}M`:Math.abs(v)>=1e3?`${Math.round(v/1e3)}K`:"0"} width={46} />
+              <Tooltip formatter={(v,name)=>[`$${Math.abs(v)>=1e6?(v/1e6).toFixed(2)+"M":Math.abs(v)>=1e3?(v/1e3).toFixed(1)+"K":Math.round(v)}`,name]} contentStyle={{fontSize:9,borderRadius:6}} />
+              <ReferenceLine yAxisId="left" y={0} stroke="#E4E8F2" />
+              <ReferenceLine yAxisId="right" y={0} stroke="#534AB755" strokeDasharray="4 2" />
+              <Bar yAxisId="left" dataKey="Sales" radius={[3,3,0,0]}>{chartData.map((e,i)=><Cell key={i} fill={e.cur?"#1D9E7566":"#1D9E7533"} />)}</Bar>
+              <Bar yAxisId="left" dataKey="OpEx" radius={[3,3,0,0]}>{chartData.map((e,i)=><Cell key={i} fill={e.cur?"#E24B4A55":"#E24B4A22"} />)}</Bar>
+              <Line yAxisId="right" type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={2.5} dot={{r:2,fill:"#534AB7"}} activeDot={{r:4,fill:"#534AB7"}} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
