@@ -543,7 +543,7 @@ export default function Dashboard() {
                 formatter={(v) => ["$"+(v/1e3).toFixed(1)+"K", "Reales"]}
               />
               <Bar dataKey="real" name="Reales" fill="#534AB7" cursor={expandedOpexLine ? "default" : "pointer"}
-                shape={(props)=>{const {x,y,width,height,value}=props;const w=Math.round(width*(value/maxVal));const bx=x+(width-w)/2;return <rect x={bx} y={y} width={w} height={height} fill="#534AB7" rx={3}/>;}>
+                shape={(props)=>{const {x,y,width,height,value}=props;const w=Math.round(width*(value/maxVal));const bx=x+(width-w)/2;return React.createElement("rect",{x:bx,y:y,width:w,height:height,fill:"#534AB7",rx:3});}>
                 <LabelList
                   dataKey="real"
                   position="right"
