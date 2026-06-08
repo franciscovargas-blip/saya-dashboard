@@ -526,8 +526,6 @@ export default function Dashboard() {
               ← Volver a todas las líneas
             </div>
           )}
-            // Pyramid custom bar shape
-            const maxVal = (expandedOpexLine ? opexDetailData : opexClsData).reduce((m,r)=>Math.max(m,r.real),1);
           <ResponsiveContainer width="100%" height={(expandedOpexLine ? opexDetailData.length : opexClsData.length) * 30 + 40}>
             <BarChart
               data={expandedOpexLine ? opexDetailData : opexClsData}
@@ -542,8 +540,7 @@ export default function Dashboard() {
                 contentStyle={{ fontSize:9,borderRadius:6 }}
                 formatter={(v) => ["$"+(v/1e3).toFixed(1)+"K", "Reales"]}
               />
-              <Bar dataKey="real" name="Reales" fill="#534AB7" cursor={expandedOpexLine ? "default" : "pointer"}
-                shape={(props)=>{const {x,y,width,height,value}=props;const w=Math.round(width*(value/maxVal));const bx=x+(width-w)/2;return React.createElement("rect",{x:bx,y:y,width:w,height:height,fill:"#534AB7",rx:3});}>
+              <Bar dataKey="real" name="Reales" fill="#534AB7" cursor={expandedOpexLine ? "default" : "pointer"}>
                 <LabelList
                   dataKey="real"
                   position="right"
