@@ -228,7 +228,7 @@ export default function Dashboard() {
   const pieCM = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && r[3] === cm).forEach(r => { const m = mapMol(r[4]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[9]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, cm]);
 
   // Pareto
-  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && r[3] === cm); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
 
   const toggleP = k => setExpP(p => ({ ...p, [k]: !p[k] }));
 
@@ -526,12 +526,14 @@ export default function Dashboard() {
               ← Volver a todas las líneas
             </div>
           )}
+            // Pyramid custom bar shape
+            const maxVal = (expandedOpexLine ? opexDetailData : opexClsData).reduce((m,r)=>Math.max(m,r.real),1);
           <ResponsiveContainer width="100%" height={(expandedOpexLine ? opexDetailData.length : opexClsData.length) * 30 + 40}>
             <BarChart
               data={expandedOpexLine ? opexDetailData : opexClsData}
               layout="vertical"
               margin={{ top:4, right:65, bottom:4, left:120 }}
-              barCategoryGap="30%"
+              barCategoryGap="20%"
               onClick={(data) => { if (!expandedOpexLine && data && data.activePayload) setExpandedOpexLine(data.activePayload[0].payload.fdName); }}
             >
               <XAxis type="number" tick={{ fontSize:7,fill:"#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":"0"} />
@@ -540,7 +542,8 @@ export default function Dashboard() {
                 contentStyle={{ fontSize:9,borderRadius:6 }}
                 formatter={(v) => ["$"+(v/1e3).toFixed(1)+"K", "Reales"]}
               />
-              <Bar dataKey="real" name="Reales" fill="#534AB7" radius={[0,3,3,0]} cursor={expandedOpexLine ? "default" : "pointer"}>
+              <Bar dataKey="real" name="Reales" fill="#534AB7" cursor={expandedOpexLine ? "default" : "pointer"}
+                shape={(props)=>{const {x,y,width,height,value}=props;const w=Math.round(width*(value/maxVal));const bx=x+(width-w)/2;return <rect x={bx} y={y} width={w} height={height} fill="#534AB7" rx={3}/>;}>
                 <LabelList
                   dataKey="real"
                   position="right"
@@ -822,8 +825,8 @@ export default function Dashboard() {
 
 
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 10 }}>Pareto por Partner — {MO[cm - 1]} 2026</div>
-        {pareto.length === 0 && <div style={{ fontSize: 10, color: "#8A90A8", padding: 16, textAlign: "center" }}>Sin gastos con partner en {MO[cm - 1]}</div>}
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 10 }}>Pareto por Partner — YTD {MO[cm - 1]} 2026</div>
+        {pareto.length === 0 && <div style={{ fontSize: 10, color: "#8A90A8", padding: 16, textAlign: "center" }}>Sin gastos con partner YTD {MO[cm - 1]}</div>}
         {pareto.slice(0, 15).map((p, i) => { const w = maxP ? Math.abs(p.total) / maxP * 100 : 0; const isE = expP[p.partner]; return (
           <div key={i} style={{ marginBottom: isE ? 8 : 3 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => toggleP(p.partner)}>
@@ -1064,7 +1067,7 @@ export default function Dashboard() {
           </table>
           </div>
 
-          {/* ─── KPI cards ─── */}
+          {/* KPI cards */}
           {(()=>{
             const RATE=0.1151;
             const annualEBITDA=pnlYears.map(yr=>allM.reduce((s,m)=>s+buildPL(fd,yr,m,cm,'forecast').ebitda,0));
@@ -1072,29 +1075,29 @@ export default function Dashboard() {
             const ebitdaTotal=annualEBITDA.reduce((s,v)=>s+v,0);
             const npv=annualEBITDA.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
             let irr=null;
-            if(annualEBITDA.length>1){let r=0.2;for(let i=0;i<200;i++){const f=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const df=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(df)<1e-12)break;const r2=r-f/df;if(Math.abs(r2-r)<1e-8){r=r2;break;}r=r2;}irr=r;}
+            if(annualEBITDA.length>1){let r=0.2;for(let i=0;i<200;i++){const fv=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const df=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(df)<1e-12)break;const r2=r-fv/df;if(Math.abs(r2-r)<1e-8){r=r2;break;}r=r2;}irr=r;}
             const ip=irr!==null?irr*100:null;
             const badge=ip===null?null:ip<45?{t:'Riesgo Alto — No es viable',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
             const Fk=v=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(v);
             return(
-              <div style=display:'flex',gap:16,flexWrap:'wrap',margin:'20px 0 8px 0',padding:'0 2px'>
-                <div style=flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
-                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>Investment First 2 Years</div>
-                  <div style=fontSize:19,fontWeight:700,color:inv2y<0?'#E24B4A':'#1D9E75'>{Fk(inv2y)}</div>
+              <div style={{display:'flex',gap:16,flexWrap:'wrap',margin:'20px 0 8px 0',padding:'0 2px'}}>
+                <div style={{flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
+                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>Investment First 2 Years</div>
+                  <div style={{fontSize:18,fontWeight:700,color:'#1E2A3A'}}>{Fk(inv2y)}</div>
                 </div>
-                <div style=flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
-                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>EBITDA Acumulado</div>
-                  <div style=fontSize:19,fontWeight:700,color:ebitdaTotal<0?'#E24B4A':'#1D9E75'>{Fk(ebitdaTotal)}</div>
+                <div style={{flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
+                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>EBITDA Acumulado</div>
+                  <div style={{fontSize:18,fontWeight:700,color:ebitdaTotal>=0?'#10B981':'#C0392B'}}>{Fk(ebitdaTotal)}</div>
                 </div>
-                <div style=flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
-                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>NPV 11.51%</div>
-                  <div style=fontSize:19,fontWeight:700,color:npv<0?'#E24B4A':'#1D9E75'>{Fk(npv)}</div>
+                <div style={{flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
+                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>NPV 11.51%</div>
+                  <div style={{fontSize:18,fontWeight:700,color:npv>=0?'#10B981':'#C0392B'}}>{Fk(npv)}</div>
                 </div>
-                <div style=flex:'1 1 240px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'>
-                  <div style=fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4>IRR %</div>
-                  <div style=display:'flex',alignItems:'center',gap:10>
-                    <span style=fontSize:19,fontWeight:700,color:badge?badge.c:'#1E2A3A'>{ip!==null?ip.toFixed(2)+' %':'\u2014'}</span>
-                    {badge&&<span style={{fontSize:11,fontWeight:600,color:badge.c,background:badge.bg,border:`1px solid ${badge.bc}`,borderRadius:6,padding:'3px 9px'}}>{badge.t}</span>}
+                <div style={{flex:'1 1 220px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
+                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>IRR %</div>
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    <span style={{fontSize:18,fontWeight:700,color:'#1E2A3A'}}>{ip!==null?ip.toFixed(2)+' %':'—'}</span>
+                    {badge&&<span style={{fontSize:11,fontWeight:600,color:badge.c,background:badge.bg,border:`1px solid {badge.bc}`,borderRadius:6,padding:'3px 9px'}}>{badge.t}</span>}
                   </div>
                 </div>
               </div>
