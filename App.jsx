@@ -1,6 +1,15 @@
 import React, { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie, LabelList } from "recharts";
 
+function makePyramidBar(maxVal) {
+  return function PyramidBar(props) {
+    var x=props.x, y=props.y, width=props.width, height=props.height, value=props.value;
+    var w = Math.round(width * (value / (maxVal||1)));
+    var bx = x + (width - w) / 2;
+    return React.createElement('rect', {x:bx, y:y, width:w, height:height, fill:'#534AB7', rx:3});
+  };
+}
+
 const MO=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const COLORS=["#1D9E75","#534AB7","#D85A30","#185FA5","#BA7517","#E24B4A","#D4537E","#639922","#888"];
 const OPEX_LINES=["Salaries & Wages","Sales & Marketing","Travel & Accomodation","Professional Fees","Office Expense"];
@@ -221,6 +230,10 @@ export default function Dashboard() {
       .filter(x => x.real > 0)
       .sort((a, b) => b.real - a.real);
   }, [fd, cm, expandedOpexLine]);
+  const pyramidBarShape = React.useMemo(() => makePyramidBar(
+    (opexClsData[0] ? opexClsData[0].real : 1)
+  ), [opexClsData]);
+
 
 
   // Pies
@@ -229,6 +242,9 @@ export default function Dashboard() {
 
   // Pareto
   const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const paretoMes = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && r[3] === cm); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const maxPMes = paretoMes.length ? Math.abs(paretoMes[0].total) : 1;
+
 
   const toggleP = k => setExpP(p => ({ ...p, [k]: !p[k] }));
 
@@ -540,7 +556,7 @@ export default function Dashboard() {
                 contentStyle={{ fontSize:9,borderRadius:6 }}
                 formatter={(v) => ["$"+(v/1e3).toFixed(1)+"K", "Reales"]}
               />
-              <Bar dataKey="real" name="Reales" fill="#534AB7" cursor={expandedOpexLine ? "default" : "pointer"}>
+              <Bar dataKey="real" name="Reales" fill="#534AB7" cursor={expandedOpexLine ? "default" : "pointer"} shape={!expandedOpexLine ? pyramidBarShape : undefined}>
                 <LabelList
                   dataKey="real"
                   position="right"
@@ -822,21 +838,31 @@ export default function Dashboard() {
 
 
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 10 }}>Pareto por Partner — YTD {MO[cm - 1]} 2026</div>
-        {pareto.length === 0 && <div style={{ fontSize: 10, color: "#8A90A8", padding: 16, textAlign: "center" }}>Sin gastos con partner YTD {MO[cm - 1]}</div>}
-        {pareto.slice(0, 15).map((p, i) => { const w = maxP ? Math.abs(p.total) / maxP * 100 : 0; const isE = expP[p.partner]; return (
-          <div key={i} style={{ marginBottom: isE ? 8 : 3 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => toggleP(p.partner)}>
-              <div style={{ width: 150, fontSize: 9, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }} title={p.partner}><span style={{ fontSize: 7, marginRight: 3 }}>{isE ? "▼" : "▶"}</span>{p.partner.length > 20 ? p.partner.slice(0, 20) + "…" : p.partner}</div>
-              <div style={{ flex: 1, height: 16, background: "#f0f2fa", borderRadius: 3, overflow: "hidden" }}><div style={{ height: "100%", width: `${w}%`, background: p.total < 0 ? "#FCEBEB" : "linear-gradient(90deg,#1D9E7544,#1D9E7522)", borderRadius: 3, border: `1px solid ${p.total < 0 ? "#E24B4A44" : "#1D9E7544"}` }} /></div>
-              <div style={{ width: 65, textAlign: "right", fontSize: 9, fontWeight: 500, color: p.total < 0 ? "#E24B4A" : "#1a1a2e", flexShrink: 0 }}>{F(p.total)}</div>
-              <div style={{ width: 36, textAlign: "right", fontSize: 8, color: "#8A90A8", flexShrink: 0 }}>{P(p.cumPct)}</div>
-            </div>
-            {isE && <div style={{ marginLeft: 18, marginTop: 3, borderLeft: "2px solid #E4E8F2", paddingLeft: 8 }}>{Object.entries(p.items).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).map(([co, val], j) => (
-              <div key={j} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0", fontSize: 8, color: "#666" }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "80%" }}>{co}</span><span style={{ fontWeight: 500, color: val < 0 ? "#E24B4A" : "#1a1a2e", flexShrink: 0, marginLeft: 8 }}>{F(val)}</span></div>
-            ))}</div>}
-          </div>
-        ); })}
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:13,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:13,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div><div style={{display:"flex",gap:16,alignItems:"flex-start"}}><div style={{flex:1,minWidth:0}}>{pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}{pareto.slice(0,15).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
+<div key={i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
+<div style={{width:32,textAlign:"right",fontSize:8,color:"#8A90A8",flexShrink:0}}>{P(p.cumPct)}</div>
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div><div style={{flex:1,minWidth:0}}>{paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}{paretoMes.slice(0,15).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
+<div key={"m"+i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
+<div style={{width:32,textAlign:"right",fontSize:8,color:"#8A90A8",flexShrink:0}}>{P(p.cumPct)}</div>
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div></div>
       </div>
 
       {/* ═══════ CASH FLOW ═══════ */}
