@@ -345,61 +345,78 @@ export default function Dashboard() {
 
   const cashFlow = useMemo(() => {
     if (!B || B.length === 0) return null;
-    // Direct method: sum from PL data (D array) for Reales months
-    const mos = Array.from({length:12}, (_,mi) => {
+    // suma cuentas hoja (no totales) con prefijo dado para el mes mi
+    // B[5]=saldo 31-Ene (NO movimiento); B[6..]=movimientos mensuales
+    const bLeaf = (pfx, mi) => B
+      .filter(r => !r[4] && (r[0]||"").startsWith(pfx))
+      .reduce((s, r) => s + (r[5+mi]||0), 0);
+    // detalle de subcuentas (depth>=3, no total) para filas expandibles
+    const bDet = (...pfxs) => B
+      .filter(r => !r[4] && r[2] >= 3 && pfxs.some(p => (r[0]||"").startsWith(p)))
+      .map(r => ({ name: r[1], code: r[0], vals: Array.from({length:12}, (_,i) => r[5+i]||0) }));
+    // cuentas de caja (filas total, depth=2)
+    const r102 = B.find(r => r[0]==="102-00-000" && r[4]===1);
+    const r103 = B.find(r => r[0]==="103-00-000" && r[4]===1);
+    const mos = Array.from({length:12}, (_, mi) => {
       const m = mi + 1;
-      const g = (pl) => {
-        const rows = D.filter(r => r[1]==="Reales" && r[2]===CUR_YEAR && r[3]===m && r[0]===pl);
-        return rows.reduce((s,r)=>s+r[9],0);
-      };
-      // Operating - direct
-      const cobros       =  g("Net Sales");              // (+) inflows from customers
-      const pagCOGS      = -g("COGS");                   // (-) payments to suppliers/COGS
-      const pagNomina    = -g("Salaries & Wages");        // (-) payroll
-      const pagMarketing = -(g("Sales & Marketing"));     // (-)
-      const pagViaje     = -(g("Travel & Accomodation")); // (-)
-      const pagProfes    = -(g("Professional Fees"));     // (-)
-      const pagOficina   = -(g("Office Expense"));        // (-)
-      const pagSoftware  = -(g("Software & Hardware") + g("IT (Software-Hardware)")); // (-)
-      const pagOpera     = -(g("Operations"));            // (-)
-      const pagOtros     = -(g("Others") + g("Regulatory") + g("Mobility")); // (-)
-      const totalOp = cobros + pagCOGS + pagNomina + pagMarketing + pagViaje + pagProfes + pagOficina + pagSoftware + pagOpera + pagOtros;
-      // Investing - from balance changes
-      const sum = (code3) => { const a = B.find(r => (r[0]||"").startsWith(code3)); return a ? (a[5+mi]||0) : 0; };
-      const capex_comp   = -(sum("156"));
-      const capex_furn   = -(sum("155"));
-      const capex_intang = -(sum("176"));
-      const capex_depos  = -(sum("184"));
-      const totalInv = capex_comp + capex_furn + capex_intang + capex_depos;
-      // Financing - equity changes from B
-      const equityRow = B.find(r => r[3]==="Capital" && !r[4]);
-      const equityChg = equityRow ? (equityRow[5+mi]||0) : 0;
-      const totalFin = equityChg;
-      const netChange = totalOp + totalInv + totalFin;
-      const cashRow = B.find(r => (r[0]||"").startsWith("102") || (r[0]||"").startsWith("103"));
-      const cashActual = cashRow ? (cashRow[5+mi]||0) : 0;
-      return { m, cobros, pagCOGS, pagNomina, pagMarketing, pagViaje, pagProfes, pagOficina, pagSoftware, pagOpera, pagOtros, totalOp, capex_comp, capex_furn, capex_intang, capex_depos, totalInv, equityChg, totalFin, netChange, cashActual };
+      // ─ CAMBIO REAL EN CAJA desde cuentas 102+103 ───────────────────────────
+      const c102 = r102 ? (r102[5+mi]||0) : 0;
+      const c103 = r103 ? (r103[5+mi]||0) : 0;
+      // Enero: B[5] = saldo final al 31-Ene. Cambio = saldo_final - saldo_apertura (OPEN_CASH)
+      // Feb en adelante: B[5+mi] = movimiento mensual directo
+      const netChange = mi === 0 ? (c102 + c103) - OPEN_CASH : (c102 + c103);
+      // ─ ACTIVIDADES DE OPERACIÓN (movimientos de Balance) ──────────────────
+      // Activos corrientes: aumento activo = salida de caja → negar
+      const inventory  = -(bLeaf("115", mi));  // Inventario
+      const otherRecv  = -(bLeaf("121", mi));  // Otros activos CP
+      const vatItem    = -(bLeaf("113", mi) + bLeaf("119", mi)); // IVA a favor / pendiente
+      const prepaid    = -(bLeaf("109", mi));  // Pagos anticipados
+      const advProv    = -(bLeaf("120", mi));  // Anticipo proveedores
+      // Pasivos corrientes: aumento pasivo = entrada de caja → positivo
+      const acctsPay   = bLeaf("201", mi);     // Proveedores
+      const otherCred  = bLeaf("205", mi);     // Acreedores diversos
+      const empBenef   = bLeaf("210", mi);     // Provisión sueldos
+      const payTaxPaid = bLeaf("216", mi) + bLeaf("217", mi); // Impuestos retenidos
+      const imssProvis = bLeaf("211", mi) + bLeaf("212", mi); // IMSS/ISN provisión
+      const totalOp    = inventory + otherRecv + vatItem + prepaid + advProv +
+                         acctsPay + otherCred + empBenef + payTaxPaid + imssProvis;
+      // ─ ACTIVIDADES DE INVERSIÓN ─────────────────────────────────────────────
+      // Activo fijo: aumento activo = salida de caja → negar
+      const capexComp   = -(bLeaf("156", mi)); // Equipo de cómputo
+      const capexFurn   = -(bLeaf("155", mi)); // Mobiliario y equipo
+      const capexIntang = -(bLeaf("176", mi)); // Intangibles
+      const capexDepos  = -(bLeaf("184", mi)); // Depósitos en garantía
+      const totalInv    = capexComp + capexFurn + capexIntang + capexDepos;
+      // ─ ACTIVIDADES DE FINANCIAMIENTO ─────────────────────────────────────
+      const equityChg  = bLeaf("301", mi);     // Capital social
+      const totalFin   = equityChg;
+      return { m, inventory, otherRecv, vatItem, prepaid, advProv,
+               acctsPay, otherCred, empBenef, payTaxPaid, imssProvis, totalOp,
+               capexComp, capexFurn, capexIntang, capexDepos, totalInv,
+               equityChg, totalFin, netChange };
     });
+    // Saldos acumulados: begin/end por mes
     let bal = OPEN_CASH;
     mos.forEach(mo => { mo.beginBal = bal; mo.endBal = bal + mo.netChange; bal = mo.endBal; });
-    const notes = [
-      {section:"A) Cobros a clientes", accounts:["Net Sales (D array, Reales)"]},
-      {section:"(-) Pagos costo de ventas", accounts:["COGS (D array, Reales)"]},
-      {section:"(-) Pagos de nomina", accounts:["Salaries & Wages (D array, Reales)"]},
-      {section:"(-) Marketing & Ventas", accounts:["Sales & Marketing (D array, Reales)"]},
-      {section:"(-) Viaje & Hospedaje", accounts:["Travel & Accomodation (D array, Reales)"]},
-      {section:"(-) Servicios Profesionales", accounts:["Professional Fees (D array, Reales)"]},
-      {section:"(-) Gastos de Oficina", accounts:["Office Expense (D array, Reales)"]},
-      {section:"(-) Software & Hardware", accounts:["Software & Hardware, IT (D array, Reales)"]},
-      {section:"(-) Operaciones", accounts:["Operations (D array, Reales)"]},
-      {section:"(-) Otros gastos", accounts:["Others, Regulatory, Mobility (D array, Reales)"]},
-      {section:"(-) CAPEX Equipo Computo", accounts:["Cuenta 156 del Balance"]},
-      {section:"(-) CAPEX Mobiliario", accounts:["Cuenta 155 del Balance"]},
-      {section:"(-) Intangibles", accounts:["Cuenta 176 del Balance"]},
-      {section:"(-) Depositos en Garantia", accounts:["Cuenta 184 del Balance"]},
-      {section:"Financiamiento - Capital", accounts:["Cuentas de Capital del Balance (r[3]===Capital)"]},
-    ];
-    return {months:mos, notes};
+    // Detalles por cuenta para filas expandibles
+    const details = {
+      inventory:   bDet("115"),
+      otherRecv:   bDet("121"),
+      vatItem:     bDet("113","119"),
+      prepaid:     bDet("109"),
+      advProv:     bDet("120"),
+      acctsPay:    bDet("201"),
+      otherCred:   bDet("205"),
+      empBenef:    bDet("210"),
+      payTaxPaid:  bDet("216","217"),
+      imssProvis:  bDet("211","212"),
+      capexComp:   bDet("156"),
+      capexFurn:   bDet("155"),
+      capexIntang: bDet("176"),
+      capexDepos:  bDet("184"),
+      equityChg:   bDet("301"),
+    };
+    return { months: mos, details };
   }, [cm]);
 
 
@@ -885,110 +902,127 @@ return (
     </div>
     {cashFlow ? (() => {
       const cf = cashFlow;
-      const mos = cf.months.slice(0,cm);
-      const Fk = v => { if(v===0||v===null||v===undefined) return "—"; const neg=v<0; const s="$"+Math.abs(Math.round(v)).toLocaleString("en-US"); return neg?"-"+s:s; };
-      const neg = v => v < 0 ? "#C0392B" : v > 0 ? "#10B981" : "#6B7280";
-      const rows = cf.months.slice(0,cm);
-      const totRow = (key, label, sec) => {
-        const vals = rows.map(mo => mo[key]);
-        const tot = vals.reduce((s,v)=>s+v,0);
-        return (
-          <tr key={label} style={{background:sec?"#F0F4FF":"#F7F9FC",borderTop:"2px solid #E4E8F2"}}>
-            <td style={{padding:"6px 10px",fontWeight:700,fontSize:11,color:"#1A1D2E",paddingLeft:10}}>{label}</td>
-            {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(v)}}>{Fk(v)}</td>)}
-            <td style={{textAlign:"right",padding:"6px 8px",fontWeight:700,fontSize:11,color:neg(tot)}}>{Fk(tot)}</td>
-          </tr>
-        );
+      const rows = cf.months.slice(0, cm);
+      const det  = cf.details;
+      const Fk = v => {
+        if (v===0||v===null||v===undefined) return "—";
+        return (v<0?"-$":"$") + Math.abs(Math.round(v)).toLocaleString("en-US");
       };
-      const cfRow = (key, label, _dk, indent) => {
+      // Fila expandible con subcuentas del Balance
+      const cfRow = (key, label, detKey) => {
         const vals = rows.map(mo => (mo[key]||0));
-        const tot = vals.reduce((s,v)=>s+v,0);
+        const tot  = vals.reduce((s,v) => s+v, 0);
+        const dets = (det && det[detKey]) ? det[detKey] : [];
+        const hasD = dets.length > 0;
+        const isExp = expCF[key];
+        const cN = v => ({color:v<0?"#C0392B":v>0?"#1a1a2e":"#bbb",textAlign:"right",fontSize:11,padding:"3px 8px"});
         return (
-          <tr key={label} style={{background:"#F7F9FC",borderBottom:"1px solid #E4E8F2"}}>
-            <td style={{padding:"6px 10px",fontSize:12,paddingLeft:indent}}>{label}</td>
-                        {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"6px 8px",fontSize:12,color:neg(v)}}>{Fk(v)}</td>)}
-            <td style={{textAlign:"right",padding:"6px 8px",fontSize:12,fontWeight:600,color:neg(tot)}}>{Fk(tot)}</td>
+          <React.Fragment key={key}>
+            <tr style=cursor:hasD?"pointer":"default",background:"#fff" onClick={() => hasD && toggleCF(key)}>
+              <td style=fontSize:11,padding:"4px 8px",paddingLeft:24,color:"#334155">
+                {hasD && <span style=marginRight:4,fontSize:9,color:"#6B7280">{isExp?"▼":"►"}</span>}
+                {label}
+              </td>
+              {vals.map((v,i) => <td key={i} style={cN(v)}>{Fk(v)}</td>)}
+              <td style=color:tot<0?"#C0392B":"#1a1a2e",textAlign:"right",fontSize:11,fontWeight:600,padding:"3px 8px",borderLeft:"1px solid #E2E8F0">{Fk(tot)}</td>
+            </tr>
+            {isExp && dets
+              .filter(a => a.vals.slice(0,cm).some(v => v !== 0))
+              .map((a, ai) => (
+                <tr key={ai} style=background:"#F8FAFC">
+                  <td style=fontSize:10,padding:"3px 8px",paddingLeft:40,color:"#64748B">
+                    <span style=marginRight:4,color:"#CBD5E1">└</span>{a.name}
+                  </td>
+                  {a.vals.slice(0,cm).map((v,mi) => (
+                    <td key={mi} style=color:v<0?"#C0392B":"#475569",textAlign:"right",fontSize:10,padding:"2px 8px">
+                      {v===0?"":Fk(v)}
+                    </td>
+                  ))}
+                  <td style=color:"#475569",textAlign:"right",fontSize:10,padding:"2px 8px",borderLeft:"1px solid #E2E8F0">
+                    {Fk(a.vals.slice(0,cm).reduce((s,v)=>s+v,0))}
+                  </td>
+                </tr>
+              ))
+            }
+          </React.Fragment>
+        );
+      };
+      const totRow = (key, label) => {
+        const vals = rows.map(mo => (mo[key]||0));
+        const tot  = vals.reduce((s,v)=>s+v,0);
+        return (
+          <tr key={key} style=background:"#EFF6FF",borderTop:"2px solid #BFDBFE">
+            <td style=fontSize:11,padding:"5px 8px",paddingLeft:16,fontWeight:700,color:"#1E40AF">{label}</td>
+            {vals.map((v,i)=>(
+              <td key={i} style=textAlign:"right",fontSize:11,fontWeight:700,color:v<0?"#C0392B":"#1E40AF",padding:"5px 8px">{Fk(v)}</td>
+            ))}
+            <td style=textAlign:"right",fontSize:11,fontWeight:700,color:tot<0?"#C0392B":"#1E40AF",padding:"5px 8px",borderLeft:"1px solid #BFDBFE">{Fk(tot)}</td>
           </tr>
         );
       };
-      const balRow = (key, label, dark) => {
-        const vals = rows.map(mo => mo[key]);
+      const balRow = (key, label, purple) => {
+        const vals = rows.map(mo => (mo[key]||0));
+        const bg = purple ? "#F3E8FF" : "#FAF5FF";
+        const fw = purple ? 700 : 500;
+        const col = v => purple ? (v<0?"#7C3AED":"#6D28D9") : "#7C3AED";
         return (
-          <tr key={label} style={{background:dark?"#1A1D2E":"#2D3150",borderTop:"2px solid #374151"}}>
-            <td style={{padding:"7px 10px",fontWeight:700,fontSize:11,color:"#F3F4F6"}}>{label}</td>
-            {vals.map((v,i)=><td key={i} style={{textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:v<0?"#F87171":"#6EE7B7"}}>{Fk(v)}</td>)}
-            <td style={{textAlign:"right",padding:"7px 8px",fontWeight:700,fontSize:11,color:"#9CA3AF"}}>—</td>
+          <tr key={key} style=background:bg,borderTop:purple?"2px solid #C4B5FD":"none">
+            <td style=fontSize:11,padding:"5px 8px",paddingLeft:16,fontWeight:fw,color:"#5B21B6">{label}</td>
+            {vals.map((v,i)=>(
+              <td key={i} style=textAlign:"right",fontSize:11,fontWeight:fw,color:col(v),padding:"5px 8px">{Fk(v)}</td>
+            ))}
+            <td style=textAlign:"right",fontSize:11,fontWeight:fw,color:"#9CA3AF",padding:"5px 8px",borderLeft:"1px solid #E9D5FF">{"—"}</td>
           </tr>
         );
       };
-      const sectionHeader = (label, color) => (
-        <tr key={"sec-"+label} style={{background:color||"#EEF2FF"}}>
-          <td colSpan={cm+2} style={{padding:"5px 10px",fontWeight:700,fontSize:10,color:"#374151",letterSpacing:"0.05em",textTransform:"uppercase"}}>{label}</td>
+      const secH = (label) => (
+        <tr key={"h"+label}>
+          <td colSpan={cm+2} style=fontSize:10,fontWeight:700,letterSpacing:1,color:"#fff",background:"#334155",padding:"5px 10px",textTransform:"uppercase">{label}</td>
         </tr>
       );
       return (
-        <div style={{overflowX:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:10,tableLayout:"auto"}}>
+        <div style=overflowX:"auto",marginTop:12>
+          <table style=borderCollapse:"collapse",width:"100%",fontSize:11>
             <thead>
-              <tr style={{background:"#1A1D2E"}}>
-                <th style={{textAlign:"left",padding:"7px 10px",fontSize:10,color:"#9CA3AF",fontWeight:600,minWidth:180}}>Concepto</th>
-                {rows.map(mo=><th key={mo.m} style={{textAlign:"right",padding:"7px 8px",fontSize:10,color:"#9CA3AF",fontWeight:600,whiteSpace:"nowrap"}}>{MO[mo.m-1]}</th>)}
-                <th style={{textAlign:"right",padding:"7px 8px",fontSize:10,color:"#F59E0B",fontWeight:700}}>TOTAL</th>
+              <tr style=background:"#1E293B">
+                <th style=textAlign:"left",padding:"6px 10px",color:"#fff",fontSize:11,fontWeight:600,minWidth:200>Concepto</th>
+                {rows.map(mo => <th key={mo.m} style=textAlign:"right",padding:"6px 8px",color:"#94A3B8",fontSize:10,fontWeight:500>{MO[mo.m-1]}</th>)}
+                <th style=textAlign:"right",padding:"6px 8px",color:"#38BDF8",fontSize:10,fontWeight:600,borderLeft:"1px solid #334155">TOTAL</th>
               </tr>
             </thead>
             <tbody>
-              {sectionHeader("A) Actividades de Operacion","#EFF6FF")}
-              {cfRow("cobros",      "(+) Cobros a Clientes",           null, 20)}
-              {cfRow("pagCOGS",     "(-) Costo de Ventas Pagado",      null, 20)}
-              {cfRow("pagNomina",   "(-) Nomina Pagada",               null, 20)}
-              {cfRow("pagMarketing","(-) Marketing & Ventas",          null, 20)}
-              {cfRow("pagViaje",    "(-) Viaje & Hospedaje",           null, 20)}
-              {cfRow("pagProfes",   "(-) Servicios Profesionales",     null, 20)}
-              {cfRow("pagOficina",  "(-) Gastos de Oficina",           null, 20)}
-              {cfRow("pagSoftware", "(-) Software & Hardware",         null, 20)}
-              {cfRow("pagOpera",    "(-) Operaciones",                 null, 20)}
-              {cfRow("pagOtros",    "(-) Otros Gastos",                null, 20)}
-              {totRow("totalOp",    "= FLUJO OPERATIVO",               true)}
-              {sectionHeader("B) Actividades de Inversion","#FFF7ED")}
-              {cfRow("capex_comp",  "(-) Equipo de Computo",           "capex_comp",  20)}
-              {cfRow("capex_furn",  "(-) Mobiliario y Equipo",         "capex_furn",  20)}
-              {cfRow("capex_intang","(-) Intangibles y Software",      "capex_intang",20)}
-              {cfRow("capex_depos", "(-) Depositos en Garantia",       "capex_depos", 20)}
-              {totRow("totalInv",   "= FLUJO DE INVERSION",            true)}
-              {sectionHeader("C) Actividades de Financiamiento","#F0FDF4")}
-              {cfRow("equityChg",   "Capital Social / Aportaciones",   "equityChg",   20)}
-              {totRow("totalFin",   "= FLUJO DE FINANCIAMIENTO",       true)}
-              {balRow("netChange",  "CAMBIO EN EFECTIVO",              true)}
-              {balRow("beginBal",   "SALDO INICIAL",                   false)}
-              {balRow("endBal",     "SALDO FINAL",                     false)}
-              <tr style={{background:"#0B6644"}}>
-                <td style={{padding:"5px 10px",fontSize:9,color:"#6EE7B7",fontWeight:600}}>Verificacion: Efectivo en Balance</td>
-                {rows.map(mo=>{
-                  const diff = mo.cashActual - mo.endBal;
-                  return <td key={mo.m} style={{textAlign:"right",padding:"5px 8px",fontSize:9,color:Math.abs(diff)<1000?"#6EE7B7":"#F87171"}}>{Fk(mo.cashActual)}</td>;
-                })}
-                <td></td>
-              </tr>
+              {secH("A)  Actividades de Operación")}
+              {cfRow("inventory",  "Inventario",              "inventory")}
+              {cfRow("otherRecv",  "Otros Activos CP",        "otherRecv")}
+              {cfRow("vatItem",    "IVA a Favor / Pendiente", "vatItem")}
+              {cfRow("prepaid",    "Pagos Anticipados",       "prepaid")}
+              {cfRow("advProv",    "Anticipo Proveedores",    "advProv")}
+              {cfRow("acctsPay",   "Proveedores",             "acctsPay")}
+              {cfRow("otherCred",  "Acreedores Diversos",     "otherCred")}
+              {cfRow("empBenef",   "Provisión Sueldos",       "empBenef")}
+              {cfRow("payTaxPaid", "Impuestos Retenidos",     "payTaxPaid")}
+              {cfRow("imssProvis", "IMSS / ISN Provisión",    "imssProvis")}
+              {totRow("totalOp",  "= FLUJO OPERATIVO")}
+              {secH("B)  Actividades de Inversión")}
+              {cfRow("capexComp",   "(-) Equipo de Cómputo",     "capexComp")}
+              {cfRow("capexFurn",   "(-) Mobiliario y Equipo",   "capexFurn")}
+              {cfRow("capexIntang", "(-) Intangibles / Software", "capexIntang")}
+              {cfRow("capexDepos",  "(-) Depósitos en Garantía", "capexDepos")}
+              {totRow("totalInv",  "= FLUJO DE INVERSIÓN")}
+              {secH("C)  Actividades de Financiamiento")}
+              {cfRow("equityChg",  "Capital Social / Aportaciones", "equityChg")}
+              {totRow("totalFin",  "= FLUJO DE FINANCIAMIENTO")}
+              {balRow("netChange", "Δ CAMBIO EN EFECTIVO", true)}
+              {balRow("beginBal",  "Saldo Inicial", false)}
+              {balRow("endBal",    "Saldo Final",   false)}
             </tbody>
           </table>
-        </div>
-      );
-    })() : <div style={{color:"#6B7280",fontSize:12,padding:16}}>Cargando datos de balance...</div>}
-  </div>
-);
-      })()}
-
-
-      {/* ═══════ BALANCE GENERAL ═══════ */}
-      {balData&&<div style={{borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16,marginBottom:16}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-          <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1a1a2e"/><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">BG</text></svg>
-          <div>
-            <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:500,color:"#1a1a2e"}}>Balance Sheet</div>
-            <div style={{fontSize:9,color:"#8A90A8",letterSpacing:2,textTransform:"uppercase"}}>Cumulative balances as of {MO[cm-1]} 2026</div>
+          <div style=fontSize:10,color:"#94A3B8",marginTop:6,paddingLeft:4>
+            * Haz clic en cualquier línea para expandir el detalle de cuentas
           </div>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:8,marginBottom:16}}>
+      );
+    })() : <div style=color:"#6B7280",fontSize:12,padding:16>Cargando datos de balance...</div>}
           {[{l:"TOTAL ASSETS",v:balData.totAct?.cum,c:"#1D9E75",mov:balData.totAct?.mov},{l:"TOTAL LIABILITIES",v:balData.totPas?.cum,c:"#E24B4A",mov:balData.totPas?.mov},{l:"EQUITY",v:balData.totCap?.cum,c:"#534AB7",mov:balData.totCap?.mov},{l:"NET INCOME (LOSS)",v:balData.perGan?.cum,c:balData.perGan?.cum<0?"#E24B4A":"#1D9E75",mov:balData.perGan?.mov}].map((k,i)=>(
             <div key={i} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 14px",borderTop:`3px solid ${k.c}`}}>
               <div style={{fontSize:7,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",marginBottom:3}}>{k.l}</div>
