@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie, LabelList } from "recharts";
 
 const MO=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -500,7 +500,7 @@ export default function Dashboard() {
   const [expCF, setExpCF] = useState({});
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
   const [mainTab, setMainTab] = useState("dashboard");
-  const [expPnlAnn, setExpPnlAnn] = useState({});
+  const [expPnlAnn, setExpPnlAnn] = useState({2026:true});
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[3])));
@@ -509,6 +509,7 @@ export default function Dashboard() {
   }, [selMols, selAreas]);
   const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
   const allM = Array.from({ length: 12 }, (_, i) => i + 1);
+  const allYears = [2026]; // auto-detected years
 
   // P&L table data
   const plData = useMemo(() => {
@@ -1383,7 +1384,7 @@ export default function Dashboard() {
             <thead>
               <tr>
                 <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:11,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
-                {[2026].map(yr => (
+                {allYears.map(yr => (
                   <React.Fragment key={yr}>
                     <th
                       style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:12,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
@@ -1413,12 +1414,12 @@ export default function Dashboard() {
                   <React.Fragment key={k}>
                     {k==="sw" && (
                       <tr key="sep-sw">
-                        <td colSpan={1+[2026].length*(expPnlAnn[2026]?13:1)} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
+                        <td colSpan={allYears.reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+1} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
                       </tr>
                     )}
                     <tr style={rowStyle}>
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
-                      {[2026].map(yr => {
+                      {allYears.map(yr => {
                         const isExp = expPnlAnn[yr];
                         const fyVal = allM.reduce((s,m) => s + buildPL(fd,m,cm,"consolidado")[k], 0);
                         const fyNs = allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado").ns,0);
