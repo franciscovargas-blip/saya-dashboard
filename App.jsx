@@ -1421,9 +1421,9 @@ export default function Dashboard() {
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
                       {allYears.map(yr => {
                         const isExp = expPnlAnn[yr];
-                        const fyVal = allM.reduce((s,m) => s + buildPL(fd,m,cm,"consolidado")[k], 0);
-                        const fyNs = allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado").ns,0);
-                        const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+buildPL(fd,m,cm,"consolidado")[k.replace("Pct","")],0)/fyNs : null;
+                        const fyVal = allM.reduce((s,m) => s + buildPL(fd,m,cm,view)[k], 0);
+                        const fyNs = allM.reduce((a,m)=>a+buildPL(fd,m,cm,view).ns,0);
+                        const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+buildPL(fd,m,cm,view)[k.replace("Pct","")],0)/fyNs : null;
                         return (
                           <React.Fragment key={yr}>
                             <td style={{textAlign:"right",padding:"6px 12px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,color:k==="netProfit"?"#4C1D95":undefined}}>
@@ -1431,9 +1431,9 @@ export default function Dashboard() {
                             </td>
                             {isExp && allM.map((m,mi) => {
                               const isReal = yr < 2026 || (yr===2026 && m<=cm);
-                              const v = buildPL(fd,m,cm,"consolidado")[k];
-                              const vNs = buildPL(fd,m,cm,"consolidado").ns;
-                              const vPct = isPct && vNs ? buildPL(fd,m,cm,"consolidado")[k.replace("Pct","")]/vNs : null;
+                              const v = buildPL(fd,m,cm,view)[k];
+                              const vNs = buildPL(fd,m,cm,view).ns;
+                              const vPct = isPct && vNs ? buildPL(fd,m,cm,view)[k.replace("Pct","")]/vNs : null;
                               return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
                             })}
                           </React.Fragment>
