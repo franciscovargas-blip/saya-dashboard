@@ -570,7 +570,7 @@ export default function Dashboard() {
               ← Volver a todas las líneas
             </div>
           )}
-          React.createElement(OpexFunnel, {data: expandedOpexLine ? opexDetailData : opexClsData, onClickBar: function(fdName){ setExpandedOpexLine(fdName); }, expanded: !!expandedOpexLine})
+          {React.createElement(OpexFunnel, {data: expandedOpexLine ? opexDetailData : opexClsData, onClickBar: function(fdName){ setExpandedOpexLine(fdName); }, expanded: !!expandedOpexLine})}
         </div>
       </div>
 
