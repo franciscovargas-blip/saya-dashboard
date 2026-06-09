@@ -1047,28 +1047,60 @@ export default function Dashboard() {
                     De <strong>Febrero en adelante</strong>, se usa el movimiento mensual directo de cada cuenta.
                   </p>
 
-                                       <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
-                        <thead>
-                          <tr style={{background:'#F0F2FA'}}>
-                            {['Línea del Flujo','Cuentas SAP','Descripción','Convención de signo'].map((h,hi)=>(
-                              <th key={hi} style={{padding:'5px 10px',textAlign:'left',fontWeight:600,color:'#3D4366',borderBottom:'1px solid #D0D5E8'}}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sec.rows.map(([l,c,d,s],ri) => (
-                            <tr key={ri} style={{background: ri%2===0 ? '#fff' : '#F8F9FD'}}>
-                              <td style={{padding:'5px 10px',fontWeight:600,color:'#1a1a2e',whiteSpace:'nowrap',borderBottom:'1px solid #EEF0F8'}}>{l}</td>
-                              <td style={{padding:'5px 10px',fontFamily:'monospace',fontSize:10,color:'#534AB7',borderBottom:'1px solid #EEF0F8'}}>{c}</td>
-                              <td style={{padding:'5px 10px',color:'#3D4366',borderBottom:'1px solid #EEF0F8'}}>{d}</td>
-                              <td style={{padding:'5px 10px',color:'#6B7280',fontSize:10,borderBottom:'1px solid #EEF0F8'}}>{s}</td>
-                            </tr>
+                  {[{
+                    title: 'A) Actividades de Operación', color: '#0B6644',
+                    rows: [
+                      ['Utilidad Neta','P&L del periodo','Utilidad/pérdida calculada por buildPL.','Positivo = ganancia; Negativo = pérdida'],
+                      ['(+) Dep./Amort.','161-xx+162-xx+177-xx','Depreciación acumulada. Gasto no monetario: suma de regreso.','Siempre positivo'],
+                      ['Inventario','115-xx-xxx','Movimiento mensual subcuentas hoja de inventario.','Activo ↑ = salida → negativo'],
+                      ['Otros Activos CP','121-xx-xxx','Deudores, anticipos de personal y otros activos circulantes.','Activo ↑ = salida → negativo'],
+                      ['IVA a Favor/Pendiente','118-xx-xxx','IVA acreditable pendiente de compensar o cobrar.','Activo ↑ = salida → negativo'],
+                      ['Pagos Anticipados','126-xx-xxx','Seguros, rentas anticipadas y otros prepagos.','Activo ↑ = salida → negativo'],
+                      ['Anticipo Proveedores','131-xx-xxx','Anticipos entregados a proveedores por bienes/servicios futuros.','Activo ↑ = salida → negativo'],
+                      ['Proveedores','201-xx-xxx','Cuentas por pagar a proveedores comerciales.','Pasivo ↑ = fuente → positivo'],
+                      ['Acreedores Diversos','205-xx-xxx','Otras cuentas por pagar: honorarios, servicios.','Pasivo ↑ = fuente → positivo'],
+                      ['Provisión Sueldos','210-xx-xxx','Sueldos y prestaciones laborales devengados pendientes de pago.','Pasivo ↑ = fuente → positivo'],
+                      ['Impuestos Retenidos','216-xx+217-xx','ISR retenido a empleados (216) y retenciones por enterar al SAT (217).','Pasivo ↑ = fuente → positivo'],
+                      ['IMSS/ISN Provisión','211-xx+212-xx','Cuotas patronales IMSS (211) e ISN (212).','Pasivo ↑ = fuente → positivo'],
+                      ['(±) Otros gastos de operación','Línea de cuadre automático','Absorbe movimientos SAP no capturados explícitamente. = Cambio Neto en Caja − (Op.explícita + Inv + Fin). El flujo siempre cierra exactamente.','Positivo = fuente; Negativo = uso'],
+                    ]
+                  },{
+                    title: 'B) Actividades de Inversión (CAPEX)', color: '#185FA5',
+                    rows: [
+                      ['(-) Equipo de Cómputo','156-xx-xxx','Computadoras, servidores y periféricos capitalizados.','Activo fijo ↑ = salida → ×(−1)'],
+                      ['(-) Mobiliario y Equipo','155-xx-xxx','Muebles, equipo de oficina y laboratorio capitalizado.','Activo fijo ↑ = salida → ×(−1)'],
+                      ['(-) Intangibles/Software','176-xx-xxx','Licencias perpetuas y otros activos intangibles.','Activo ↑ = salida → ×(−1)'],
+                      ['(-) Depósitos en Garantía','184-xx-xxx','Depósitos en garantía por arrendamientos de oficinas o equipos.','Activo ↑ = salida → ×(−1)'],
+                    ]
+                  },{
+                    title: 'C) Actividades de Financiamiento', color: '#534AB7',
+                    rows: [
+                      ['Capital Social/Aportaciones','301-xx-xxx','Aportaciones de socios (entradas) o reembolsos de capital. Solo cuentas hoja prefijo 301.','Aumento = entrada; Disminución = negativo'],
+                    ]
+                  }].map((sec,si) => (
+                    <div key={si} style={{marginBottom:20}}>
+                      <div style={{fontWeight:700,fontSize:12,color:sec.color,marginBottom:8,paddingBottom:4,borderBottom:`2px solid {sec.color}33`}}>
+                        {sec.title}
+                      </div>
+                      <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+                        <thead><tr style={{background:'#F0F2FA'}}>
+                          {['Línea','Cuentas SAP','Descripción','Signo'].map((h,hi) => (
+                            <th key={hi} style={{padding:'5px 8px',textAlign:'left',fontWeight:600,color:'#3D4366',borderBottom:'1px solid #D0D5E8'}}>{h}</th>
                           ))}
+                        </tr></thead>
+                        <tbody>
+                        {sec.rows.map(([l,c,d,s],ri) => (
+                          <tr key={ri} style={{background:ri%2===0?'#fff':'#F8F9FD'}}>
+                            <td style={{padding:'5px 8px',fontWeight:600,whiteSpace:'nowrap',borderBottom:'1px solid #EEF0F8'}}>{l}</td>
+                            <td style={{padding:'5px 8px',fontFamily:'monospace',fontSize:10,color:'#534AB7',borderBottom:'1px solid #EEF0F8'}}>{c}</td>
+                            <td style={{padding:'5px 8px',color:'#3D4366',borderBottom:'1px solid #EEF0F8'}}>{d}</td>
+                            <td style={{padding:'5px 8px',color:'#6B7280',fontSize:10,borderBottom:'1px solid #EEF0F8'}}>{s}</td>
+                          </tr>
+                        ))}
                         </tbody>
                       </table>
                     </div>
                   ))}
-
                   {/* TOTALES Y SALDOS */}
                   <div style={{marginTop:8,padding:'12px 16px',background:'#fff',borderRadius:8,border:'1px solid #E4E8F2'}}>
                     <div style={{fontWeight:700,fontSize:12,color:'#1a1a2e',marginBottom:10,paddingBottom:4,borderBottom:'2px solid #E4E8F244'}}>
