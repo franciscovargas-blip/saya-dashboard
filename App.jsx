@@ -539,42 +539,6 @@ export default function Dashboard() {
         ))}
       </div>
 //
-//
-      {/* BURN ACUM TABLE */}
-      <div style=overflowX:"auto",marginBottom:16,borderRadius:10,border:"1px solid #E4E8F2",background:"#fff">
-        <table style=borderCollapse:"collapse",width:"100%",fontSize:11>
-          <thead>
-            <tr>
-              <th style=padding:"6px 10px",textAlign:"left",background:"#F4F6FB",fontWeight:700,fontSize:11,color:"#1E2A3A",position:"sticky",left:0,zIndex:2,borderBottom:"2px solid #E4E8F2",whiteSpace:"nowrap">Burn ACUM</th>
-              {allM.map((m,mi) => {
-                const isAct = mi+1 <= cm;
-                return (
-                  <th key={mi} style=padding:"3px 6px",textAlign:"right",background:isAct?"#EEF6F2":"#F5F6FA",fontWeight:500,fontSize:10,color:isAct?"#1D9E75":"#8A90A8",borderBottom:"2px solid #E4E8F2",whiteSpace:"nowrap",minWidth:72>
-                    <div style=fontSize:9,color:isAct?"#1D9E75":"#8A90A8",fontWeight:600>{isAct?"Act":"Fcst"}</div>
-                    <div>{CUR_YEAR}</div>
-                    <div style=fontWeight:400,color:"#8A90A8">{MO[mi]}</div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            <tr style=background:"#fff">
-              <td style=padding:"6px 10px",fontWeight:700,fontSize:12,color:"#1E2A3A",position:"sticky",left:0,background:"#fff",zIndex:1,borderBottom:"1px solid #F0F2F8",whiteSpace:"nowrap">Burn ACUM</td>
-              {allM.map((m,mi) => {
-                const burnCum = allM.slice(0,mi+1).reduce((s,mx) => s + buildPL(fd, CUR_YEAR, mx, cm, view==="reales"?"reales":view==="forecast"?"forecast":(Number(mx)<=cm?"reales":"forecast")).ebitda, 0);
-                const isNeg = burnCum < 0;
-                return (
-                  <td key={mi} style=padding:"6px 8px",textAlign:"right",fontWeight:600,fontSize:12,color:isNeg?"#E24B4A":"#1D9E75",borderBottom:"1px solid #F0F2F8",background:mi+1===cm?"#FFF8F8":"transparent">
-                    {burnCum === 0 ? "—" : (burnCum >= 1e6 || burnCum <= -1e6 ? (burnCum/1e6).toFixed(1)+"M" : burnCum >= 1e3 || burnCum <= -1e3 ? (burnCum/1e3).toFixed(0)+"K" : burnCum.toFixed(0))}
-                  </td>
-                );
-              })}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-//
       {/* P&L TABLE */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
@@ -586,8 +550,8 @@ export default function Dashboard() {
               <Bar dataKey="Sales" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E7566" : "#1D9E7533"} />)}</Bar>
               <Bar dataKey="OpEx" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A55" : "#E24B4A22"} />)}</Bar>
               <Line type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={2} dot={{ r: 2, fill: "#534AB7" }} />
-//
-              <Legend verticalAlign="top" height={24} iconSize={10} /></ComposedChart>
+              <Legend verticalAlign="top" height={24} iconSize={10} />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
@@ -1095,7 +1059,7 @@ export default function Dashboard() {
                       const isReal = yr < CUR_YEAR || (yr===CUR_YEAR && mi+1<=cm);
                       return <th key={mi} style={{textAlign:"right",padding:"5px 6px",background:isReal?"#EEF6F2":"#F5F6FA",fontWeight:500,fontSize:10,borderBottom:"2px solid #E4E8F2",color:isReal?"#1D9E75":"#8A90A8",whiteSpace:"nowrap"}}>{mo}</th>;
                     })}
-                    {expPnlAnn[yr] && <th key="tot" style=textAlign:"right",padding:"5px 6px",background:"#EDE9FA",fontWeight:700,fontSize:10,borderBottom:"2px solid #534AB733",borderLeft:"2px solid #534AB733",color:"#534AB7",whiteSpace:"nowrap">Total</th>}
+                    {expPnlAnn[yr] && <th key="tot" style={({textAlign:"right",padding:"5px 6px",background:"#F4F6FB",fontWeight:700,fontSize:10,borderBottom:"2px solid #E4E8F2",borderLeft:"2px solid #534AB733"})}>Total</th>}
                   </React.Fragment>
                 ))}
               </tr>
@@ -1136,12 +1100,7 @@ export default function Dashboard() {
                               const vNs = buildPL(fd,yr,m,cm,mMode).ns;
                               const vPct = isPct && vNs ? buildPL(fd,yr,m,cm,mMode)[k.replace("Pct","")]/vNs : null;
                               return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
-                            })}{isExp && (() => {
-                              const fyVal2 = allM.reduce((s,m2) => s + buildPL(fd,yr,m2,cm, view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"reales":"forecast"))[k], 0);
-                              const fyNs2 = allM.reduce((s,m2) => s + buildPL(fd,yr,m2,cm, view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"reales":"forecast")).ns, 0);
-                              const fyPct2 = isPct && fyNs2 ? fyVal2/fyNs2 : null;
-                              return <td key="tot" style=textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:700,fontSize:11,background:"#F4F6FB",borderLeft:"2px solid #534AB733",color:"#1a1a2e">{isPct ? (fyPct2!==null?Math.round(fyPct2*100)+"%":"—") : (fyVal2!==0?(fyVal2>=1e6?(fyVal2/1e6).toFixed(1)+"M":fyVal2>=1e3?(fyVal2/1e3).toFixed(0)+"K":fyVal2.toFixed(0)):"—")}</td>;
-                            })()}
+                            })}
                           </React.Fragment>
                         );
                       })}
