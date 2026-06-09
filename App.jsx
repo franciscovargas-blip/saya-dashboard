@@ -1077,9 +1077,9 @@ export default function Dashboard() {
                   </p>
 
                   {/* ──── NOTA DE PARCHES ──── */}
-                  <div style=background:'#FFFBEB',border:'1px solid #FCD34D',borderRadius:6,padding:'10px 14px',marginBottom:16,fontSize:12,lineHeight:'1.7'>
-                    <strong style=color:'#92400E'>⚠ Parches aplicados al cálculo</strong>
-                    <ol style=margin:'6px 0 0 16px',padding:0>
+                  <div style={{background:'#FFFBEB',border:'1px solid #FCD34D',borderRadius:6,padding:'10px 14px',marginBottom:16,fontSize:12,lineHeight:'1.7'}}>
+                    <strong style={{color:'#92400E'}}>⚠ Parches aplicados al cálculo</strong>
+                    <ol style={{margin:'6px 0 0 16px',padding:0}}>
                       <li><strong>netChange (Cambio en Caja):</strong> Se calcula como <code>mov(102) + mov(103)</code>. El balance de SAP de Enero traía saldos acumulados desde Dic-2025; el script de Python convierte todos a movimientos mensuales usando el baseline de Diciembre 2025 (caja apertura = <strong>$4,955,698</strong>). Se eliminó el <code>-OPEN_CASH</code> que se aplicaba erróneamente solo en Enero.</li>
                       <li><strong>Cuentas hoja (leafCodes):</strong> Se excluyen los nodos de sección de profundidad 1 (<code>100-01-000</code>, <code>100-02-000</code>, <code>200-01-000</code>, <code>300-01-000</code>) para evitar doble conteo. Solo se suman cuentas analíticas (hoja).</li>
                       <li><strong>Resultado del Ejercicio (D):</strong> Derivado directamente del Balance SAP como <code>ΔCapital Total − ΔCapital 301</code>. Representa la Utilidad/Pérdida Neta que SAP registra en la fila «Período ganancias» del Balance General.</li>
@@ -1258,7 +1258,7 @@ export default function Dashboard() {
                       const isReal = yr < CUR_YEAR || (yr===CUR_YEAR && mi+1<=cm);
                       return <th key={mi} style={{textAlign:"right",padding:"5px 6px",background:isReal?"#EEF6F2":"#F5F6FA",fontWeight:500,fontSize:10,borderBottom:"2px solid #E4E8F2",color:isReal?"#1D9E75":"#8A90A8",whiteSpace:"nowrap"}}>{mo}</th>;
                     })}
-                    {expPnlAnn[yr] && <th key="tot" style=textAlign:"right",padding:"5px 6px",background:"#E8F0FE",fontWeight:700,color:"#1E3A5F",borderLeft:"2px solid #BFCFE8",whiteSpace:"nowrap",fontSize:10,borderBottom:"2px solid #BFCFE8">Total</th>}
+                    {expPnlAnn[yr] && <th key="tot" style={{textAlign:"right",padding:"5px 6px",background:"#E8F0FE",fontWeight:700,color:"#1E3A5F",borderLeft:"2px solid #BFCFE8",whiteSpace:"nowrap",fontSize:10,borderBottom:"2px solid #BFCFE8"}}>Total</th>}
                   </React.Fragment>
                 ))}
               </tr>
@@ -1304,7 +1304,7 @@ export default function Dashboard() {
                               const totVal=allM.reduce((s,m)=>{const mNum=Number(m);const isR=(view==="reales"||(view==="consolidado"&&mNum<=cm));const mm=isR?"reales":"forecast";return s+buildPL(fd,yr,m,cm,mm)[k];},0);
                               const totNs=allM.reduce((s,m)=>{const mNum=Number(m);const isR=(view==="reales"||(view==="consolidado"&&mNum<=cm));const mm=isR?"reales":"forecast";return s+buildPL(fd,yr,m,cm,mm).ns;},0);
                               const totPct=isPct&&totNs?allM.reduce((s,m)=>{const mNum=Number(m);const isR=(view==="reales"||(view==="consolidado"&&mNum<=cm));const mm=isR?"reales":"forecast";return s+buildPL(fd,yr,m,cm,mm)[k.replace('Pct','')];},0)/totNs:null;
-                              return <td key="tot" style=textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:700,color:"#1E3A5F",background:"#E8F0FE",borderLeft:"2px solid #BFCFE8">{ isPct?P(totPct):F(totVal) }</td>;
+                              return <td key="tot" style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:700,color:"#1E3A5F",background:"#E8F0FE",borderLeft:"2px solid #BFCFE8"}}>{ isPct?P(totPct):F(totVal) }</td>;
                             })()}
                           </React.Fragment>
                         );
