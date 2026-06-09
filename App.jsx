@@ -556,11 +556,7 @@ export default function Dashboard() {
               <Bar dataKey="Sales" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E7566" : "#1D9E7533"} />)}</Bar>
               <Bar dataKey="OpEx" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A55" : "#E24B4A22"} />)}</Bar>
               <Line type="monotone" dataKey="EBITDA" stroke="#534AB7" strokeWidth={3} dot={{ r: 2, fill: "#534AB7" }} />
-              <Legend verticalAlign="top" height={24} iconSize={10} /> Sales</span>
-                  <span style=display:'flex',alignItems:'center',gap:4><span style=display:'inline-block',width:12,height:12,borderRadius:2,background:'#E24B4A',opacity:0.8/> OpEx</span>
-                  <span style=display:'flex',alignItems:'center',gap:4><span style=display:'inline-block',width:12,height:2,background:'#534AB7'/> EBITDA</span>
-                </div>
-              )} />
+              <Legend verticalAlign="top" height={24} iconSize={10} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
