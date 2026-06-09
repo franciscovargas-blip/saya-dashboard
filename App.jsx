@@ -348,8 +348,18 @@ export default function Dashboard() {
     if (!B || B.length === 0) return null;
     // suma cuentas hoja (no totales) con prefijo dado para el mes mi
     // B[5]=saldo 31-Ene (NO movimiento); B[6..]=movimientos mensuales
+    // leafCodes: solo cuentas hoja (sin subcuentas en B) para evitar duplicacion
+    const _bNT = B.filter(r => r[0] && !r[4]);
+    const leafCodes = new Set(
+      _bNT.filter(r => {
+        const [A,BB,CCC] = r[0].split('-');
+        if (CCC !== '000') return true;                          // depth4: siempre hoja
+        if (BB === '00')   return !_bNT.some(o => o[0] !== r[0] && o[0].startsWith(A+'-') && o[2] > 2); // depth2
+        return             !_bNT.some(o => o[0] !== r[0] && o[0].startsWith(A+'-'+BB+'-') && o[2] > 3); // depth3
+      }).map(r => r[0])
+    );
     const bLeaf = (pfx, mi) => B
-      .filter(r => !r[4] && (r[0]||"").startsWith(pfx))
+      .filter(r => !r[4] && leafCodes.has(r[0]||"") && (r[0]||"").startsWith(pfx))
       .reduce((s, r) => s + (r[5+mi]||0), 0);
     // detalle de subcuentas (depth>=3, no total) para filas expandibles
     const bDet = (...pfxs) => B
