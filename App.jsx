@@ -540,43 +540,44 @@ export default function Dashboard() {
       </div>
 //
 //
+      {/* BURN ACUM TABLE */}
+      <div style=overflowX:'auto',marginBottom:16,borderRadius:10,border:'1px solid #E4E8F2',background:'#fff'>
+        <table style=borderCollapse:'collapse',width:'100%',fontSize:11>
+          <thead>
+            <tr>
+              <th style=padding:'6px 10px',textAlign:'left',background:'#F4F6FB',fontWeight:700,fontSize:11,color:'#1E2A3A',position:'sticky',left:0,zIndex:2,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'>Burn ACUM</th>
+              {allM.map((m,mi) => {
+                const isAct = mi+1 <= cm;
+                return (
+                  <th key={mi} style=padding:'3px 6px',textAlign:'right',background:isAct?'#EEF6F2':'#F5F6FA',fontWeight:500,fontSize:10,color:isAct?'#1D9E75':'#8A90A8',borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap',minWidth:72>
+                    <div style=fontSize:9,fontWeight:600,color:isAct?'#1D9E75':'#8A90A8'>{isAct?'Act':'Fcst'}</div>
+                    <div>{CUR_YEAR}</div>
+                    <div style=fontWeight:400,color:'#8A90A8'>{MO[mi]}</div>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            <tr style=background:'#fff'>
+              <td style=padding:'6px 10px',fontWeight:700,fontSize:12,color:'#1E2A3A',position:'sticky',left:0,background:'#fff',zIndex:1,borderBottom:'1px solid #F0F2F8',whiteSpace:'nowrap'>Burn ACUM</td>
+              {allM.map((m,mi) => {
+                const mMode = view==='reales'?'reales':view==='forecast'?'forecast':(Number(m)<=cm?'reales':'forecast');
+                const burnCum = allM.slice(0,mi+1).reduce((s,mx) => s + buildPL(fd,CUR_YEAR,mx,cm,view==='reales'?'reales':view==='forecast'?'forecast':(Number(mx)<=cm?'reales':'forecast')).ebitda, 0);
+                const isNeg = burnCum < 0;
+                const fmtB = v => v===0?'—':(Math.abs(v)>=1e6?(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?(v/1e3).toFixed(0)+'K':v.toFixed(0));
+                return (
+                  <td key={mi} style=padding:'6px 8px',textAlign:'right',fontWeight:600,fontSize:12,color:isNeg?'#E24B4A':'#1D9E75',borderBottom:'1px solid #F0F2F8',background:mi+1===cm?'#FFF8F8':'transparent'>
+                    {fmtB(burnCum)}
+                  </td>
+                );
+              })}
+            </tr>
+          </tbody>
+        </table>
+      </div>
 //
-      {(()=>{
-        const sBurnWrap = {overflowX:'auto',marginBottom:16,borderRadius:10,border:'1px solid #E4E8F2',background:'#fff'};
-        const sBurnTable = {borderCollapse:'collapse',width:'100%',fontSize:11};
-        const sBurnThLabel = {padding:'6px 10px',textAlign:'left',background:'#F4F6FB',fontWeight:700,fontSize:11,color:'#1E2A3A',position:'sticky',left:0,zIndex:2,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'};
-        const sBurnTdLabel = {padding:'6px 10px',fontWeight:700,fontSize:12,color:'#1E2A3A',position:'sticky',left:0,background:'#fff',zIndex:1,borderBottom:'1px solid #F0F2F8',whiteSpace:'nowrap'};
-        const sBurnRow = {background:'#fff'};
-        const fmtB = v => v===0?'—':(Math.abs(v)>=1e6?(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?(v/1e3).toFixed(0)+'K':v.toFixed(0));
-        return (
-          <div style={sBurnWrap}>
-            <table style={sBurnTable}>
-              <thead>
-                <tr>
-                  <th style={sBurnThLabel}>Burn ACUM</th>
-                  {allM.map((m,mi)=>{
-                    const isAct=mi+1<=cm;
-                    const sThM={padding:'3px 6px',textAlign:'right',background:isAct?'#EEF6F2':'#F5F6FA',fontWeight:500,fontSize:10,color:isAct?'#1D9E75':'#8A90A8',borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap',minWidth:72};
-                    const sDivAct={fontSize:9,color:isAct?'#1D9E75':'#8A90A8',fontWeight:600};
-                    const sDivMo={fontWeight:400,color:'#8A90A8'};
-                    return(<th key={mi} style={sThM}><div style={sDivAct}>{isAct?'Act':'Fcst'}</div><div>{CUR_YEAR}</div><div style={sDivMo}>{MO[mi]}</div></th>);
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={sBurnRow}>
-                  <td style={sBurnTdLabel}>Burn ACUM</td>
-                  {allM.map((m,mi)=>{
-                    const bc=allM.slice(0,mi+1).reduce((s,mx)=>s+buildPL(fd,CUR_YEAR,mx,cm,view==='reales'?'reales':view==='forecast'?'forecast':(Number(mx)<=cm?'reales':'forecast')).ebitda,0);
-                    const sTdV={padding:'6px 8px',textAlign:'right',fontWeight:600,fontSize:12,color:bc<0?'#E24B4A':'#1D9E75',borderBottom:'1px solid #F0F2F8',background:mi+1===cm?'#FFF8F8':'transparent'};
-                    return(<td key={mi} style={sTdV}>{fmtB(bc)}</td>);
-                  })}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        );
-      })()} {/* P&L TABLE */}
+{/* P&L TABLE */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
