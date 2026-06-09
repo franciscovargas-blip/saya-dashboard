@@ -348,14 +348,21 @@ export default function Dashboard() {
     if (!B || B.length === 0) return null;
     // suma cuentas hoja (no totales) con prefijo dado para el mes mi
     // B[5]=saldo 31-Ene (NO movimiento); B[6..]=movimientos mensuales
-    // leafCodes: solo cuentas hoja (sin subcuentas en B) para evitar duplicacion
+    // leafCodes: solo cuentas hoja reales (sin subcuentas en B, sin subtotales de seccion SAP)
+    // Se excluyen cuentas depth-1 (100-01-000, 100-02-000, 200-01-000, 300-01-000) que son
+    // resúmenes de sección cuyo valor = suma de todos sus hijos → evita doble conteo
     const _bNT = B.filter(r => r[0] && !r[4]);
+    const _depthOf = code => { const [A,BB,CCC]=code.split('-');
+      if(A[0]!=='0'&&parseInt(A)%100===0&&BB!=='00'&&CCC==='000') return 1;
+      if(CCC==='000'&&BB==='00') return 2; if(CCC==='000') return 3; return 4; };
     const leafCodes = new Set(
       _bNT.filter(r => {
+        const d = _depthOf(r[0]);
+        if (d === 1) return false;                               // excluir subtotales de seccion
         const [A,BB,CCC] = r[0].split('-');
         if (CCC !== '000') return true;                          // depth4: siempre hoja
-        if (BB === '00')   return !_bNT.some(o => o[0] !== r[0] && o[0].startsWith(A+'-') && o[2] > 2); // depth2
-        return             !_bNT.some(o => o[0] !== r[0] && o[0].startsWith(A+'-'+BB+'-') && o[2] > 3); // depth3
+        if (BB === '00')   return !_bNT.some(o => o[0] !== r[0] && o[0].startsWith(A+'-') && o[2] > 2);
+        return             !_bNT.some(o => o[0] !== r[0] && o[0].startsWith(A+'-'+BB+'-') && o[2] > 3);
       }).map(r => r[0])
     );
     const bLeaf = (pfx, mi) => B
@@ -373,9 +380,8 @@ export default function Dashboard() {
       // ─ CAMBIO REAL EN CAJA desde cuentas 102+103 ───────────────────────────
       const c102 = r102 ? (r102[5+mi]||0) : 0;
       const c103 = r103 ? (r103[5+mi]||0) : 0;
-      // Enero: B[5] = saldo final al 31-Ene. Cambio = saldo_final - saldo_apertura (OPEN_CASH)
-      // Feb en adelante: B[5+mi] = movimiento mensual directo
-      const netChange = mi === 0 ? (c102 + c103) - OPEN_CASH : (c102 + c103);
+      // B guarda movimientos mensuales reales (saldo[m] - saldo[m-1], con Dic-anterior como base)
+      const netChange = c102 + c103;
       // ─ ACTIVIDADES DE OPERACIÓN (método indirecto) ───────────────────────
       // 1. Punto de partida: Utilidad Neta del P&L
       //    reales para m <= cm, forecast para m > cm
@@ -409,11 +415,17 @@ export default function Dashboard() {
       // ─ ACTIVIDADES DE FINANCIAMIENTO ─────────────────────────────────────
       const equityChg  = bLeaf("301", mi);     // Capital social
       const totalFin   = equityChg;
+      // ─ RESULTADO DEL EJERCICIO (residual honesto) ─────────────────────────
+      // = Cambio real en caja − (CF_Operativo + CF_Inversión + CF_Financiamiento)
+      // Captura el efecto P&L (utilidad/pérdida) que fluye al balance pero no
+      // está directamente en ninguna cuenta de balance capturada arriba.
+      const resultEjer = netChange - (totalOp + totalInv + totalFin);
+      const cfTotal    = totalOp + totalInv + totalFin + resultEjer; // = netChange
       return { m, netProfit, deprAddBk, wc,
                inventory, otherRecv, vatItem, prepaid, advProv,
                acctsPay, otherCred, empBenef, payTaxPaid, imssProvis, totalOp,
                capexComp, capexFurn, capexIntang, capexDepos, totalInv,
-               equityChg, totalFin, netChange };
+               equityChg, totalFin, resultEjer, cfTotal, netChange };
     });
     // Saldos acumulados: begin/end por mes
     let bal = OPEN_CASH;
@@ -1004,7 +1016,10 @@ export default function Dashboard() {
                   {secH('C)  Actividades de Financiamiento')}
                   {cfRow('equityChg',  'Capital Social / Aportaciones', 'equityChg')}
                   {totRow('totalFin',  '= FLUJO DE FINANCIAMIENTO')}
-                  {balRow('netChange', 'Δ CAMBIO EN EFECTIVO', true)}
+                  {secH('D)  Conciliacion')}
+                  {cfRow('resultEjer', 'Resultado del Ejercicio (P&L)', 'resultEjer')}
+                  {totRow('cfTotal',   '= CAMBIO NETO EN EFECTIVO')}
+                  {balRow('netChange', 'Δ CAMBIO REAL EN EFECTIVO', true)}
                   {balRow('beginBal',  'Saldo Inicial', false)}
                   {balRow('endBal',    'Saldo Final',   false)}
                 </tbody>
