@@ -264,16 +264,8 @@ export default function Dashboard() {
 //
 //
   // Pies
-  const pieYTD = useMemo(() => {
-    const map = {};
-    realOpex.filter(r => ytdM.includes(r[3])).forEach(r => { const m = mapMol(r[4]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[9]); });
-    return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(d => d.value > 0);
-  }, [realOpex, ytdM]);
-  const pieCM = useMemo(() => {
-    const map = {};
-    realOpex.filter(r => r[3] === cm).forEach(r => { const m = mapMol(r[4]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[9]); });
-    return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(d => d.value > 0);
-  }, [realOpex, cm]);
+  const pieYTD = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[3])).forEach(r => { const m = mapMol(r[4]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[9]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(d => d.value > 0).sort((a,b)=>b.value-a.value); }, [fd, ytdM]);
+  const pieCM = useMemo(() => { const map = {}; fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && r[3] === cm).forEach(r => { const m = mapMol(r[4]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[9]) }); return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(d => d.value > 0).sort((a,b)=>b.value-a.value); }, [fd, cm]);
 //
   // Pareto
   const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
