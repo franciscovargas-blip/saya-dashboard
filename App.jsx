@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie, LabelList, Legend } from "recharts";
-​
-​
+// Saya Business Intelligence Dashboard
+// v2026.06
 ​
 function OpexFunnel(props) {
   var data = props.data;
