@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, ComposedChart, Line, PieChart, Pie, LabelList, Legend } from "recharts";
-​
-​
-​
+//
+//
+//
 function OpexFunnel(props) {
   var data = props.data;
   var onClickBar = props.onClickBar;
@@ -266,18 +266,12 @@ export default function Dashboard() {
   // Pies
   const pieYTD = useMemo(() => {
     const map = {};
-    realOpex.filter(r => ytdM.includes(r[3])).forEach(r => {
-      const m = mapMol(r[4]); if (!map[m]) map[m] = 0;
-      map[m] += Math.abs(r[9]);
-    });
+    realOpex.filter(r => ytdM.includes(r[3])).forEach(r => { const m = mapMol(r[4]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[9]); });
     return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(d => d.value > 0);
   }, [realOpex, ytdM]).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, ytdM]);
   const pieCM = useMemo(() => {
     const map = {};
-    realOpex.filter(r => r[3] === cm).forEach(r => {
-      const m = mapMol(r[4]); if (!map[m]) map[m] = 0;
-      map[m] += Math.abs(r[9]);
-    });
+    realOpex.filter(r => r[3] === cm).forEach(r => { const m = mapMol(r[4]); if (!map[m]) map[m] = 0; map[m] += Math.abs(r[9]); });
     return Object.entries(map).map(([name, value]) => ({ name, value: Math.round(value) })).filter(d => d.value > 0);
   }, [realOpex, cm]).filter(x => x.value > 0).sort((a, b) => b.value - a.value); }, [fd, cm]);
 ​
@@ -552,28 +546,7 @@ export default function Dashboard() {
         ))}
       </div>
 ​
-      {(function(){
-        var sW={overflowX:'auto',marginBottom:16,borderRadius:10,border:'1px solid #E4E8F2',background:'#fff'};
-        var sT={borderCollapse:'collapse',width:'100%',fontSize:11};
-        var sHL={padding:'6px 10px',textAlign:'left',background:'#F4F6FB',fontWeight:700,fontSize:11,color:'#1E2A3A',position:'sticky',left:0,zIndex:2,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'};
-        var sDL={padding:'6px 10px',fontWeight:700,fontSize:12,color:'#1E2A3A',position:'sticky',left:0,background:'#fff',zIndex:1,borderBottom:'1px solid #F0F2F8',whiteSpace:'nowrap'};
-        var sR={background:'#fff'};
-        function fB(v){return v===0?'—':(Math.abs(v)>=1e6?(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?(v/1e3).toFixed(0)+'K':v.toFixed(0));}
-        var heads=allM.map(function(m,mi){
-          var isA=mi+1<=cm;
-          var sH={padding:'3px 6px',textAlign:'right',background:isA?'#EEF6F2':'#F5F6FA',fontWeight:500,fontSize:10,color:isA?'#1D9E75':'#8A90A8',borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap',minWidth:72};
-          var sAF={fontSize:9,color:isA?'#1D9E75':'#8A90A8',fontWeight:600};
-          var sMo={fontWeight:400,color:'#8A90A8'};
-          return React.createElement('th',{key:mi,style:sH},React.createElement('div',{style:sAF},isA?'Act':'Fcst'),React.createElement('div',null,CUR_YEAR),React.createElement('div',{style:sMo},MO[mi]));
-        });
-        var cells=allM.map(function(m,mi){
-          var md=view==='reales'?'reales':view==='forecast'?'forecast':(Number(m)<=cm?'reales':'forecast');
-          var bc=allM.slice(0,mi+1).reduce(function(s,mx){var md2=view==='reales'?'reales':view==='forecast'?'forecast':(Number(mx)<=cm?'reales':'forecast');return s+buildPL(fd,CUR_YEAR,mx,cm,md2).ebitda;},0);
-          var sD={padding:'6px 8px',textAlign:'right',fontWeight:600,fontSize:12,color:bc<0?'#E24B4A':'#1D9E75',borderBottom:'1px solid #F0F2F8',background:mi+1===cm?'#FFF8F8':'transparent'};
-          return React.createElement('td',{key:mi,style:sD},fB(bc));
-        });
-        return React.createElement('div',{style:sW},React.createElement('table',{style:sT},React.createElement('thead',null,React.createElement('tr',null,React.createElement('th',{style:sHL},'Burn ACUM'),heads)),React.createElement('tbody',null,React.createElement('tr',{style:sR},React.createElement('td',{style:sDL},'Burn ACUM'),cells))));
-      })()} 
+      {(function(){var sW={overflowX:'auto',marginBottom:16,borderRadius:10,border:'1px solid #E4E8F2',background:'#fff'};var sT={borderCollapse:'collapse',width:'100%',fontSize:11};var sHL={padding:'6px 10px',textAlign:'left',background:'#F4F6FB',fontWeight:700,fontSize:11,color:'#1E2A3A',position:'sticky',left:0,zIndex:2,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'};var sDL={padding:'6px 10px',fontWeight:700,fontSize:12,color:'#1E2A3A',position:'sticky',left:0,background:'#fff',zIndex:1,borderBottom:'1px solid #F0F2F8',whiteSpace:'nowrap'};var sR={background:'#fff'};function fB(v){return v===0?'—':(Math.abs(v)>=1e6?(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?(v/1e3).toFixed(0)+'K':v.toFixed(0));}var heads=allM.map(function(m,mi){var isA=mi+1<=cm;var sH={padding:'3px 6px',textAlign:'right',background:isA?'#EEF6F2':'#F5F6FA',fontWeight:500,fontSize:10,color:isA?'#1D9E75':'#8A90A8',borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap',minWidth:72};var sAF={fontSize:9,color:isA?'#1D9E75':'#8A90A8',fontWeight:600};var sMo={fontWeight:400,color:'#8A90A8'};return React.createElement('th',{key:mi,style:sH},React.createElement('div',{style:sAF},isA?'Act':'Fcst'),React.createElement('div',null,CUR_YEAR),React.createElement('div',{style:sMo},MO[mi]));});var cells=allM.map(function(m,mi){var md=view==='reales'?'reales':view==='forecast'?'forecast':(Number(m)<=cm?'reales':'forecast');var bc=allM.slice(0,mi+1).reduce(function(s,mx){var d=view==='reales'?'reales':view==='forecast'?'forecast':(Number(mx)<=cm?'reales':'forecast');return s+buildPL(fd,CUR_YEAR,mx,cm,d).ebitda;},0);var sD={padding:'6px 8px',textAlign:'right',fontWeight:600,fontSize:12,color:bc<0?'#E24B4A':'#1D9E75',borderBottom:'1px solid #F0F2F8',background:mi+1===cm?'#FFF8F8':'transparent'};return React.createElement('td',{key:mi,style:sD},fB(bc));});return React.createElement('div',{style:sW},React.createElement('table',{style:sT},React.createElement('thead',null,React.createElement('tr',null,React.createElement('th',{style:sHL},'Burn ACUM'),heads)),React.createElement('tbody',null,React.createElement('tr',{style:sR},React.createElement('td',{style:sDL},'Burn ACUM'),cells))));})()}
       {/* P&L TABLE */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
@@ -1094,7 +1067,7 @@ export default function Dashboard() {
                       const isReal = yr < CUR_YEAR || (yr===CUR_YEAR && mi+1<=cm);
                       return <th key={mi} style={{textAlign:"right",padding:"5px 6px",background:isReal?"#EEF6F2":"#F5F6FA",fontWeight:500,fontSize:10,borderBottom:"2px solid #E4E8F2",color:isReal?"#1D9E75":"#8A90A8",whiteSpace:"nowrap"}}>{mo}</th>;
                     })}
-                    {expPnlAnn[yr] && <th key="tot" style={({textAlign:"right",padding:"5px 6px",background:"#F4F6FB",fontWeight:700,fontSize:10,borderBottom:"2px solid #E4E8F2",borderLeft:"2px solid #534AB733"})}>Total</th>}
+                    {expPnlAnn[yr] && <th key="tot" style={({textAlign:"right",padding:"5px 6px",background:"#F4F6FB",fontWeight:700,fontSize:10,borderBottom:"2px solid #E4E8F2",borderLeft:"2px solid #B0B8D0"})}>Total</th>}
                   </React.Fragment>
                 ))}
               </tr>
@@ -1190,4 +1163,3 @@ export default function Dashboard() {
     </div>
   );
 }
-​
