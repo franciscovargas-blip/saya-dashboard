@@ -403,10 +403,7 @@ export default function Dashboard() {
       const imssProvis = bLeaf("211", mi) + bLeaf("212", mi); // IMSS/ISN provisión
       const wc         = inventory + otherRecv + vatItem + prepaid + advProv +
                          acctsPay + otherCred + empBenef + payTaxPaid + imssProvis;
-      // 3. Total Operativo = Utilidad Neta + D&A + Cambios en WC
-      const totalOp    = netProfit + deprAddBk + wc;
       // ─ ACTIVIDADES DE INVERSIÓN ─────────────────────────────────────────────
-      // Activo fijo: aumento activo = salida de caja → negar
       const capexComp   = -(bLeaf("156", mi)); // Equipo de cómputo
       const capexFurn   = -(bLeaf("155", mi)); // Mobiliario y equipo
       const capexIntang = -(bLeaf("176", mi)); // Intangibles
@@ -415,42 +412,19 @@ export default function Dashboard() {
       // ─ ACTIVIDADES DE FINANCIAMIENTO ─────────────────────────────────────
       const equityChg  = bLeaf("301", mi);     // Capital social
       const totalFin   = equityChg;
-      // ─ OTROS MOV. ACTIVOS/PASIVOS (cuentas SAP no en B) ─────────────────────
-      // Cuentas con saldo cero en Dic-2025 no se extrajeron a B,
-      // pero sus movimientos en 2026 quedan en los totales de sección SAP.
-      // Formula: (total sección SAP) - (suma de hojas capturadas)
-      // Incluye TODOS los activos no-caja (CP + LP) y todos los pasivos.
-      const _rA1_s = B.find(r => r[0]==="100-01-000" && !r[4]);
-      const _rA2_s = B.find(r => r[0]==="100-02-000" && !r[4]);
-      const _rP1_s = B.find(r => r[0]==="200-01-000" && !r[4]);
-      const _actNC_sec   = (_rA1_s?_rA1_s[5+mi]:0) + (_rA2_s?_rA2_s[5+mi]:0) - (c102+c103);
-      // hojas capturadas en dirección balance (positivo = activo aumentó)
-      const _actNC_leaf  = -(inventory+otherRecv+vatItem+prepaid+advProv)
-                         - (capexComp+capexFurn+capexIntang+capexDepos);
-      const _pas_sec     = _rP1_s ? _rP1_s[5+mi] : 0;
-      const _pas_leaf    = acctsPay+otherCred+empBenef+payTaxPaid+imssProvis;
-      // Impacto en CF: activo faltante resta, pasivo faltante suma
-      const otrosMov     = -(_actNC_sec - _actNC_leaf) + (_pas_sec - _pas_leaf);
-      // ─ RESULTADO DEL EJERCICIO (residual honesto) ─────────────────────────
-      // = Cambio real en caja − (CF_Operativo + CF_Inversión + CF_Financiamiento)
-      // Captura el efecto P&L (utilidad/pérdida) que fluye al balance pero no
-      // está directamente en ninguna cuenta de balance capturada arriba.
-      // Resultado del Ejercicio = movimiento mensual de Capital Contable Total
-      // MENOS las aportaciones de capital (301).
-      // Esto es exactamente la "Utilidad/Perdida Neta" del periodo que SAP
-      // registra en la fila "Periodo ganancias" del balance.
-      // Fila de referencia en B: depth=0, isTotal=0, sin codigo, seccion Capital
-      const _rCapTot  = B.find(r => !r[0] && !r[4] && r[3]==="Capital" && r[2]===0);
-      const capTotMov = _rCapTot ? (_rCapTot[5+mi] || 0) : 0;
-      const resultEjer = capTotMov - equityChg;
-      // cfTotal = suma de las 4 secciones; puede diferir <5% de netChange
-      // por traslape menor en prefijos de activo (se muestra como conciliacion)
-      const cfTotal    = totalOp + totalInv + totalFin + resultEjer + otrosMov;
+      // ─ OTROS GASTOS DE OPERACIÓN (línea de cuadre) ───────────────────────
+      // Absorbe todo movimiento no capturado explícitamente (cuentas SAP sin
+      // extracción, utilidad neta del periodo, etc.) para que el flujo siempre
+      // cierre exactamente contra el cambio real en caja del balance.
+      const wc_sub      = netProfit + deprAddBk + wc; // operación sin cuadre
+      const otrosGastos = netChange - (wc_sub + totalInv + totalFin);
+      // 3. Total Operativo = incluye la línea de cuadre
+      const totalOp     = wc_sub + otrosGastos;        // = netChange - totalInv - totalFin
       return { m, netProfit, deprAddBk, wc,
-               inventory, otherRecv, vatItem, prepaid, advProv, otrosMov,
+               inventory, otherRecv, vatItem, prepaid, advProv, otrosGastos,
                acctsPay, otherCred, empBenef, payTaxPaid, imssProvis, totalOp,
                capexComp, capexFurn, capexIntang, capexDepos, totalInv,
-               equityChg, totalFin, resultEjer, cfTotal, netChange };
+               equityChg, totalFin, netChange };
     });
     // Saldos acumulados: begin/end por mes
     let bal = OPEN_CASH;
@@ -1026,12 +1000,12 @@ export default function Dashboard() {
                   {cfRow('vatItem',    'IVA a Favor / Pendiente', 'vatItem')}
                   {cfRow('prepaid',    'Pagos Anticipados',       'prepaid')}
                   {cfRow('advProv',    'Anticipo Proveedores',    'advProv')}
-                  {cfRow('otrosMov',  'Otros mov. activos/pasivos (SAP)', null)}
                   {cfRow('acctsPay',   'Proveedores',             'acctsPay')}
                   {cfRow('otherCred',  'Acreedores Diversos',     'otherCred')}
                   {cfRow('empBenef',   'Provisión Sueldos',       'empBenef')}
                   {cfRow('payTaxPaid', 'Impuestos Retenidos',     'payTaxPaid')}
                   {cfRow('imssProvis', 'IMSS / ISN Provisión',    'imssProvis')}
+                  {cfRow('otrosGastos','(±) Otros gastos de operación', null)}
                   {totRow('totalOp',  '= FLUJO OPERATIVO')}
                   {secH('B)  Actividades de Inversión')}
                   {cfRow('capexComp',   '(-) Equipo de Cómputo',     'capexComp')}
@@ -1042,9 +1016,6 @@ export default function Dashboard() {
                   {secH('C)  Actividades de Financiamiento')}
                   {cfRow('equityChg',  'Capital Social / Aportaciones', 'equityChg')}
                   {totRow('totalFin',  '= FLUJO DE FINANCIAMIENTO')}
-                  {secH('D)  Conciliacion')}
-                  {cfRow('resultEjer', 'Resultado del Ejercicio (P&L)', 'resultEjer')}
-                  {totRow('cfTotal',   '= CF TOTAL (Balance)')}
                   {balRow('netChange', 'Δ CAMBIO REAL EN EFECTIVO', true)}
                   {balRow('beginBal',  'Saldo Inicial', false)}
                   {balRow('endBal',    'Saldo Final',   false)}
@@ -1076,67 +1047,7 @@ export default function Dashboard() {
                     De <strong>Febrero en adelante</strong>, se usa el movimiento mensual directo de cada cuenta.
                   </p>
 
-                  {/* ──── NOTA DE PARCHES ──── */}
-                  <div style={{background:'#FFFBEB',border:'1px solid #FCD34D',borderRadius:6,padding:'10px 14px',marginBottom:16,fontSize:12,lineHeight:'1.7'}}>
-                    <strong style={{color:'#92400E'}}>⚠ Parches aplicados al cálculo</strong>
-                    <ol style={{margin:'6px 0 0 16px',padding:0}}>
-                      <li><strong>netChange (Cambio en Caja):</strong> Se calcula como <code>mov(102) + mov(103)</code>. El balance de SAP de Enero traía saldos acumulados desde Dic-2025; el script de Python convierte todos a movimientos mensuales usando el baseline de Diciembre 2025 (caja apertura = <strong>$4,955,698</strong>). Se eliminó el <code>-OPEN_CASH</code> que se aplicaba erróneamente solo en Enero.</li>
-                      <li><strong>Cuentas hoja (leafCodes):</strong> Se excluyen los nodos de sección de profundidad 1 (<code>100-01-000</code>, <code>100-02-000</code>, <code>200-01-000</code>, <code>300-01-000</code>) para evitar doble conteo. Solo se suman cuentas analíticas (hoja).</li>
-                      <li><strong>Resultado del Ejercicio (D):</strong> Derivado directamente del Balance SAP como <code>ΔCapital Total − ΔCapital 301</code>. Representa la Utilidad/Pérdida Neta que SAP registra en la fila «Período ganancias» del Balance General.</li>
-                      <li><strong>Otros mov. activos/pasivos SAP (E):</strong> Captura cuentas que existen en SAP pero no se extrajeron al archivo B porque tenían saldo cero en Dic-2025 (el baseline). Su impacto se recupera comparando los <em>totales de sección</em> del Balance (<code>100-01 + 100-02 − caja</code> y <code>200-01</code>) contra la suma de hojas individuales capturadas. Residual restante tras el parche: <strong>&lt;$600/mes</strong> (redondeo de decimales).</li>
-                    </ol>
-                  </div>
-
-                  {[{
-                    title: 'A) Actividades de Operación',
-                    color: '#0B6644',
-                    rows: [
-                      ['Inventario',               '115-xx-xxx (ej. 115-01-001)', 'Movimiento mensual de TODAS las subcuentas hoja de inventario. Se excluyen nodos subtotales.', 'Activo ↑ = salida de caja → ×(−1)'],
-                      ['Otros Activos CP',          '121-xx-xxx (ej. 121-01-001)', 'Otras cuentas de activo circulante a corto plazo (deudores, anticipos de personal, etc.).', 'Activo ↑ = salida → ×(−1)'],
-                      ['IVA a Favor / Pendiente',  '113-xx-xxx + 119-xx-xxx',    'IVA acreditable (113) e IVA pendiente de acreditar / en transición (119).', 'Activo ↑ = salida → ×(−1)'],
-                      ['Pagos Anticipados',         '109-xx-xxx',                  'Anticipos y prepagos de servicios aún no devengados (seguros, rentas, etc.).', 'Activo ↑ = salida → ×(−1)'],
-                      ['Anticipo Proveedores',      '120-xx-xxx',                  'Recursos entregados a proveedores como anticipo a cuenta de compras futuras.', 'Activo ↑ = salida → ×(−1)'],
-                      ['Proveedores',               '201-xx-xxx (ej. 201-01-001, 201-02-000)', 'Cuentas por pagar a proveedores comerciales. Sub-cuenta 201-01-001 es la principal.', 'Pasivo ↑ = fuente de caja → positivo'],
-                      ['Acreedores Diversos',       '205-xx-xxx',                  'Otras cuentas por pagar: honorarios, servicios, pasivos acumulados diversos.', 'Pasivo ↑ = fuente → positivo'],
-                      ['Provisión Sueldos',         '210-xx-xxx',                  'Sueldos y prestaciones laborales devengados pendientes de pago al corte.', 'Pasivo ↑ = fuente → positivo'],
-                      ['Impuestos Retenidos',       '216-xx-xxx + 217-xx-xxx',    'ISR retenido a empleados (216) y otras retenciones por enterar al SAT (217).', 'Pasivo ↑ = fuente → positivo'],
-                      ['IMSS / ISN Provisión',      '211-xx-xxx + 212-xx-xxx',    'Cuotas patronales IMSS provisionadas (211) e Impuesto Sobre Nómina (212).', 'Pasivo ↑ = fuente → positivo'],
-                      ['Otros mov. act./pas. SAP ⚠','Sección 100-01 + 100-02 − caja vs. Σhojas; Sección 200-01 vs. Σhojas', '⚠ PARCHE: cuentas en SAP no extraídas al archivo B (saldo cero en Dic-2025). Se recuperan comparando el total de sección del Balance contra la suma de hojas capturadas. Ejemplo Ene: activos faltantes = −$121K, pasivos faltantes = +$9K → impacto neto = +$130K.', 'Se suma directamente al WC; no afecta líneas individuales'],
-                    ]
-                  },{
-                    title: 'B) Actividades de Inversión (CAPEX)',
-                    color: '#185FA5',
-                    rows: [
-                      ['(-) Equipo de Cómputo',      '156-xx-xxx (ej. 156-01-001, 156-01-002)', 'Adquisiciones/disposiciones de computadoras, servidores y periféricos capitalizados.', 'Activo fijo ↑ = inversión = salida → ×(−1)'],
-                      ['(-) Mobiliario y Equipo',    '155-xx-xxx (ej. 155-01-001…155-01-005)',  'Muebles, equipo de oficina, equipo de laboratorio y equipo médico capitalizado.', 'Activo fijo ↑ = salida → ×(−1)'],
-                      ['(-) Intangibles / Software', '176-xx-xxx',                               'Licencias perpetuas, software y otros activos intangibles capitalizados.', 'Activo ↑ = salida → ×(−1)'],
-                      ['(-) Depósitos en Garantía',  '184-xx-xxx (ej. 184-01-001)',              'Depósitos entregados en garantía por arrendamientos de oficinas o equipos.', 'Activo ↑ = salida → ×(−1)'],
-                    ]
-                  },{
-                    title: 'C) Actividades de Financiamiento',
-                    color: '#534AB7',
-                    rows: [
-                      ['Capital Social / Aportaciones','301-xx-xxx (ej. 301-01-001)', 'Aportaciones de socios / accionistas (entradas) o reembolsos de capital (salidas). Se toman solo cuentas hoja del prefijo 301.', 'Aumento = entrada → positivo; Disminución → negativo'],
-                    ]
-                  },{
-                    title: 'D) Resultado del Ejercicio ⚠ PARCHE',
-                    color: '#7C3AED',
-                    rows: [
-                      ['Utilidad / Pérdida Neta ⚠', 'Capital Contable Total (depth=0) − mov(301-xx-xxx)', '⚠ PARCHE: se deriva del Balance como ΔCapital Total − ΔCapital 301. Equivale exactamente a lo que SAP registra como «Período ganancias» en el balance. No se toma del P&L para evitar diferencias de devengo vs. caja.', 'El signo ya refleja ganancia (+) o pérdida (−) directamente'],
-                    ]
-                  },{
-                    title: 'E) Conciliación — Caja Real vs. CF Total',
-                    color: '#B45309',
-                    rows: [
-                      ['Cambio Neto en Caja', 'mov(102-00-000) + mov(103-00-000)', 'Movimiento mensual de las cuentas Bancos Nacionales (102) y Bancos Extranjeros (103). Este es el «check» de cierre: debe coincidir con A+B+C+D+E.', 'Positivo = incremento de caja; Negativo = disminución'],
-                      ['Residual ≤ $600', '(Ver parche E arriba)', 'Diferencia remanente después de aplicar el parche de «Otros mov.». Corresponde a redondeo de decimales en SAP. Meses: Ene=$0, Feb=$77, Mar=$188, Abr=$506, May=$219.', 'Solo redondeo — no requiere acción'],
-                    ]
-                  }].map((sec,si) => (
-                    <div key={si} style={{marginBottom:20}}>
-                      <div style={{fontWeight:700,fontSize:12,color:sec.color,marginBottom:8,paddingBottom:4,borderBottom:`2px solid ${sec.color}33`}}>
-                        {sec.title}
-                      </div>
-                      <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+                                       <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
                         <thead>
                           <tr style={{background:'#F0F2FA'}}>
                             {['Línea del Flujo','Cuentas SAP','Descripción','Convención de signo'].map((h,hi)=>(
