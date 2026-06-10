@@ -351,13 +351,19 @@ export default function Dashboard() {
   const cashFlow = useMemo(() => {
     if (!B || B.length === 0) return null;
 {/* */}
-    // Suma movimientos mensuales de cuentas hoja (isTotal=0) con prefijo dado, mes mi
-    // B almacena deltas mensuales, NO saldos acumulados.
-    // Activos: mv > 0 = aumento activo = USO de efectivo
-    // Pasivos: mv > 0 = aumento pasivo = FUENTE de efectivo
-    const mv = (pfx, mi) => B
-      .filter(r => !r[4] && (r[0] || '').startsWith(pfx))
-      .reduce((s, r) => s + (r[5 + mi] || 0), 0);
+    // Suma movimientos mensuales de cuentas hoja (isTotal=0) con prefijo dado, mes mi.
+    // IMPORTANTE: algunas cuentas de larga vida (intangibles 176, capital 301, depositos 184)
+    // almacenan en la columna de enero el SALDO INICIAL HISTORICO (saldo acumulado Dec-2025),
+    // no un movimiento de enero 2026. Para el flujo de efectivo 2026 esas cuentas
+    // no tienen movimiento en enero -> se devuelve 0 para mi===0.
+    // Los demas meses (mi>0) siempre son movimientos reales del mes.
+    const SALDO_INICIAL_PREFIJOS = ['176', '301', '184'];
+    const mv = (pfx, mi) => {
+      if (mi === 0 && SALDO_INICIAL_PREFIJOS.some(p => pfx.startsWith(p))) return 0;
+      return B
+        .filter(r => !r[4] && (r[0] || '').startsWith(pfx))
+        .reduce((s, r) => s + (r[5 + mi] || 0), 0);
+    };
 {/* */}
     // Detalle de subcuentas para expansion de filas
     const det = (...pfxs) => B
