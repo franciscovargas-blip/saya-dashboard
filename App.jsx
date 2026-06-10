@@ -381,7 +381,7 @@ export default function Dashboard() {
 {/* */}
     const mvLeaf = (pfx, mi) => B
       .filter(r => !r[4] && (r[0]||'').startsWith(pfx) && isLeaf(r[0]||""))
-      .reduce((s, r) => s + (r[5 + mi] || 0), 0);
+      .reduce((s, r) => { const v=r[5+mi]||0; return s+(mi===0?v-(B_OPEN[r[0]||""]||0):v); }, 0);
 {/* */}
     // Para enero (mi=0) necesitamos el saldo inicial de cada cuenta en dic-2025.
     // Usamos bVal(row,-1) = 0 como aproximacion (no tenemos dic-2025)
@@ -391,7 +391,7 @@ export default function Dashboard() {
     // Detalle expandible (solo hojas)
     const detLeaf = (...pfxs) => B
       .filter(r => !r[4] && pfxs.some(p => (r[0]||'').startsWith(p)) && isLeaf(r[0]||""))
-      .map(r => ({ name: r[1], code: r[0], vals: Array.from({length:12}, (_,i) => r[5+i]||0) }));
+      .map(r => ({ name: r[1], code: r[0], vals: Array.from({length:12}, (_,i) => i===0?(r[5]||0)-(B_OPEN[r[0]||""]||0):r[5+i]||0) }));
 {/* */}
     // ─────────────────────────────────────────────────────────────────
     // Saldo inicial de cada cuenta de efectivo en dic-2025:
