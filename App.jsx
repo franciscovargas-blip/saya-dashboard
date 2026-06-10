@@ -419,15 +419,15 @@ export default function Dashboard() {
       // ══ B) ACTIVIDADES DE INVERSION ══════════════════════════════
       // Enero: col[5] = saldo acumulado historico de activos -> no es movimiento 2026
       // Solo Feb+ tienen movimientos reales; enero se muestra como 0
-      const equComputo  = mi === 0 ? 0 : -mvLeaf('156', mi);
-      const mobEquipo   = mi === 0 ? 0 : -mvLeaf('155', mi);
-      const intangibles = mi === 0 ? 0 : -mvLeaf('176', mi);
-      const depositos   = mi === 0 ? 0 : -mvLeaf('184', mi);
+      const equComputo  = -mvLeaf('156', mi);
+      const mobEquipo   = -mvLeaf('155', mi);
+      const intangibles = -mvLeaf('176', mi);
+      const depositos   = -mvLeaf('184', mi);
       const totalInversion = equComputo + mobEquipo + intangibles + depositos;
 {/* */}
       // ══ C) ACTIVIDADES DE FINANCIAMIENTO ═════════════════════════════
       // Capital: misma logica, enero = saldo historico -> 0
-      const aportaciones       = mi === 0 ? 0 : mvLeaf('301', mi);
+      const aportaciones       = mvLeaf('301', mi);
       const totalFinanciamiento = aportaciones;
 {/* */}
       // ══ A) ACTIVIDADES DE OPERACION (Metodo Indirecto) ══════════════════
@@ -436,25 +436,23 @@ export default function Dashboard() {
       //
       // Periodo ganancias (utilidad neta segun balance):
       const pgRow = B.find(r => r[1] === 'Per\u00edodo ganancias' && !r[4]);
-      const utilidadNeta = pgRow
-        ? (mi === 0 ? 0 : (pgRow[5 + mi] || 0))
-        : 0;
+      const utilidadNeta = pgRow ? (pgRow[5 + mi] || 0) : 0;
 {/* */}
       // Depreciacion y amortizacion (cargo sin salida de caja)
       // Usamos buildPL solo para obtener D&A ya que no esta en B por separado
       const pl      = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
-      const depAmort = mi === 0 ? 0 : pl.depr;
+      const depAmort = pl.depr;
 {/* */}
       // Capital de trabajo operativo (Feb+ = movimientos reales)
-      const dInventario  = mi === 0 ? 0 : -mvLeaf('115', mi);
-      const dCxC         = mi === 0 ? 0 : -mvLeaf('121', mi);
-      const dIVA         = mi === 0 ? 0 : -(mvLeaf('113', mi) + mvLeaf('119', mi));
-      const dAnticipos   = mi === 0 ? 0 : -mvLeaf('109', mi);
-      const dAntProv     = mi === 0 ? 0 : -mvLeaf('120', mi);
-      const dProveedores = mi === 0 ? 0 :  mvLeaf('201', mi);
-      const dAcreedores  = mi === 0 ? 0 :  mvLeaf('205', mi);
-      const dProvisiones = mi === 0 ? 0 :  mvLeaf('210', mi) + mvLeaf('211', mi) + mvLeaf('212', mi);
-      const dImpuestos   = mi === 0 ? 0 :  mvLeaf('216', mi) + mvLeaf('217', mi);
+      const dInventario  = -mvLeaf('115', mi);
+      const dCxC         = -mvLeaf('121', mi);
+      const dIVA         = -(mvLeaf('113', mi) + mvLeaf('119', mi));
+      const dAnticipos   = -mvLeaf('109', mi);
+      const dAntProv     = -mvLeaf('120', mi);
+      const dProveedores =  mvLeaf('201', mi);
+      const dAcreedores  =  mvLeaf('205', mi);
+      const dProvisiones =  mvLeaf('210', mi) + mvLeaf('211', mi) + mvLeaf('212', mi);
+      const dImpuestos   =  mvLeaf('216', mi) + mvLeaf('217', mi);
       const varCapTrabajo = dInventario + dCxC + dIVA + dAnticipos + dAntProv
                           + dProveedores + dAcreedores + dProvisiones + dImpuestos;
 {/* */}
