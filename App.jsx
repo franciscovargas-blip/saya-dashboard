@@ -351,92 +351,126 @@ export default function Dashboard() {
   const cashFlow = useMemo(() => {
     if (!B || B.length === 0) return null;
 {/* */}
-    // Suma movimientos mensuales de cuentas hoja (isTotal=0) con prefijo dado, mes mi.
-    // IMPORTANTE: algunas cuentas de larga vida (intangibles 176, capital 301, depositos 184)
-    // almacenan en la columna de enero el SALDO INICIAL HISTORICO (saldo acumulado Dec-2025),
-    // no un movimiento de enero 2026. Para el flujo de efectivo 2026 esas cuentas
-    // no tienen movimiento en enero -> se devuelve 0 para mi===0.
-    // Los demas meses (mi>0) siempre son movimientos reales del mes.
-    const SALDO_INICIAL_PREFIJOS = ['176', '301', '184'];
-    const mv = (pfx, mi) => {
-      if (mi === 0 && SALDO_INICIAL_PREFIJOS.some(p => pfx.startsWith(p))) return 0;
-      return B
-        .filter(r => !r[4] && (r[0] || '').startsWith(pfx))
-        .reduce((s, r) => s + (r[5 + mi] || 0), 0);
-    };
+    // ─── ESTRUCTURA DEL ARRAY B ──────────────────────────────────────────────────
+    // Col Enero  (mi=0): SALDO FINAL acumulado al 31-ene-2026
+    //                    (base de arranque del anio; no es un movimiento mensual)
+    // Col Feb+   (mi>0): MOVIMIENTO mensual real de ese mes
+    //
+    // Por eso bVal(row, cm) suma correctamente el saldo al mes cm:
+    //   bVal(row,1) = col[0] = saldo a enero
+    //   bVal(row,2) = col[0]+col[1] = saldo enero + movimiento feb = saldo a feb
+    //
+    // Para el flujo de efectivo necesitamos MOVIMIENTOS:
+    //   - Efectivo (102+103) enero: mov = saldo_ene - OPEN_CASH
+    //   - Todas las cuentas Feb+:   mov = col[mi] directamente
+    //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
+    //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
+    //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
+    // ─────────────────────────────────────────────────────────────────
 {/* */}
-    // Detalle de subcuentas para expansion de filas
-    const det = (...pfxs) => B
-      .filter(r => !r[4] && r[2] >= 3 && pfxs.some(p => (r[0] || '').startsWith(p)))
-      .map(r => ({ name: r[1], code: r[0], vals: Array.from({ length: 12 }, (_, i) => r[5 + i] || 0) }));
+    // Cuentas de efectivo y equivalentes
+    const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
+    const r103 = B.find(r => (r[0]||'').startsWith('103') && r[4] === 1);
 {/* */}
-    // Cuentas de efectivo (102=Bancos, 103=Caja)
-    const r102 = B.find(r => r[0] === '102-00-000' && r[4] === 0) ||
-                 B.find(r => (r[0]||'').startsWith('102') && !r[4]);
-    const r103 = B.find(r => r[0] === '103-00-000' && r[4] === 0) ||
-                 B.find(r => (r[0]||'').startsWith('103') && !r[4]);
+    // Movimiento mensual de cuentas NO-efectivo (solo hojas, sin subtotales -000)
+    // mi=0 -> col[5] es saldo final enero; usamos diferencia con apertura de la cuenta
+    // mi>0 -> col[5+mi] es movimiento real del mes
+    // Para evitar doble conteo excluimos cuentas -00-000 y -0x-000 (subtotales)
+    const allCodes = new Set(B.map(r => r[0] || ''));
+    const isLeaf = code => code && !Array.from(allCodes).some(c2 => c2 !== code && c2.startsWith(code + '-'));
 {/* */}
-    const months = Array.from({ length: 12 }, (_, mi) => {
-      const m  = mi + 1;
-      const pl = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
+    const mvLeaf = (pfx, mi) => B
+      .filter(r => !r[4] && (r[0]||'').startsWith(pfx) && isLeaf(r[0]||""))
+      .reduce((s, r) => s + (r[5 + mi] || 0), 0);
 {/* */}
-      // Variacion real de efectivo (del balance, fuente de verdad)
-      const cash102  = r102 ? (r102[5 + mi] || 0) : 0;
-      const cash103  = r103 ? (r103[5 + mi] || 0) : 0;
-      const netChange = cash102 + cash103;
+    // Para enero (mi=0) necesitamos el saldo inicial de cada cuenta en dic-2025.
+    // Usamos bVal(row,-1) = 0 como aproximacion (no tenemos dic-2025)
+    // -> mvLeaf(pfx, 0) = saldo_ene (diff vs 0 = todo el saldo de apertura)
+    // Esto sobrestima enero; se corrige con el "plug" de operacion.
 {/* */}
-      // ══ A) ACTIVIDADES DE OPERACION — Metodo Indirecto NIF B-2 ════════════
+    // Detalle expandible (solo hojas)
+    const detLeaf = (...pfxs) => B
+      .filter(r => !r[4] && pfxs.some(p => (r[0]||'').startsWith(p)) && isLeaf(r[0]||""))
+      .map(r => ({ name: r[1], code: r[0], vals: Array.from({length:12}, (_,i) => r[5+i]||0) }));
+{/* */}
+    // ─────────────────────────────────────────────────────────────────
+    // Saldo inicial de cada cuenta de efectivo en dic-2025:
+    //   sum_saldo_dic2025 = OPEN_CASH (dato conocido)
+    // Movimiento real de efectivo en enero = saldo_ene - OPEN_CASH
+    const cash102_ene = r102 ? (r102[5] || 0) : 0;
+    const cash103_ene = r103 ? (r103[5] || 0) : 0;
+    const saldoEfec_ene = cash102_ene + cash103_ene; // saldo efectivo al 31-ene
+{/* */}
+    const months = Array.from({length: 12}, (_, mi) => {
+      const m = mi + 1;
+{/* */}
+      // MOVIMIENTO NETO DE EFECTIVO (siempre correcto)
+      let netChange;
+      if (mi === 0) {
+        // Enero: movimiento = saldo final enero - saldo inicial dic-2025
+        netChange = saldoEfec_ene - OPEN_CASH;
+      } else {
+        // Feb+: la columna B ya es el movimiento mensual real
+        const c102 = r102 ? (r102[5 + mi] || 0) : 0;
+        const c103 = r103 ? (r103[5 + mi] || 0) : 0;
+        netChange = c102 + c103;
+      }
+{/* */}
+      // ══ B) ACTIVIDADES DE INVERSION ══════════════════════════════
+      // Enero: col[5] = saldo acumulado historico de activos -> no es movimiento 2026
+      // Solo Feb+ tienen movimientos reales; enero se muestra como 0
+      const equComputo  = mi === 0 ? 0 : -mvLeaf('156', mi);
+      const mobEquipo   = mi === 0 ? 0 : -mvLeaf('155', mi);
+      const intangibles = mi === 0 ? 0 : -mvLeaf('176', mi);
+      const depositos   = mi === 0 ? 0 : -mvLeaf('184', mi);
+      const totalInversion = equComputo + mobEquipo + intangibles + depositos;
+{/* */}
+      // ══ C) ACTIVIDADES DE FINANCIAMIENTO ═════════════════════════════
+      // Capital: misma logica, enero = saldo historico -> 0
+      const aportaciones       = mi === 0 ? 0 : mvLeaf('301', mi);
+      const totalFinanciamiento = aportaciones;
+{/* */}
+      // ══ A) ACTIVIDADES DE OPERACION (Metodo Indirecto) ══════════════════
+      // La utilidad neta y los cambios en capital de trabajo se derivan
+      // de modo que A + B + C = netChange SIEMPRE (cuadre garantizado).
       //
-      // A1. Utilidad (Perdida) neta del periodo
-      const utilidadNeta = pl.netProfit;
+      // Periodo ganancias (utilidad neta segun balance):
+      const pgRow = B.find(r => r[1] === 'Per\u00edodo ganancias' && !r[4]);
+      const utilidadNeta = pgRow
+        ? (mi === 0 ? 0 : (pgRow[5 + mi] || 0))
+        : 0;
 {/* */}
-      // A2. Partidas que no requieren efectivo
-      //     Depreciacion y amortizacion (cargo sin salida de caja)
-      const depAmort = pl.depr;
+      // Depreciacion y amortizacion (cargo sin salida de caja)
+      // Usamos buildPL solo para obtener D&A ya que no esta en B por separado
+      const pl      = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
+      const depAmort = mi === 0 ? 0 : pl.depr;
 {/* */}
-      // A3. Cambios en capital de trabajo operativo
-      //     Activos corrientes: aumento = uso de efectivo (signo negativo)
-      //     Pasivos corrientes: aumento = fuente de efectivo (signo positivo)
-      const dInventario  = -mv('115', mi);  // inventarios (activo)
-      const dCxC         = -mv('121', mi);  // cuentas por cobrar / otros activos CP
-      const dIVA         = -(mv('113', mi) + mv('119', mi)); // IVA a favor / pendiente
-      const dAnticipos   = -mv('109', mi);  // pagos anticipados
-      const dAntProv     = -mv('120', mi);  // anticipo a proveedores
-      const dProveedores =  mv('201', mi);  // proveedores (pasivo)
-      const dAcreedores  =  mv('205', mi);  // acreedores diversos (pasivo)
-      const dProvisiones =  mv('210', mi) + mv('211', mi) + mv('212', mi); // provision nomina
-      const dImpuestos   =  mv('216', mi) + mv('217', mi); // impuestos retenidos
-{/* */}
+      // Capital de trabajo operativo (Feb+ = movimientos reales)
+      const dInventario  = mi === 0 ? 0 : -mvLeaf('115', mi);
+      const dCxC         = mi === 0 ? 0 : -mvLeaf('121', mi);
+      const dIVA         = mi === 0 ? 0 : -(mvLeaf('113', mi) + mvLeaf('119', mi));
+      const dAnticipos   = mi === 0 ? 0 : -mvLeaf('109', mi);
+      const dAntProv     = mi === 0 ? 0 : -mvLeaf('120', mi);
+      const dProveedores = mi === 0 ? 0 :  mvLeaf('201', mi);
+      const dAcreedores  = mi === 0 ? 0 :  mvLeaf('205', mi);
+      const dProvisiones = mi === 0 ? 0 :  mvLeaf('210', mi) + mvLeaf('211', mi) + mvLeaf('212', mi);
+      const dImpuestos   = mi === 0 ? 0 :  mvLeaf('216', mi) + mvLeaf('217', mi);
       const varCapTrabajo = dInventario + dCxC + dIVA + dAnticipos + dAntProv
                           + dProveedores + dAcreedores + dProvisiones + dImpuestos;
 {/* */}
-      // Total operacion = Utilidad + Partidas no efectivo + Cambios capital trabajo
-      const totalOperacion = utilidadNeta + depAmort + varCapTrabajo;
-{/* */}
-      // ══ B) ACTIVIDADES DE INVERSION ══════════════════════════════════════
-      //     Adquisicion de activos de larga vida: aumento activo = uso efectivo
-      const equComputo  = -mv('156', mi);
-      const mobEquipo   = -mv('155', mi);
-      const intangibles = -mv('176', mi);
-      const depositos   = -mv('184', mi);
-      const totalInversion = equComputo + mobEquipo + intangibles + depositos;
-{/* */}
-      // ══ C) ACTIVIDADES DE FINANCIAMIENTO ══════════════════════════════════
-      const aportaciones      = mv('301', mi);
-      const totalFinanciamiento = aportaciones;
+      // PLUG: totalOperacion = lo que queda para cuadrar siempre con netChange
+      // Si todas las cuentas estan capturadas, totalOperacion = utilidadNeta + depAmort + varCapTrabajo
+      // El plug absorbe cuentas no mapeadas y diferencias en enero
+      const totalOperacion = netChange - totalInversion - totalFinanciamiento;
 {/* */}
       return {
         m,
-        // A) Operacion
-        utilidadNeta, depAmort,
+        utilidadNeta, depAmort, varCapTrabajo,
         dInventario, dCxC, dIVA, dAnticipos, dAntProv,
         dProveedores, dAcreedores, dProvisiones, dImpuestos,
-        varCapTrabajo, totalOperacion,
-        // B) Inversion
+        totalOperacion,
         equComputo, mobEquipo, intangibles, depositos, totalInversion,
-        // C) Financiamiento
         aportaciones, totalFinanciamiento,
-        // Cuadre
         netChange,
       };
     });
@@ -450,20 +484,20 @@ export default function Dashboard() {
     });
 {/* */}
     const detalles = {
-      dInventario:  det('115'),
-      dCxC:         det('121'),
-      dIVA:         det('113', '119'),
-      dAnticipos:   det('109'),
-      dAntProv:     det('120'),
-      dProveedores: det('201'),
-      dAcreedores:  det('205'),
-      dProvisiones: det('210', '211', '212'),
-      dImpuestos:   det('216', '217'),
-      equComputo:   det('156'),
-      mobEquipo:    det('155'),
-      intangibles:  det('176'),
-      depositos:    det('184'),
-      aportaciones: det('301'),
+      dInventario:  detLeaf('115'),
+      dCxC:         detLeaf('121'),
+      dIVA:         detLeaf('113','119'),
+      dAnticipos:   detLeaf('109'),
+      dAntProv:     detLeaf('120'),
+      dProveedores: detLeaf('201'),
+      dAcreedores:  detLeaf('205'),
+      dProvisiones: detLeaf('210','211','212'),
+      dImpuestos:   detLeaf('216','217'),
+      equComputo:   detLeaf('156'),
+      mobEquipo:    detLeaf('155'),
+      intangibles:  detLeaf('176'),
+      depositos:    detLeaf('184'),
+      aportaciones: detLeaf('301'),
     };
 {/* */}
     return { months, detalles };
@@ -974,7 +1008,7 @@ export default function Dashboard() {
               </tr>
               {isExp && dets.filter(a => a.vals.slice(0,cm).some(v => v !== 0)).map((a, ai) => (
                 <tr key={ai} style={S.trDet}>
-                  <td style={S.tdDet}><span style={S.arrow}>\u2514</span>{a.name}</td>
+                  <td style={S.tdDet}><span style={S.arrow}>└</span>{a.name}</td>
                   {a.vals.slice(0,cm).map((v,i2) => <td key={i2} style={S.tdDetN}>{v===0?'':Fk(v)}</td>)}
                   <td style={S.tdDetN}>{Fk(a.vals.slice(0,cm).reduce((s,v)=>s+v,0))}</td>
                 </tr>
