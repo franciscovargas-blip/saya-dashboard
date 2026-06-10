@@ -943,145 +943,147 @@ export default function Dashboard() {
         const cf   = cashFlow;
         const rows = cf.months.slice(0, cm);
         const det  = cf.detalles || {};
-{/* */}
-        // Formateador de valores monetarios
         const Fk = v => {
-          if (v === 0 || v == null) return '\u2014';
+          if (v === 0 || v == null) return '—';
           return (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US');
         };
-{/* */}
-        // Fila de dato con expansion opcional
-        const cfRow = (key, label, detKey, indent) => {
+        const nc = v => v < 0 ? '#B91C1C' : v > 0 ? '#065F46' : '#9CA3AF';
+        /* ---- estilos como variables (sin llaves dobles en JSX) ---------- */
+        const S = {
+          wrap:    { padding: 24 },
+          hdr:     { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 },
+          hTitle:  { fontWeight: 700, fontSize: 16, color: '#111827' },
+          hSub:    { fontSize: 11, color: '#6B7280' },
+          scroll:  { overflowX: 'auto' },
+          table:   { width: '100%', borderCollapse: 'collapse', fontSize: 11 },
+          th:      { padding: '6px 8px', textAlign: 'right', fontWeight: 600, fontSize: 10, color: '#6B7280', background: '#F9FAFB', borderBottom: '2px solid #E5E7EB' },
+          thLabel: { padding: '6px 12px', textAlign: 'left', fontWeight: 600, fontSize: 10, color: '#6B7280', background: '#F9FAFB', borderBottom: '2px solid #E5E7EB', minWidth: 260 },
+          trRow:   { cursor: 'pointer', background: 'transparent' },
+          trRowNC: { cursor: 'default', background: 'transparent' },
+          tdLabel: { padding: '5px 12px', fontSize: 11, color: '#374151', whiteSpace: 'nowrap' },
+          arrow:   { marginRight: 6, fontSize: 9, color: '#6B7280' },
+          trDet:   { background: '#F9FAFB' },
+          tdDet:   { padding: '4px 12px 4px 32px', fontSize: 10, color: '#6B7280', whiteSpace: 'nowrap' },
+          tdDetN:  { textAlign: 'right', fontSize: 10, padding: '4px 8px', color: '#6B7280' },
+          trTot:   { background: '#F3F4F6', borderTop: '2px solid #D1D5DB', borderBottom: '2px solid #D1D5DB' },
+          tdTot:   { padding: '6px 12px', fontWeight: 700, fontSize: 11, color: '#111827', whiteSpace: 'nowrap' },
+          trBal:   { background: '#EFF6FF', borderTop: '2px solid #3B82F6', borderBottom: '2px solid #3B82F6' },
+          tdBal:   { padding: '6px 12px', fontWeight: 700, fontSize: 12, color: '#1E40AF', whiteSpace: 'nowrap' },
+          secOp:   { padding: '8px 12px 4px', fontWeight: 700, fontSize: 11, color: '#fff', background: '#065F46', letterSpacing: '0.04em' },
+          secInv:  { padding: '8px 12px 4px', fontWeight: 700, fontSize: 11, color: '#fff', background: '#1E40AF', letterSpacing: '0.04em' },
+          secFin:  { padding: '8px 12px 4px', fontWeight: 700, fontSize: 11, color: '#fff', background: '#6D28D9', letterSpacing: '0.04em' },
+          secCon:  { padding: '8px 12px 4px', fontWeight: 700, fontSize: 11, color: '#fff', background: '#92400E', letterSpacing: '0.04em' },
+          foot:    { fontSize: 10, color: '#9CA3AF', marginTop: 10 },
+        };
+        const numS  = v => ({ textAlign: 'right', fontSize: 11, padding: '5px 8px', color: nc(v) });
+        const numT  = v => ({ textAlign: 'right', fontSize: 11, padding: '6px 8px', fontWeight: 700, color: nc(v) });
+        const numB  = v => ({ textAlign: 'right', fontSize: 12, padding: '6px 8px', fontWeight: 700, color: '#1E40AF' });
+        /* ---- helpers de fila ------------------------------------------- */
+        const cfRow = (key, label, detKey) => {
           const vals  = rows.map(mo => mo[key] || 0);
           const total = vals.reduce((s, v) => s + v, 0);
           const dets  = det[detKey] || [];
           const hasD  = dets.length > 0;
           const isExp = expCF[key];
-          const color = v => v < 0 ? '#C0392B' : v > 0 ? '#1D6348' : '#9CA3AF';
           return (
             <React.Fragment key={key}>
-              <tr
-                style= cursor: hasD ? 'pointer' : 'default', background: 'transparent' 
-                onClick={() => hasD && toggleCF(key)}
-              >
-                <td style= padding: '5px 12px 5px ' + (indent ? '28px' : '12px'), fontSize: 11, color: '#374151', whiteSpace: 'nowrap' >
-                  {hasD && <span style= marginRight: 6, fontSize: 9, color: '#6B7280' >{isExp ? '\u25BC' : '\u25BA'}</span>}
+              <tr style={hasD ? S.trRow : S.trRowNC} onClick={() => hasD && toggleCF(key)}>
+                <td style={S.tdLabel}>
+                  {hasD && <span style={S.arrow}>{isExp ? '▼' : '►'}</span>}
                   {label}
                 </td>
-                {vals.map((v, i) => <td key={i} style= textAlign: 'right', fontSize: 11, padding: '5px 8px', color: color(v) >{Fk(v)}</td>)}
-                <td style= textAlign: 'right', fontSize: 11, padding: '5px 8px', fontWeight: 600, color: color(total), borderLeft: '1px solid #E5E7EB' >{Fk(total)}</td>
+                {vals.map((v, i) => <td key={i} style={numS(v)}>{Fk(v)}</td>)}
+                <td style={numT(total)}>{Fk(total)}</td>
               </tr>
-              {isExp && dets.filter(a => a.vals.slice(0, cm).some(v => v !== 0)).map((a, ai) => (
-                <tr key={ai} style= background: '#F9FAFB' >
-                  <td style= padding: '3px 12px 3px 44px', fontSize: 10, color: '#6B7280' >
-                    <span style= marginRight: 4 >\u2514</span>{a.name}
-                  </td>
-                  {a.vals.slice(0, cm).map((v, mi2) => (
-                    <td key={mi2} style= textAlign: 'right', fontSize: 10, padding: '3px 8px', color: v < 0 ? '#C0392B' : '#374151' >{v === 0 ? '' : Fk(v)}</td>
-                  ))}
-                  <td style= textAlign: 'right', fontSize: 10, padding: '3px 8px', color: '#6B7280', borderLeft: '1px solid #E5E7EB' >
-                    {Fk(a.vals.slice(0, cm).reduce((s, v) => s + v, 0))}
-                  </td>
+              {isExp && dets.filter(a => a.vals.slice(0,cm).some(v => v !== 0)).map((a, ai) => (
+                <tr key={ai} style={S.trDet}>
+                  <td style={S.tdDet}><span style={S.arrow}>└</span>{a.name}</td>
+                  {a.vals.slice(0,cm).map((v,i2) => <td key={i2} style={S.tdDetN}>{v===0?'':Fk(v)}</td>)}
+                  <td style={S.tdDetN}>{Fk(a.vals.slice(0,cm).reduce((s,v)=>s+v,0))}</td>
                 </tr>
               ))}
             </React.Fragment>
           );
         };
-{/* */}
-        // Fila de subtotal / total de seccion
-        const totRow = (key, label, accent) => {
+        const totRow = (key, label, isBal) => {
           const vals  = rows.map(mo => mo[key] || 0);
           const total = vals.reduce((s, v) => s + v, 0);
-          const bg    = accent ? '#EFF6FF' : '#F3F4F6';
-          const fw    = 700;
-          const color = v => v < 0 ? '#B91C1C' : v > 0 ? '#065F46' : '#6B7280';
-          return (
-            <tr key={key} style= background: bg, borderTop: '2px solid #D1D5DB' >
-              <td style= padding: '6px 12px', fontSize: 11, fontWeight: fw, color: '#111827' >{label}</td>
-              {vals.map((v, i) => <td key={i} style= textAlign: 'right', fontSize: 11, padding: '6px 8px', fontWeight: fw, color: color(v) >{Fk(v)}</td>)}
-              <td style= textAlign: 'right', fontSize: 11, padding: '6px 8px', fontWeight: fw, color: color(total), borderLeft: '2px solid #9CA3AF' >{Fk(total)}</td>
+          return isBal ? (
+            <tr key={key} style={S.trBal}>
+              <td style={S.tdBal}>{label}</td>
+              {vals.map((v,i) => <td key={i} style={numB(v)}>{Fk(v)}</td>)}
+              <td style={numB(total)}>{Fk(total)}</td>
+            </tr>
+          ) : (
+            <tr key={key} style={S.trTot}>
+              <td style={S.tdTot}>{label}</td>
+              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
+              <td style={numT(total)}>{Fk(total)}</td>
             </tr>
           );
         };
-{/* */}
-        // Fila de saldo (inicio / fin)
         const balRow = (key, label) => {
           const vals = rows.map(mo => mo[key] || 0);
           return (
-            <tr key={key} style= background: '#EDE9FE' >
-              <td style= padding: '6px 12px', fontSize: 11, fontWeight: 700, color: '#4C1D95' >{label}</td>
-              {vals.map((v, i) => <td key={i} style= textAlign: 'right', fontSize: 11, padding: '6px 8px', fontWeight: 700, color: '#4C1D95' >{Fk(v)}</td>)}
-              <td style= textAlign: 'right', fontSize: 11, padding: '6px 8px', color: '#9CA3AF', borderLeft: '1px solid #C4B5FD' >{'\u2014'}</td>
+            <tr key={key} style={S.trTot}>
+              <td style={S.tdTot}>{label}</td>
+              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
+              <td style={S.tdTot}>{'—'}</td>
             </tr>
           );
         };
-{/* */}
-        // Encabezado de seccion
-        const secH = (label, color) => (
-          <tr key={'h_' + label}>
-            <td colSpan={cm + 2} style= padding: '10px 12px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: color || '#6B7280', borderTop: '1px solid #E5E7EB', background: '#FAFAFA' >
-              {label}
-            </td>
-          </tr>
+        const secH = (label, st) => (
+          <tr key={'h_'+label}><td colSpan={cm+2} style={st}>{label}</td></tr>
         );
-{/* */}
+        /* ---- render ------------------------------------------------------- */
         return (
-          <div style= background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: 0, overflow: 'hidden' >
-            {/* Header */}
-            <div style= display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid #E5E7EB', background: '#F9FAFB' >
+          <div style={S.wrap}>
+            <div style={S.hdr}>
               <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
               <div>
-                <div style= fontSize: 14, fontWeight: 700, color: '#111827' >Estado de Flujo de Efectivo</div>
-                <div style= fontSize: 11, color: '#6B7280', marginTop: 2 >M\u00e9todo Directo \u2014 NIF B-2 \u00b7 Enero\u2013{MO[cm - 1]} {CUR_YEAR}</div>
+                <div style={S.hTitle}>Estado de Flujo de Efectivo</div>
+                <div style={S.hSub}>Método Directo — NIF B-2 · Enero–{MO[cm-1]} {CUR_YEAR}</div>
               </div>
             </div>
-            {/* Tabla */}
-            <div style= overflowX: 'auto' >
-              <table style= borderCollapse: 'collapse', width: '100%', fontSize: 11 >
+            <div style={S.scroll}>
+              <table style={S.table}>
                 <thead>
-                  <tr style= background: '#F3F4F6' >
-                    <th style= padding: '8px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#374151', whiteSpace: 'nowrap', position: 'sticky', left: 0, background: '#F3F4F6', zIndex: 2, minWidth: 220 >Concepto</th>
-                    {rows.map(mo => <th key={mo.m} style= padding: '8px 8px', textAlign: 'right', fontSize: 10, fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap', minWidth: 80 >{MO[mo.m - 1]}</th>)}
-                    <th style= padding: '8px 8px', textAlign: 'right', fontSize: 10, fontWeight: 700, color: '#374151', borderLeft: '1px solid #D1D5DB', minWidth: 80 >Acum.</th>
+                  <tr>
+                    <th style={S.thLabel}>Concepto</th>
+                    {rows.map(mo => <th key={mo.m} style={S.th}>{MO[mo.m-1]}</th>)}
+                    <th style={S.th}>Acum.</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {/* ── A) OPERACION ── */}
-                  {secH('A)  Actividades de Operaci\u00f3n', '#065F46')}
-                  {cfRow('cobrosClientes',    '(+) Cobros a clientes',                        'cobrosClientes',    false)}
-                  {cfRow('pagosProveedores',  '(\u2212) Pagos a proveedores de bienes',        'pagosProveedores',  false)}
-                  {cfRow('pagosEmpleados',    '(\u2212) Pagos a empleados y seg. social',      'pagosEmpleados',    false)}
-                  {cfRow('otrosPagos',        '(\u00b1) Otros cobros y pagos de operaci\u00f3n', 'otrosPagos',        false)}
-                  {cfRow('impuestosUtilidad', '(\u00b1) Impuestos retenidos por enterar',      'impuestosUtilidad', false)}
-                  {totRow('totalOperacion',   '= Flujo Neto de Actividades de Operaci\u00f3n', false)}
-                  {/* ── B) INVERSION ── */}
-                  {secH('B)  Actividades de Inversi\u00f3n', '#1E40AF')}
-                  {cfRow('equComputo',   '(\u2212) Adquisici\u00f3n de equipo de c\u00f3mputo',    'equComputo',  false)}
-                  {cfRow('mobEquipo',    '(\u2212) Adquisici\u00f3n de mobiliario y equipo',    'mobEquipo',   false)}
-                  {cfRow('intangibles',  '(\u2212) Adquisici\u00f3n de activos intangibles',    'intangibles', false)}
-                  {cfRow('depositos',    '(\u2212) Dep\u00f3sitos en garant\u00eda',              'depositos',   false)}
-                  {totRow('totalInversion', '= Flujo Neto de Actividades de Inversi\u00f3n', false)}
-                  {/* ── C) FINANCIAMIENTO ── */}
-                  {secH('C)  Actividades de Financiamiento', '#6D28D9')}
-                  {cfRow('aportaciones', '(+) Aportaciones de capital social', 'aportaciones', false)}
+                  {secH('A)  Actividades de Operación  —  Método Directo', S.secOp)}
+                  {cfRow('cobrosClientes',    '(+) Cobros a clientes',                           'cobrosClientes')}
+                  {cfRow('pagosProveedores',  '(−) Pagos a proveedores de bienes',           'pagosProveedores')}
+                  {cfRow('pagosEmpleados',    '(−) Pagos a empleados y seg. social',         'pagosEmpleados')}
+                  {cfRow('otrosPagos',        '(±) Otros cobros y pagos de operación',  'otrosPagos')}
+                  {cfRow('impuestosUtilidad', '(±) Impuestos retenidos por enterar',         'impuestosUtilidad')}
+                  {totRow('totalOperacion',   '= Flujo Neto de Actividades de Operación',   false)}
+                  {secH('B)  Actividades de Inversión', S.secInv)}
+                  {cfRow('equComputo',   '(−) Adquisición de equipo de cómputo',    'equComputo')}
+                  {cfRow('mobEquipo',    '(−) Adquisición de mobiliario y equipo',       'mobEquipo')}
+                  {cfRow('intangibles',  '(−) Adquisición de activos intangibles',       'intangibles')}
+                  {cfRow('depositos',    '(−) Depósitos en garantía',               'depositos')}
+                  {totRow('totalInversion', '= Flujo Neto de Actividades de Inversión',      false)}
+                  {secH('C)  Actividades de Financiamiento', S.secFin)}
+                  {cfRow('aportaciones', '(+) Aportaciones de capital social', 'aportaciones')}
                   {totRow('totalFinanciamiento', '= Flujo Neto de Actividades de Financiamiento', false)}
-                  {/* ── CUADRE ── */}
-                  {totRow('netChange', 'Incremento (Decremento) Neto en Efectivo', true)}
+                  {totRow('netChange',   'Incremento (Decremento) Neto en Efectivo',              true)}
                   {balRow('saldoInicial', 'Saldo Inicial de Efectivo y Equivalentes')}
                   {balRow('saldoFinal',   'Saldo Final de Efectivo y Equivalentes')}
-                  {/* ── CONCILIACION NIF B-2 par.39 ── */}
-                  {secH('Conciliaci\u00f3n: Utilidad Neta \u2192 Flujo de Operaci\u00f3n  (NIF B-2 p\u00e1rr. 39)', '#92400E')}
-                  {cfRow('utilidadNeta',     'Utilidad (P\u00e9rdida) neta del per\u00edodo',              'cobrosClientes',    false)}
-                  {cfRow('depAmort',         '(+) Depreciaci\u00f3n y amortizaci\u00f3n (cargo no efect.)',  'intangibles',       false)}
-                  {cfRow('resultFinanciero', '(+/\u2212) Resultado financiero neto',                   'aportaciones',      false)}
-                  {cfRow('varCapTrabajo',    '(+/\u2212) Variaci\u00f3n neta en capital de trabajo',     'otrosPagos',        false)}
-                  {totRow('totalOperacion',  '= Flujo de Operaci\u00f3n (verificaci\u00f3n)', false)}
+                  {secH('Conciliación: Utilidad Neta → Flujo Operación  (NIF B-2 párr. 39)', S.secCon)}
+                  {cfRow('utilidadNeta',     'Utilidad (Pérdida) neta del período',               'cobrosClientes')}
+                  {cfRow('depAmort',         '(+) Depreciación y amortización',                     'intangibles')}
+                  {cfRow('resultFinanciero', '(+/−) Resultado financiero neto',                        'aportaciones')}
+                  {cfRow('varCapTrabajo',    '(+/−) Variación neta en capital de trabajo',         'otrosPagos')}
+                  {totRow('totalOperacion',  '= Flujo de Operación (verificación)',                false)}
                 </tbody>
               </table>
             </div>
-            <div style= padding: '8px 16px', fontSize: 10, color: '#9CA3AF', borderTop: '1px solid #E5E7EB' >
-              Haz clic en una l\u00ednea para expandir el detalle de cuentas del balance.
-            </div>
+            <div style={S.foot}>Haz clic en una línea para expandir el detalle de cuentas.</div>
           </div>
         );
       })()}
