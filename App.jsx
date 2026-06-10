@@ -1162,7 +1162,7 @@ export default function Dashboard() {
                 </ul>
                 <p><strong>B) Inversión</strong>: <span style={cod}>155</span> Mob. &nbsp;<span style={cod}>156</span> Cómputo &nbsp;<span style={cod}>176</span> Intangibles &nbsp;<span style={cod}>184</span> Depósitos</p>
                 <p><strong>C) Financiamiento</strong>: <span style={cod}>301</span> Aportaciones de capital</p>
-                <p>(+/−) Otras variaciones:</strong> residual entre variación real de efectivo y suma A+B+C. Valor distinto de cero = cuentas SAP sin clasificar.</p>
+                <p><strong>(+/−) Otras variaciones:</strong> residual entre variación real de efectivo y suma A+B+C. Valor distinto de cero = cuentas SAP sin clasificar.</p>
               </div>
             )}
           </div>
