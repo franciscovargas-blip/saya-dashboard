@@ -350,84 +350,148 @@ export default function Dashboard() {
 {/* */}
   const cashFlow = useMemo(() => {
     if (!B || B.length === 0) return null;
-    // NIF B-2 Método Directo
-    // bLeaf: suma movimientos de cuentas hoja para el mes mi
-    // Activos: mov positivo = aumento activo = uso de efectivo
-    // Pasivos: mov positivo = aumento pasivo = fuente de efectivo
-    const bLeaf = (pfx, mi) => B
-      .filter(r => !r[4] && (r[0]||"").startsWith(pfx))
-      .reduce((s, r) => s + (r[5+mi]||0), 0);
-    const bDet = (...pfxs) => B
-      .filter(r => !r[4] && r[2] >= 3 && pfxs.some(p => (r[0]||"").startsWith(p)))
-      .map(r => ({ name: r[1], code: r[0], vals: Array.from({length:12}, (_,i) => r[5+i]||0) }));
-    const r102 = B.find(r => r[0]==="102-00-000" && r[4]===1);
-    const r103 = B.find(r => r[0]==="103-00-000" && r[4]===1);
-    const mos = Array.from({length:12}, (_, mi) => {
-      const m = mi + 1;
-      // Saldo real de caja (fuente de verdad para cuadre)
-      const c102 = r102 ? (r102[5+mi]||0) : 0;
-      const c103 = r103 ? (r103[5+mi]||0) : 0;
-      const netChange = mi === 0 ? (c102 + c103) - OPEN_CASH : (c102 + c103);
-      // P&L del mes (método consolidado)
-      const pl = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
-      // ── A) ACTIVIDADES DE OPERACIÓN — Método Directo NIF B-2 ────────────
-      // 1. Cobros a clientes: Ventas netas - ΔCuentas por cobrar(121)
-      const dAR          = bLeaf('121', mi);  // aumento AR = menos cobros
-      const cobrosClientes = pl.ns - dAR;
-      // 2. Pagos a proveedores: COGS + ΔInv - ΔAP - ΔAnticipo prov
-      const dInv         = bLeaf('115', mi);  // aumento inv = más compras pagadas
-      const dAP          = bLeaf('201', mi);  // aumento AP = menos pagado en efectivo
-      const dAdvProv     = bLeaf('120', mi);  // aumento anticipo = más pagado
-      const pagosProveedores = -(pl.cogs + dInv - dAP + dAdvProv);
-      // 3. Pagos a empleados: sueldos - ΔProvisiones nómina
-      const dPayroll     = bLeaf('210', mi) + bLeaf('211', mi) + bLeaf('212', mi);
-      const pagosEmpleados = -(pl.sw - dPayroll);
-      // 4. Otros gastos de operación pagados (SM, TA, PF, OF, REG, SH, MOB, OPS, OTH)
-      const otherOpex    = pl.sm + pl.ta + pl.pf + pl.of + pl.reg + pl.sh + pl.mob + pl.ops + pl.oth;
-      const dVAT         = bLeaf('113', mi) + bLeaf('119', mi);  // IVA: aumento = más efectivo retenido
-      const dPrepaid     = bLeaf('109', mi);  // pagos anticipados: aumento = efectivo salido
-      const dOtherCred   = bLeaf('205', mi);  // acreedores: aumento = menos pagado
-      const otrosGastosOp = -(otherOpex) - dVAT - dPrepaid + dOtherCred;
-      // 5. Impuestos retenidos pagados (movimiento de cuentas 216+217)
-      // aumento pasivo = acumulado, no pagado; disminución = pagado
-      const dTaxPay      = bLeaf('216', mi) + bLeaf('217', mi);
-      const impuestosOp  = dTaxPay;  // positivo = más retenido (fuente); negativo = pagado (uso)
-      const totalOp = cobrosClientes + pagosProveedores + pagosEmpleados + otrosGastosOp + impuestosOp;
-      // ── B) ACTIVIDADES DE INVERSIÓN ──────────────────────────────────────
-      const capexComp    = -(bLeaf('156', mi));
-      const capexFurn    = -(bLeaf('155', mi));
-      const capexIntang  = -(bLeaf('176', mi));
-      const capexDepos   = -(bLeaf('184', mi));
-      const totalInv     = capexComp + capexFurn + capexIntang + capexDepos;
-      // ── C) ACTIVIDADES DE FINANCIAMIENTO ─────────────────────────────────
-      const equityChg    = bLeaf('301', mi);
-      const totalFin     = equityChg;
-      // ── CONCILIACIÓN con Utilidad Neta (NIF B-2 Nota) ───────────────────
-      const netProfit    = pl.netProfit;
-      const deprAmort    = pl.depr;   // depreciación y amortización (no efectivo)
-      const finItems     = pl.fi + pl.fe; // resultado financiero neto
-      return { m,
-        cobrosClientes, pagosProveedores, pagosEmpleados, otrosGastosOp, impuestosOp, totalOp,
-        capexComp, capexFurn, capexIntang, capexDepos, totalInv,
-        equityChg, totalFin,
-        netChange, netProfit, deprAmort, finItems };
+{/* */}
+    // Helpers ─────────────────────────────────────────────────────────────────
+    // Suma movimientos de cuentas hoja (isTotal=0) con prefijo dado, mes mi
+    // Convencion balance: activo positivo = uso efectivo; pasivo positivo = fuente
+    const mv = (pfx, mi) => B
+      .filter(r => !r[4] && (r[0] || '').startsWith(pfx))
+      .reduce((s, r) => s + (r[5 + mi] || 0), 0);
+{/* */}
+    // Detalle de subcuentas expandibles
+    const det = (...pfxs) => B
+      .filter(r => !r[4] && r[2] >= 3 && pfxs.some(p => (r[0] || '').startsWith(p)))
+      .map(r => ({ name: r[1], code: r[0], vals: Array.from({ length: 12 }, (_, i) => r[5 + i] || 0) }));
+{/* */}
+    // Cuentas de efectivo (totales de grupo)
+    const r102 = B.find(r => r[0] === '102-00-000' && r[4] === 1);
+    const r103 = B.find(r => r[0] === '103-00-000' && r[4] === 1);
+{/* */}
+    // ─────────────────────────────────────────────────────────────────────────
+    const months = Array.from({ length: 12 }, (_, mi) => {
+      const m   = mi + 1;
+      const pl  = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
+{/* */}
+      // Variacion real de efectivo (fuente de verdad - cuentas 102+103)
+      const cash102   = r102 ? (r102[5 + mi] || 0) : 0;
+      const cash103   = r103 ? (r103[5 + mi] || 0) : 0;
+      const netChange = mi === 0 ? (cash102 + cash103) - OPEN_CASH : (cash102 + cash103);
+{/* */}
+      // ══ A) ACTIVIDADES DE OPERACION - Metodo Directo NIF B-2 ═════════════
+      //
+      // A1. Cobros a clientes
+      //     = Ventas netas del periodo
+      //     + Disminucion (- Aumento) en cuentas por cobrar
+      //     La cuenta 121 agrupa otros activos CP / cuentas por cobrar.
+      //     mv positivo = activo aumento = menos cobrado en efectivo.
+      const cobrosClientes = pl.ns - mv('121', mi);
+{/* */}
+      // A2. Pagos a proveedores de bienes y servicios
+      //     = Costo de ventas
+      //     + Aumento (- Disminucion) en inventarios
+      //     - Aumento en proveedores  (+ Disminucion en proveedores)
+      //     + Aumento en anticipo a proveedores
+      //     cogs es magnitud positiva; resultado negativo = salida de efectivo.
+      const pagosProveedores = -(
+        pl.cogs
+        + mv('115', mi)   // inventarios: aumento = mas comprado no devengado
+        - mv('201', mi)   // proveedores: aumento = comprado a credito, menos pago
+        + mv('120', mi)   // anticipo prov: aumento = pago adelantado adicional
+      );
+{/* */}
+      // A3. Pagos a empleados y organismos de seguridad social
+      //     = Sueldos y salarios del periodo
+      //     - Aumento en provisiones de nomina (menos pagado en efectivo)
+      //     Provisiones 210=sueldos, 211=IMSS, 212=ISN
+      const pagosEmpleados = -(
+        pl.sw
+        - mv('210', mi)
+        - mv('211', mi)
+        - mv('212', mi)
+      );
+{/* */}
+      // A4. Otros pagos de operacion
+      //     = Resto del OpEx: SM, TA, PF, OF, REG, SH, MOB, OPS, OTH
+      //     +/- Variacion en IVA a favor / pendiente (activos 113+119)
+      //     +/- Variacion en pagos anticipados (activo 109)
+      //     +/- Variacion en acreedores diversos (pasivo 205)
+      const otrosOpex = pl.sm + pl.ta + pl.pf + pl.of + pl.reg + pl.sh + pl.mob + pl.ops + pl.oth;
+      const otrosPagos = (
+        -otrosOpex
+        - mv('113', mi)   // IVA a favor: aumento activo = uso efectivo
+        - mv('119', mi)   // IVA pendiente: aumento activo = uso efectivo
+        - mv('109', mi)   // pagos anticipados: aumento = uso efectivo
+        + mv('205', mi)   // acreedores diversos: aumento = fuente efectivo
+      );
+{/* */}
+      // A5. Impuestos a la utilidad pagados
+      //     Variacion en impuestos retenidos por enterar (pasivos 216+217)
+      //     Positivo = mayor retencion (fuente); negativo = entero al fisco (uso)
+      const impuestosUtilidad = mv('216', mi) + mv('217', mi);
+{/* */}
+      // Total actividades de operacion
+      const totalOperacion = cobrosClientes + pagosProveedores + pagosEmpleados + otrosPagos + impuestosUtilidad;
+{/* */}
+      // ══ B) ACTIVIDADES DE INVERSION ══════════════════════════════════════
+      //     NIF B-2: adquisicion de activos de larga vida para generar
+      //     beneficios economicos futuros. Aumento de activo = uso de efectivo.
+      const equComputo   = -mv('156', mi);  // Equipo de computo
+      const mobEquipo    = -mv('155', mi);  // Mobiliario y equipo
+      const intangibles  = -mv('176', mi);  // Activos intangibles
+      const depositos    = -mv('184', mi);  // Depositos en garantia
+      const totalInversion = equComputo + mobEquipo + intangibles + depositos;
+{/* */}
+      // ══ C) ACTIVIDADES DE FINANCIAMIENTO ═════════════════════════════════
+      //     NIF B-2: transacciones con propietarios y acreedores.
+      const aportaciones = mv('301', mi);   // Capital social
+      const totalFinanciamiento = aportaciones;
+{/* */}
+      // ══ CONCILIACION: Utilidad Neta → Flujo de Operacion (NIF B-2 par. 39)
+      //     Requerida como nota cuando se usa metodo directo.
+      const utilidadNeta     = pl.netProfit;
+      const depAmort         = pl.depr;           // no requiere efectivo
+      const resultFinanciero = -(pl.fi + pl.fe);  // revertir efecto financiero
+      const varCapTrabajo    = totalOperacion - utilidadNeta - depAmort - resultFinanciero;
+{/* */}
+      return {
+        m,
+        // A) Operacion
+        cobrosClientes, pagosProveedores, pagosEmpleados, otrosPagos, impuestosUtilidad, totalOperacion,
+        // B) Inversion
+        equComputo, mobEquipo, intangibles, depositos, totalInversion,
+        // C) Financiamiento
+        aportaciones, totalFinanciamiento,
+        // Cuadre
+        netChange,
+        // Conciliacion
+        utilidadNeta, depAmort, resultFinanciero, varCapTrabajo,
+      };
     });
-    let bal = OPEN_CASH;
-    mos.forEach(mo => { mo.beginBal = bal; mo.endBal = bal + mo.netChange; bal = mo.endBal; });
-    const details = {
-      cobrosClientes:   bDet('121'),
-      pagosProveedores: bDet('115','201','120'),
-      pagosEmpleados:   bDet('210','211','212'),
-      otrosGastosOp:    bDet('113','119','109','205'),
-      impuestosOp:      bDet('216','217'),
-      capexComp:        bDet('156'),
-      capexFurn:        bDet('155'),
-      capexIntang:      bDet('176'),
-      capexDepos:       bDet('184'),
-      equityChg:        bDet('301'),
+{/* */}
+    // Saldos acumulados de efectivo
+    let saldo = OPEN_CASH;
+    months.forEach(mo => {
+      mo.saldoInicial = saldo;
+      mo.saldoFinal   = saldo + mo.netChange;
+      saldo           = mo.saldoFinal;
+    });
+{/* */}
+    // Detalles para expansion de filas
+    const detalles = {
+      cobrosClientes:   det('121'),
+      pagosProveedores: det('115', '201', '120'),
+      pagosEmpleados:   det('210', '211', '212'),
+      otrosPagos:       det('113', '119', '109', '205'),
+      impuestosUtilidad: det('216', '217'),
+      equComputo:       det('156'),
+      mobEquipo:        det('155'),
+      intangibles:      det('176'),
+      depositos:        det('184'),
+      aportaciones:     det('301'),
     };
-    return { months: mos, details };
-  }, [cm, fd])
+{/* */}
+    return { months, detalles };
+  }, [B, fd, cm])
 {/* */}
 {/* */}
   // ═══ BALANCE GENERAL ═══
@@ -876,41 +940,46 @@ export default function Dashboard() {
 {/* */}
       {/* CASH FLOW METODO DIRECTO NIF B-2 */}
       {cashFlow && (() => {
-        const cf = cashFlow;
+        const cf   = cashFlow;
         const rows = cf.months.slice(0, cm);
-        const det  = cf.details || {};
+        const det  = cf.detalles || {};
+{/* */}
+        // Formateador de valores monetarios
         const Fk = v => {
-          if (v === 0 || v === null || v === undefined) return '—';
+          if (v === 0 || v == null) return '\u2014';
           return (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US');
         };
-        const cfRow = (key, label, detKey) => {
-          const vals = rows.map(mo => (mo[key] || 0));
-          const tot  = vals.reduce((s, v) => s + v, 0);
-          const dets = (det && det[detKey]) ? det[detKey] : [];
-          const hasD = dets.length > 0;
+{/* */}
+        // Fila de dato con expansion opcional
+        const cfRow = (key, label, detKey, indent) => {
+          const vals  = rows.map(mo => mo[key] || 0);
+          const total = vals.reduce((s, v) => s + v, 0);
+          const dets  = det[detKey] || [];
+          const hasD  = dets.length > 0;
           const isExp = expCF[key];
-          const cN = v => ({ color: v < 0 ? '#C0392B' : v > 0 ? '#1a1a2e' : '#bbb', textAlign: 'right', fontSize: 11, padding: '3px 8px' });
+          const color = v => v < 0 ? '#C0392B' : v > 0 ? '#1D6348' : '#9CA3AF';
           return (
             <React.Fragment key={key}>
-              <tr style={{cursor: hasD ? 'pointer' : 'default', background: '#fff'}} onClick={() => hasD && toggleCF(key)}>
-                <td style={{fontSize: 11, padding: '4px 8px', paddingLeft: 24, color: '#334155'}}>
-                  {hasD && <span style={{marginRight: 4, fontSize: 9, color: '#6B7280'}}>{isExp ? '▼' : '►'}</span>}
+              <tr
+                style= cursor: hasD ? 'pointer' : 'default', background: 'transparent' 
+                onClick={() => hasD && toggleCF(key)}
+              >
+                <td style= padding: '5px 12px 5px ' + (indent ? '28px' : '12px'), fontSize: 11, color: '#374151', whiteSpace: 'nowrap' >
+                  {hasD && <span style= marginRight: 6, fontSize: 9, color: '#6B7280' >{isExp ? '\u25BC' : '\u25BA'}</span>}
                   {label}
                 </td>
-                {vals.map((v, i) => <td key={i} style={cN(v)}>{Fk(v)}</td>)}
-                <td style={{color: tot < 0 ? '#C0392B' : '#1a1a2e', textAlign: 'right', fontSize: 11, padding: '3px 8px', fontWeight: 600}}>{Fk(tot)}</td>
+                {vals.map((v, i) => <td key={i} style= textAlign: 'right', fontSize: 11, padding: '5px 8px', color: color(v) >{Fk(v)}</td>)}
+                <td style= textAlign: 'right', fontSize: 11, padding: '5px 8px', fontWeight: 600, color: color(total), borderLeft: '1px solid #E5E7EB' >{Fk(total)}</td>
               </tr>
               {isExp && dets.filter(a => a.vals.slice(0, cm).some(v => v !== 0)).map((a, ai) => (
-                <tr key={ai} style={{background: '#F8FAFF'}}>
-                  <td style={{fontSize: 10, padding: '3px 8px', paddingLeft: 40, color: '#6B7280'}}>
-                    <span style={{marginRight: 4}}>└</span>{a.name}
+                <tr key={ai} style= background: '#F9FAFB' >
+                  <td style= padding: '3px 12px 3px 44px', fontSize: 10, color: '#6B7280' >
+                    <span style= marginRight: 4 >\u2514</span>{a.name}
                   </td>
-                  {a.vals.slice(0, cm).map((v, mi) => (
-                    <td key={mi} style={{color: v < 0 ? '#C0392B' : v > 0 ? '#374151' : '#bbb', textAlign: 'right', fontSize: 10, padding: '3px 8px'}}>
-                      {v === 0 ? '' : Fk(v)}
-                    </td>
+                  {a.vals.slice(0, cm).map((v, mi2) => (
+                    <td key={mi2} style= textAlign: 'right', fontSize: 10, padding: '3px 8px', color: v < 0 ? '#C0392B' : '#374151' >{v === 0 ? '' : Fk(v)}</td>
                   ))}
-                  <td style={{color: '#374151', textAlign: 'right', fontSize: 10, padding: '3px 8px', fontWeight: 500}}>
+                  <td style= textAlign: 'right', fontSize: 10, padding: '3px 8px', color: '#6B7280', borderLeft: '1px solid #E5E7EB' >
                     {Fk(a.vals.slice(0, cm).reduce((s, v) => s + v, 0))}
                   </td>
                 </tr>
@@ -918,83 +987,100 @@ export default function Dashboard() {
             </React.Fragment>
           );
         };
-        const totRow = (key, label) => {
-          const vals = rows.map(mo => (mo[key] || 0));
-          const tot  = vals.reduce((s, v) => s + v, 0);
+{/* */}
+        // Fila de subtotal / total de seccion
+        const totRow = (key, label, accent) => {
+          const vals  = rows.map(mo => mo[key] || 0);
+          const total = vals.reduce((s, v) => s + v, 0);
+          const bg    = accent ? '#EFF6FF' : '#F3F4F6';
+          const fw    = 700;
+          const color = v => v < 0 ? '#B91C1C' : v > 0 ? '#065F46' : '#6B7280';
           return (
-            <tr key={key} style={{background: '#E8F4FD', fontWeight: 600}}>
-              <td style={{fontSize: 11, padding: '5px 8px', paddingLeft: 16, color: '#1a3a5c'}}>{label}</td>
-              {vals.map((v, i) => (
-                <td key={i} style={{color: v < 0 ? '#C0392B' : '#1a3a5c', textAlign: 'right', fontSize: 11, padding: '5px 8px', fontWeight: 600}}>{Fk(v)}</td>
-              ))}
-              <td style={{color: tot < 0 ? '#C0392B' : '#1a3a5c', textAlign: 'right', fontSize: 11, padding: '5px 8px', fontWeight: 700}}>{Fk(tot)}</td>
+            <tr key={key} style= background: bg, borderTop: '2px solid #D1D5DB' >
+              <td style= padding: '6px 12px', fontSize: 11, fontWeight: fw, color: '#111827' >{label}</td>
+              {vals.map((v, i) => <td key={i} style= textAlign: 'right', fontSize: 11, padding: '6px 8px', fontWeight: fw, color: color(v) >{Fk(v)}</td>)}
+              <td style= textAlign: 'right', fontSize: 11, padding: '6px 8px', fontWeight: fw, color: color(total), borderLeft: '2px solid #9CA3AF' >{Fk(total)}</td>
             </tr>
           );
         };
-        const balRow = (key, label, purple) => {
-          const vals = rows.map(mo => (mo[key] || 0));
+{/* */}
+        // Fila de saldo (inicio / fin)
+        const balRow = (key, label) => {
+          const vals = rows.map(mo => mo[key] || 0);
           return (
-            <tr key={key} style={{background: purple ? '#F3E8FF' : '#FAF5FF', fontWeight: purple ? 700 : 500}}>
-              <td style={{fontSize: 11, padding: '4px 8px', paddingLeft: 16, color: '#6D28D9'}}>{label}</td>
-              {vals.map((v, i) => (
-                <td key={i} style={{color: '#7C3AED', textAlign: 'right', fontSize: 11, padding: '4px 8px'}}>{Fk(v)}</td>
-              ))}
-              <td style={{textAlign: 'right', color: '#bbb'}}>{'—'}</td>
+            <tr key={key} style= background: '#EDE9FE' >
+              <td style= padding: '6px 12px', fontSize: 11, fontWeight: 700, color: '#4C1D95' >{label}</td>
+              {vals.map((v, i) => <td key={i} style= textAlign: 'right', fontSize: 11, padding: '6px 8px', fontWeight: 700, color: '#4C1D95' >{Fk(v)}</td>)}
+              <td style= textAlign: 'right', fontSize: 11, padding: '6px 8px', color: '#9CA3AF', borderLeft: '1px solid #C4B5FD' >{'\u2014'}</td>
             </tr>
           );
         };
-        const secH = (label) => (
-          <tr key={'h' + label}>
-            <td colSpan={cm + 2} style={{background: '#1a1a2e', color: '#fff', fontSize: 10, fontWeight: 700, padding: '4px 8px'}}>{label}</td>
+{/* */}
+        // Encabezado de seccion
+        const secH = (label, color) => (
+          <tr key={'h_' + label}>
+            <td colSpan={cm + 2} style= padding: '10px 12px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: color || '#6B7280', borderTop: '1px solid #E5E7EB', background: '#FAFAFA' >
+              {label}
+            </td>
           </tr>
         );
+{/* */}
         return (
-          <div style={{background: '#fff', border: '1px solid #E4E8F2', borderRadius: 12, padding: 16, marginBottom: 16}}>
-            <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12}}>
-              <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0B6644"/><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">CF</text></svg>
+          <div style= background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: 0, overflow: 'hidden' >
+            {/* Header */}
+            <div style= display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid #E5E7EB', background: '#F9FAFB' >
+              <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
               <div>
-                <div style={{fontSize: 13, fontWeight: 700, color: '#1a1a2e'}}>Estado de Flujo de Efectivo</div>
-                <div style={{fontSize: 10, color: '#8A90A8'}}>Metodo Directo NIF B-2 &middot; {MO[0]}&ndash;{MO[cm - 1]} 2026</div>
+                <div style= fontSize: 14, fontWeight: 700, color: '#111827' >Estado de Flujo de Efectivo</div>
+                <div style= fontSize: 11, color: '#6B7280', marginTop: 2 >M\u00e9todo Directo \u2014 NIF B-2 \u00b7 Enero\u2013{MO[cm - 1]} {CUR_YEAR}</div>
               </div>
             </div>
-            <div style={{overflowX: 'auto'}}>
-              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 11}}>
+            {/* Tabla */}
+            <div style= overflowX: 'auto' >
+              <table style= borderCollapse: 'collapse', width: '100%', fontSize: 11 >
                 <thead>
-                  <tr style={{background: '#F8F9FE'}}>
-                    <th style={{textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#8A90A8', fontWeight: 600, borderBottom: '2px solid #E4E8F2', minWidth: 140}}>Concepto</th>
-                    {rows.map(mo => <th key={mo.m} style={{textAlign: 'right', padding: '6px 8px', fontSize: 10, color: '#8A90A8', fontWeight: 600, borderBottom: '2px solid #E4E8F2', minWidth: 60}}>{MO[mo.m - 1]}</th>)}
-                    <th style={{textAlign: 'right', padding: '6px 8px', fontSize: 10, color: '#0B6644', fontWeight: 700, borderBottom: '2px solid #E4E8F2', minWidth: 60}}>TOTAL</th>
+                  <tr style= background: '#F3F4F6' >
+                    <th style= padding: '8px 12px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#374151', whiteSpace: 'nowrap', position: 'sticky', left: 0, background: '#F3F4F6', zIndex: 2, minWidth: 220 >Concepto</th>
+                    {rows.map(mo => <th key={mo.m} style= padding: '8px 8px', textAlign: 'right', fontSize: 10, fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap', minWidth: 80 >{MO[mo.m - 1]}</th>)}
+                    <th style= padding: '8px 8px', textAlign: 'right', fontSize: 10, fontWeight: 700, color: '#374151', borderLeft: '1px solid #D1D5DB', minWidth: 80 >Acum.</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {secH('A)  ACTIVIDADES DE OPERACIÓN — Método Directo')}
-                  {cfRow('cobrosClientes',   '(+) Cobros a clientes',                  'cobrosClientes')}
-                  {cfRow('pagosProveedores', '(-) Pagos a proveedores',                'pagosProveedores')}
-                  {cfRow('pagosEmpleados',   '(-) Pagos a empleados',                  'pagosEmpleados')}
-                  {cfRow('otrosGastosOp',    '(-) Otros pagos de operación',           'otrosGastosOp')}
-                  {cfRow('impuestosOp',      '(+/-) Impuestos retenidos',              'impuestosOp')}
-                  {totRow('totalOp',         '= FLUJO NETO DE OPERACIÓN')}
-                  {secH('B)  ACTIVIDADES DE INVERSIÓN')}
-                  {cfRow('capexComp',   '(-) Equipo de Cómputo',          'capexComp')}
-                  {cfRow('capexFurn',   '(-) Mobiliario y Equipo',        'capexFurn')}
-                  {cfRow('capexIntang', '(-) Intangibles / Software',     'capexIntang')}
-                  {cfRow('capexDepos',  '(-) Depósitos en Garantía',      'capexDepos')}
-                  {totRow('totalInv',  '= FLUJO NETO DE INVERSIÓN')}
-                  {secH('C)  ACTIVIDADES DE FINANCIAMIENTO')}
-                  {cfRow('equityChg',  '(+) Aportaciones de Capital',    'equityChg')}
-                  {totRow('totalFin',  '= FLUJO NETO DE FINANCIAMIENTO')}
-                  {balRow('netChange', 'INCREMENTO (DECREMENTO) NETO EN EFECTIVO', true)}
-                  {balRow('beginBal',  'Saldo inicial de efectivo', false)}
-                  {balRow('endBal',    'Saldo final de efectivo',   false)}
-                  {secH('CONCILIACIÓN — Utilidad Neta con Flujo de Operación')}
-                  {cfRow('netProfit',   'Utilidad (Pérdida) Neta',                    'cobrosClientes')}
-                  {cfRow('deprAmort',   '(+) Depreciación y Amortización (no efect.)', 'capexIntang')}
-                  {cfRow('finItems',    '(+/-) Resultado Financiero',                  'equityChg')}
+                  {/* ── A) OPERACION ── */}
+                  {secH('A)  Actividades de Operaci\u00f3n', '#065F46')}
+                  {cfRow('cobrosClientes',    '(+) Cobros a clientes',                        'cobrosClientes',    false)}
+                  {cfRow('pagosProveedores',  '(\u2212) Pagos a proveedores de bienes',        'pagosProveedores',  false)}
+                  {cfRow('pagosEmpleados',    '(\u2212) Pagos a empleados y seg. social',      'pagosEmpleados',    false)}
+                  {cfRow('otrosPagos',        '(\u00b1) Otros cobros y pagos de operaci\u00f3n', 'otrosPagos',        false)}
+                  {cfRow('impuestosUtilidad', '(\u00b1) Impuestos retenidos por enterar',      'impuestosUtilidad', false)}
+                  {totRow('totalOperacion',   '= Flujo Neto de Actividades de Operaci\u00f3n', false)}
+                  {/* ── B) INVERSION ── */}
+                  {secH('B)  Actividades de Inversi\u00f3n', '#1E40AF')}
+                  {cfRow('equComputo',   '(\u2212) Adquisici\u00f3n de equipo de c\u00f3mputo',    'equComputo',  false)}
+                  {cfRow('mobEquipo',    '(\u2212) Adquisici\u00f3n de mobiliario y equipo',    'mobEquipo',   false)}
+                  {cfRow('intangibles',  '(\u2212) Adquisici\u00f3n de activos intangibles',    'intangibles', false)}
+                  {cfRow('depositos',    '(\u2212) Dep\u00f3sitos en garant\u00eda',              'depositos',   false)}
+                  {totRow('totalInversion', '= Flujo Neto de Actividades de Inversi\u00f3n', false)}
+                  {/* ── C) FINANCIAMIENTO ── */}
+                  {secH('C)  Actividades de Financiamiento', '#6D28D9')}
+                  {cfRow('aportaciones', '(+) Aportaciones de capital social', 'aportaciones', false)}
+                  {totRow('totalFinanciamiento', '= Flujo Neto de Actividades de Financiamiento', false)}
+                  {/* ── CUADRE ── */}
+                  {totRow('netChange', 'Incremento (Decremento) Neto en Efectivo', true)}
+                  {balRow('saldoInicial', 'Saldo Inicial de Efectivo y Equivalentes')}
+                  {balRow('saldoFinal',   'Saldo Final de Efectivo y Equivalentes')}
+                  {/* ── CONCILIACION NIF B-2 par.39 ── */}
+                  {secH('Conciliaci\u00f3n: Utilidad Neta \u2192 Flujo de Operaci\u00f3n  (NIF B-2 p\u00e1rr. 39)', '#92400E')}
+                  {cfRow('utilidadNeta',     'Utilidad (P\u00e9rdida) neta del per\u00edodo',              'cobrosClientes',    false)}
+                  {cfRow('depAmort',         '(+) Depreciaci\u00f3n y amortizaci\u00f3n (cargo no efect.)',  'intangibles',       false)}
+                  {cfRow('resultFinanciero', '(+/\u2212) Resultado financiero neto',                   'aportaciones',      false)}
+                  {cfRow('varCapTrabajo',    '(+/\u2212) Variaci\u00f3n neta en capital de trabajo',     'otrosPagos',        false)}
+                  {totRow('totalOperacion',  '= Flujo de Operaci\u00f3n (verificaci\u00f3n)', false)}
                 </tbody>
               </table>
-              <div style={{fontSize: 9, color: '#8A90A8', marginTop: 6}}>
-                * Haz clic en cualquier línea para expandir el detalle de cuentas
-              </div>
+            </div>
+            <div style= padding: '8px 16px', fontSize: 10, color: '#9CA3AF', borderTop: '1px solid #E5E7EB' >
+              Haz clic en una l\u00ednea para expandir el detalle de cuentas del balance.
             </div>
           </div>
         );
