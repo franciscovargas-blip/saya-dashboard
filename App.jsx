@@ -375,7 +375,9 @@ export default function Dashboard() {
       // Variacion real de efectivo (fuente de verdad - cuentas 102+103)
       const cash102   = r102 ? (r102[5 + mi] || 0) : 0;
       const cash103   = r103 ? (r103[5 + mi] || 0) : 0;
-      const netChange = mi === 0 ? (cash102 + cash103) - OPEN_CASH : (cash102 + cash103);
+      // B almacena movimientos mensuales (no acumulados).
+      // El movimiento neto de efectivo = suma de movimientos de cuentas 102+103 en el mes.
+      const netChange = cash102 + cash103;
 {/* */}
       // ══ A) ACTIVIDADES DE OPERACION - Metodo Directo NIF B-2 ═════════════
       //
