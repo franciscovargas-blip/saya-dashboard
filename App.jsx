@@ -1149,7 +1149,7 @@ export default function Dashboard() {
               <div style={mBody}>
                 <p><strong>Lógica general:</strong> Variación mensual en cuentas <span style={cod}>102</span> y <span style={cod}>103</span> (Efectivo).</p>
                 <p><strong>A) Operación</strong> = Utilidad neta + D&amp;A + capital de trabajo:</p>
-                <ul style=listStyle:"none",paddingLeft:"14px">
+                <ul>
                   <li style={li}><span style={cod}>115</span> Inventarios</li>
                   <li style={li}><span style={cod}>121</span> Cuentas por cobrar</li>
                   <li style={li}><span style={cod}>113, 119</span> IVA a favor</li>
