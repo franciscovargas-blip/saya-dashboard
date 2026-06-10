@@ -421,26 +421,25 @@ export default function Dashboard() {
       // Solo Feb+ tienen movimientos reales; enero se muestra como 0
       const equComputo  = -mvLeaf('156', mi);
       const mobEquipo   = -mvLeaf('155', mi);
-      const intangibles = -mvLeaf('176', mi);
-      const depositos   = -mvLeaf('184', mi);
+      const intangibles = mi === 0 ? 0 : -mvLeaf('176', mi);
+      const depositos   = mi === 0 ? 0 : -mvLeaf('184', mi);
       const totalInversion = equComputo + mobEquipo + intangibles + depositos;
 {/* */}
       // ══ C) ACTIVIDADES DE FINANCIAMIENTO ═════════════════════════════
       // Capital: misma logica, enero = saldo historico -> 0
-      const aportaciones       = mvLeaf('301', mi);
+      const aportaciones       = mi === 0 ? 0 : mvLeaf('301', mi);
       const totalFinanciamiento = aportaciones;
 {/* */}
       // ══ A) ACTIVIDADES DE OPERACION (Metodo Indirecto) ══════════════════
       // La utilidad neta y los cambios en capital de trabajo se derivan
       // de modo que A + B + C = netChange SIEMPRE (cuadre garantizado).
       //
-      // Periodo ganancias (utilidad neta segun balance):
-      const pgRow = B.find(r => r[1] === 'Per\u00edodo ganancias' && !r[4]);
-      const utilidadNeta = pgRow ? (pgRow[5 + mi] || 0) : 0;
+      // Utilidad neta del periodo (P&L mensual, NO acumulado historico de B)
+      const pl      = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
+      const utilidadNeta = pl.netProfit;
 {/* */}
       // Depreciacion y amortizacion (cargo sin salida de caja)
       // Usamos buildPL solo para obtener D&A ya que no esta en B por separado
-      const pl      = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
       const depAmort = pl.depr;
 {/* */}
       // Capital de trabajo operativo (Feb+ = movimientos reales)
