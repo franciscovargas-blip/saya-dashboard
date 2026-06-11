@@ -662,8 +662,8 @@ export default function Dashboard() {
               <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
               <Bar dataKey="Sales" fill="#1D9E75" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E75" : "#1D9E7555"} />)}</Bar>
               <Bar dataKey="OpEx" fill="#E24B4A" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A" : "#E24B4A55"} />)}</Bar>
-              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot=r:3,fill:"#F59E0B" activeDot=r:4>
-                <LabelList dataKey="EBITDA" position="top" formatter={v => v && Math.abs(v)>100 ? `${(Math.round(v/1e3))}K` : ""} style=fontSize:7,fill:"#92400E",fontWeight:600 />
+              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:3,fill:"#F59E0B"}} activeDot={{r:4}}>
+                <LabelList dataKey="EBITDA" position="top" formatter={v => v && Math.abs(v)>100 ? `${(Math.round(v/1e3))}K` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:600}} />
               </Line>
               <Legend verticalAlign="top" height={24} iconSize={10} />
             </ComposedChart>
@@ -1338,4 +1338,3 @@ export default function Dashboard() {
   );
 }
 {/* */}
-​
