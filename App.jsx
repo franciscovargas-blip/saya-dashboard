@@ -177,9 +177,9 @@ export default function Dashboard() {
   const allM = Array.from({ length: 12 }, (_, i) => i + 1);
   const allYears = [...new Set(D.map(r=>r[2]))].sort();
   const pnlYears = view === "reales" ? [...new Set(D.filter(r=>r[1]==="Reales"&&["Net Sales","COGS","Salaries & Wages"].includes(r[0])).map(r=>r[2]))].sort() : [...new Set(D.filter(r=>r[1]==="Forecast"&&["Net Sales","COGS","Salaries & Wages"].includes(r[0])).map(r=>r[2]))].sort();
-  // Memoized buildPL cache to avoid thousands of repeated filter calls
   const _bplCache = useMemo(() => ({}), [fd, cm]);
-  const bpl = (yr, m, mode) => {
+  const bpl = (yr, m, mode) => { const key = yr+'-'+m+'-'+mode; if (!_bplCache[key]) _bplCache[key] = buildPL(fd, yr, m, cm, mode); return _bplCache[key]; };
+  // Memoized buildPL cache to avoid thousands of repeated filter calls
     const key = yr+'-'+m+'-'+mode;
     if (!_bplCache[key]) _bplCache[key] = buildPL(fd, yr, m, cm, mode);
     return _bplCache[key];
@@ -1191,8 +1191,8 @@ export default function Dashboard() {
                       {pnlYears.map(yr => {
                         const isExp = expPnlAnn[yr];
                         const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
-                        const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
-                        const fyNs = allM.reduce((a,m)=>a+bpl(yr,m,modeForYr).ns,0);
+                        const fyVal = allM.reduce((s,m) => s + buildPL(fd,yr,m,cm,modeForYr)[k], 0);
+                        const fyNs = allM.reduce((a,m)=>a+buildPL(fd,yr,m,cm,modeForYr).ns,0);
                         const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+bpl(yr,m,modeForYr)[k.replace("Pct","")]||0,0)/fyNs : null;
                         return (
                           <React.Fragment key={yr}>
@@ -1201,8 +1201,8 @@ export default function Dashboard() {
                             </td>
                             {isExp && allM.map((m,mi) => {
                               const mNum = Number(m); const isReal = view==="reales" || (view==="consolidado" && mNum <= cm);
-                              const mMode = isReal ? "reales" : "forecast"; const v = bpl(yr,m,mMode)[k];
-                              const vNs = bpl(yr,m,mMode).ns;
+                              const mMode = isReal ? "reales" : "forecast"; const v = buildPL(fd,yr,m,cm,mMode)[k];
+                              const vNs = buildPL(fd,yr,m,cm,mMode).ns;
                               const vPct = isPct && vNs ? (bpl(yr,m,mMode)[k.replace("Pct","")]||0)/vNs : null;
                               return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
                             })}
