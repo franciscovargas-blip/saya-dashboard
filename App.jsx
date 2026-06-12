@@ -176,7 +176,7 @@ export default function Dashboard() {
   const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
   const allM = Array.from({ length: 12 }, (_, i) => i + 1);
   const allYears = [...new Set(D.map(r=>r[2]))].sort();
-  const pnlYears = view === "reales" ? [...new Set(D.filter(r=>r[1]==="Reales"&&["Net Sales","COGS","Salaries & Wages"].includes(r[0])).map(r=>r[2]))].sort() : [...new Set(D.filter(r=>r[1]==="Forecast"&&["Net Sales","COGS","Salaries & Wages"].includes(r[0])).map(r=>r[2]))].sort();
+const pnlYears = view === "reales" ? [...new Set(D.filter(r=>r[1]==="Reales"&&["Net Sales","COGS","Salaries & Wages"].includes(r[0])).map(r=>r[2]))].sort() : [...new Set(D.filter(r=>r[1]==="Forecast"&&["Net Sales","COGS","Salaries & Wages"].includes(r[0])).map(r=>r[2]))].sort();
   const _bplCache = useMemo(() => ({}), [fd, cm]);
   const bpl = (yr, m, mode) => { const key = yr+'-'+m+'-'+mode; if (!_bplCache[key]) _bplCache[key] = buildPL(fd, yr, m, cm, mode); return _bplCache[key]; };
   // Memoized buildPL cache to avoid thousands of repeated filter calls
