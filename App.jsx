@@ -1256,6 +1256,7 @@ export default function Dashboard() {
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
           </div>
           {/* KPI cards */}
+          {/* KPI cards */}
           {(()=>{
             const RATE=0.1151;
             const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
@@ -1264,28 +1265,30 @@ export default function Dashboard() {
             const ebitdaTotal=annualEBITDA.reduce((s,v)=>s+v,0);
             const npv=annualEBITDA.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
             let irr=null;
-            if(annualEBITDA.length>1){let r=0.2;for(let it=0;it<300;it++){const fv=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const dfv=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(dfv)<1e-10)break;const rn=r-fv/dfv;if(Math.abs(rn-r)<1e-8){r=rn;break;}r=rn;}irr=(r>-1&&r<50)?r:null;}
+            if(annualEBITDA.length>1){let r=0.2;for(let i=0;i<200;i++){const fv=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const df=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(df)<1e-12)break;const r2=r-fv/df;if(Math.abs(r2-r)<1e-8){r=r2;break;}r=r2;}irr=r;}
             const ip=irr!==null?irr*100:null;
-            const badge=ip===null?null:ip<45?{t:'Riesgo Alto',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#FDE68A'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#6EE7B7'};
+            const badge=ip===null?null:ip<45?{t:'Riesgo Alto',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
             const Fk=v=>{const abs=Math.abs(v);const sign=v<0?'-':'';return sign+(abs>=1e6?(abs/1e6).toFixed(2)+'M':abs>=1e3?Math.round(abs/1e3).toLocaleString('es-MX')+'K':Math.round(abs).toLocaleString('es-MX'));}
             return(
-              <div style=display:'flex',flexWrap:'wrap',gap:14,marginBottom:20,marginTop:8>
-                <div style=flex:'1 1 170px',background:'#EFF6FF',border:'1.5px solid #BFDBFE',borderRadius:12,padding:'13px 18px'>
-                  <div style=fontSize:11,color:'#1E40AF',fontWeight:600,marginBottom:4>Investment First 2 Years</div>
-                  <div style=fontSize:22,fontWeight:800,color:'#1E40AF'>{Fk(inv2y)}</div>
+              <div style={{592}}>
+                <div style={{593}}>
+                  <div style={{594}}>Investment First 2 Years</div>
+                  <div style={{601}}>{Fk(inv2y)}</div>
                 </div>
-                <div style=flex:'1 1 170px',background:ebitdaTotal>=0?'#ECFDF5':'#FFF0F0',border:'1.5px solid '+(ebitdaTotal>=0?'#6EE7B7':'#FECACA'),borderRadius:12,padding:'13px 18px'>
-                  <div style=fontSize:11,color:ebitdaTotal>=0?'#065F46':'#C0392B',fontWeight:600,marginBottom:4>EBITDA Acumulado</div>
-                  <div style=fontSize:22,fontWeight:800,color:ebitdaTotal>=0?'#065F46':'#C0392B'>{Fk(ebitdaTotal)}</div>
+                <div style={{593}}>
+                  <div style={{594}}>EBITDA Acumulado</div>
+                  <div style={{602}}>{Fk(ebitdaTotal)}</div>
                 </div>
-                <div style=flex:'1 1 170px',background:npv>=0?'#ECFDF5':'#FFF0F0',border:'1.5px solid '+(npv>=0?'#6EE7B7':'#FECACA'),borderRadius:12,padding:'13px 18px'>
-                  <div style=fontSize:11,color:npv>=0?'#065F46':'#C0392B',fontWeight:600,marginBottom:4>NPV @ 11.51%</div>
-                  <div style=fontSize:22,fontWeight:800,color:npv>=0?'#065F46':'#C0392B'>{Fk(npv)}</div>
+                <div style={{593}}>
+                  <div style={{594}}>NPV 11.51%</div>
+                  <div style={{603}}>{Fk(npv)}</div>
                 </div>
-                <div style=flex:'1 1 200px',background:badge?badge.bg:'#F9FAFB',border:'1.5px solid '+(badge?badge.bc:'#D1D5DB'),borderRadius:12,padding:'13px 18px'>
-                  <div style=fontSize:11,color:badge?badge.c:'#6B7280',fontWeight:600,marginBottom:4>IRR %</div>
-                  <div style=fontSize:22,fontWeight:800,color:badge?badge.c:'#6B7280'>{ip!==null?ip.toFixed(2)+' %':'--'}</div>
-                  {badge&&<div style=fontSize:11,fontWeight:600,color:badge.c,marginTop:4>{badge.t}</div>}
+                <div style={{604}}>
+                  <div style={{594}}>IRR %</div>
+                  <div style={{599}}>
+                    <span style={{601}}>{ip!==null?ip.toFixed(2)+' %':'—'}</span>
+                    {badge&&<span style={fontSize:11,fontWeight:600,color:badge.c,background:badge.bg,border:`1px solid ${badge.bc}`,borderRadius:6,padding:'3px 9px'}>{badge.t}</span>}
+                  </div>
                 </div>
               </div>
             );
