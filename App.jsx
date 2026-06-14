@@ -1319,7 +1319,7 @@ export default function Dashboard() {
           </table>
           </div>
 {/* */}
-          {/* KPI cards */}
+                    {/* KPI cards */}
           {(()=>{
             const RATE=0.1151;
             const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
@@ -1364,15 +1364,15 @@ export default function Dashboard() {
                 <details style={{background:'#F8FAFF',border:'1px solid #E0E7FF',borderRadius:10,padding:'10px 16px',marginBottom:6}}>
                   <summary style={{cursor:'pointer',fontWeight:600,color:'#3730A3',fontSize:12,userSelect:'none'}}>&#8505;&#xFE0F;&nbsp; &iquest;C&oacute;mo se calculan estos indicadores?</summary>
                   <div style={{marginTop:10,fontSize:12,color:'#374151',lineHeight:1.7}}>
-                    <p><strong>Investment First 2 Years</strong> &mdash; Suma del <em>Total OpEx</em> de los primeros 2 a&ntilde;os ({pnlYears.slice(0,2).join(' y ')||'--'}), seg&uacute;n el filtro activo (Reales&nbsp;/&nbsp;Forecast&nbsp;/&nbsp;Consolidado).</p>
+                    <p><strong>Investment First 2 Years</strong> &mdash; Suma del <em>Total OpEx</em> de los primeros 2 a&ntilde;os ({pnlYears.slice(0,2).join(' y ')||'--'}), seg&uacute;n el filtro activo (Reales / Forecast / Consolidado).</p>
                     <p><strong>EBITDA Acumulado</strong> &mdash; Suma del EBITDA de todos los a&ntilde;os. EBITDA = Utilidad Bruta &minus; Total OPEX. Positivo = la operaci&oacute;n genera m&aacute;s de lo que gasta.</p>
-                    <p><strong>NPV @ 11.51%</strong> &mdash; Valor Presente Neto: &Sigma; EBITDA_t &divide; (1.1151)^t. NPV &gt; 0 = el proyecto crea valor. WACC estimado 11.51% biotech MX.</p>
-                    <p><strong>IRR</strong> &mdash; Tasa Interna de Retorno: la tasa que hace NPV = 0 (Newton-Raphson). &bull; &gt;50% &rarr; Viable &bull; 45-50% &rarr; Riesgo Moderado &bull; &lt;45% &rarr; Riesgo Alto</p>
+                    <p><strong>NPV @ 11.51%</strong> &mdash; Valor Presente Neto: EBITDA_t / (1.1151)^t. NPV &gt; 0 = el proyecto crea valor. WACC estimado 11.51% biotech MX.</p>
+                    <p><strong>IRR</strong> &mdash; Tasa Interna de Retorno: tasa que hace NPV = 0 (Newton-Raphson). &gt;50% = Viable / 45-50% = Riesgo Moderado / &lt;45% = Riesgo Alto</p>
                   </div>
                 </details>
               </div>
             );
-          })()}
+          {)()}}
         </div>
       )}
 {/* */}
