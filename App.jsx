@@ -1372,7 +1372,7 @@ export default function Dashboard() {
                 </details>
               </div>
             );
-          {)()}}
+          })()}
         </div>
       )}
 {/* */}
