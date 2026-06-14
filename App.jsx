@@ -814,7 +814,62 @@ export default function Dashboard() {
           { t: `Mes — ${MO[cm - 1]} 2026`, fk: "cmFC", rk: "cmRE", vk: "cmVar", pk: "cmVarPct", prefix: "cm", months: [cm] }].map((t, ti) => (
           <div key={ti} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, overflowX: "auto" }}>
             <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>{t.t}</div>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            {/* KPI cards */}
+          {(()=>{
+            const RATE=0.1151;
+            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
+            const annualEBITDA=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebitda,0));
+            const annualOpex=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).totOpex,0));
+            const inv2y=annualOpex.slice(0,2).reduce((s,v)=>s+v,0);
+            const ebitdaTotal=annualEBITDA.reduce((s,v)=>s+v,0);
+            const npv=annualEBITDA.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
+            let irr=null;
+            if(annualEBITDA.length>1){let r=0.2;for(let it=0;it<300;it++){const fv=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const dfv=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(dfv)<1e-10)break;const rn=r-fv/dfv;if(Math.abs(rn-r)<1e-8){r=rn;break;}r=rn;}irr=(r>-1&&r<50)?r:null;}
+            const ip=irr!==null?irr*100:null;
+            const Fk=v=>{const a=Math.abs(v),s=v<0?'-':'';return s+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3).toLocaleString('es-MX')+'K':Math.round(a).toLocaleString('es-MX'));};
+            const irrLabel=ip===null?'Sin datos':(ip<45?'Riesgo Alto':(ip<=49?'Riesgo Moderado':'Viable'));
+            const irrColor=ip===null?'#6B7280':(ip<45?'#C0392B':(ip<=49?'#92400E':'#065F46'));
+            const irrBg=ip===null?'#F9FAFB':(ip<45?'#FFF0F0':(ip<=49?'#FFFBEB':'#ECFDF5'));
+            const irrBc=ip===null?'#D1D5DB':(ip<45?'#FECACA':(ip<=49?'#FDE68A':'#6EE7B7'));
+            const card=(bg,bc)=>({flex:'1 1 150px',minWidth:148,background:bg,border:`1.5px solid ${bc}`,borderRadius:12,padding:'13px 16px',boxShadow:'0 1px 4px rgba(0,0,0,0.07)'});
+            return(
+              <div style={{marginBottom:20}}>
+                <div style={{display:'flex',gap:14,flexWrap:'wrap',marginBottom:14}}>
+                  <div style={card('#EFF6FF','#BFDBFE')}>
+                    <div style={{fontSize:11,color:'#1E40AF',fontWeight:600,marginBottom:4}}>Investment First 2 Years</div>
+                    <div style={{fontSize:22,fontWeight:800,color:'#1E40AF'}}>{Fk(inv2y)}</div>
+                    <div style={{fontSize:10,color:'#3B82F6',marginTop:2}}>{pnlYears.slice(0,2).join(' - ')||'--'}</div>
+                  </div>
+                  <div style={card(ebitdaTotal>=0?'#ECFDF5':'#FFF0F0',ebitdaTotal>=0?'#6EE7B7':'#FECACA')}>
+                    <div style={{fontSize:11,color:ebitdaTotal>=0?'#065F46':'#C0392B',fontWeight:600,marginBottom:4}}>EBITDA Acumulado</div>
+                    <div style={{fontSize:22,fontWeight:800,color:ebitdaTotal>=0?'#065F46':'#C0392B'}}>{Fk(ebitdaTotal)}</div>
+                    <div style={{fontSize:10,color:'#6B7280',marginTop:2}}>{pnlYears.length} {pnlYears.length===1?'año':'años'}</div>
+                  </div>
+                  <div style={card(npv>=0?'#ECFDF5':'#FFF0F0',npv>=0?'#6EE7B7':'#FECACA')}>
+                    <div style={{fontSize:11,color:npv>=0?'#065F46':'#C0392B',fontWeight:600,marginBottom:4}}>NPV @ 11.51%</div>
+                    <div style={{fontSize:22,fontWeight:800,color:npv>=0?'#065F46':'#C0392B'}}>{Fk(npv)}</div>
+                    <div style={{fontSize:10,color:'#6B7280',marginTop:2}}>Tasa de descuento 11.51%</div>
+                  </div>
+                  <div style={card(irrBg,irrBc)}>
+                    <div style={{fontSize:11,color:irrColor,fontWeight:600,marginBottom:4}}>IRR %</div>
+                    <div style={{fontSize:22,fontWeight:800,color:irrColor}}>{ip!==null?ip.toFixed(2)+' %':'--'}</div>
+                    <div style={{fontSize:10,color:irrColor,marginTop:2,fontWeight:600}}>{irrLabel}</div>
+                  </div>
+                </div>
+                <details style={{background:'#F8FAFF',border:'1px solid #E0E7FF',borderRadius:10,padding:'10px 16px',marginBottom:16}}>
+                  <summary style={{cursor:'pointer',fontWeight:600,color:'#3730A3',fontSize:12,userSelect:'none'}}>&#8505; Como se calculan estos indicadores?</summary>
+                  <div style={{marginTop:8,fontSize:12,color:'#374151',lineHeight:1.7}}>
+                    <p><strong>Investment First 2 Years</strong> &mdash; Suma del Total OpEx de los primeros 2 anos ({pnlYears.slice(0,2).join(' y ')||'--'}), segun el filtro activo.</p>
+                    <p><strong>EBITDA Acumulado</strong> &mdash; Suma del EBITDA de todos los anos de la tabla. EBITDA = Utilidad Bruta menos Total OPEX.</p>
+                    <p><strong>NPV @ 11.51%</strong> &mdash; Valor Presente Neto. WACC estimado 11.51% biotech MX.</p>
+                    <p><strong>IRR</strong> &mdash; Tasa Interna de Retorno (Newton-Raphson). Mayor 50% = Viable / 45-50% = Riesgo Moderado / Menor 45% = Riesgo Alto</p>
+                  </div>
+                </details>
+              </div>
+            );
+          })()}
+
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead><tr>{["Línea", "Forecast", "Reales", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
               <tbody>
                 {(() => {
@@ -1319,61 +1374,7 @@ export default function Dashboard() {
           </table>
           </div>
 {/* */}
-                    {/* KPI cards */}
-          {(()=>{
-            const RATE=0.1151;
-            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
-            const annualEBITDA=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebitda,0));
-            const annualOpex=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).totOpex,0));
-            const inv2y=annualOpex.slice(0,2).reduce((s,v)=>s+v,0);
-            const ebitdaTotal=annualEBITDA.reduce((s,v)=>s+v,0);
-            const npv=annualEBITDA.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
-            let irr=null;
-            if(annualEBITDA.length>1){let r=0.2;for(let it=0;it<300;it++){const fv=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const dfv=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(dfv)<1e-10)break;const rn=r-fv/dfv;if(Math.abs(rn-r)<1e-8){r=rn;break;}r=rn;}irr=(r>-1&&r<50)?r:null;}
-            const ip=irr!==null?irr*100:null;
-            const Fk=v=>{const a=Math.abs(v),s=v<0?'-':'';return s+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3).toLocaleString('es-MX')+'K':Math.round(a).toLocaleString('es-MX'));};
-            const irrLabel=ip===null?'Sin datos':(ip<45?'Riesgo Alto':(ip<=49?'Riesgo Moderado':'Viable'));
-            const irrColor=ip===null?'#6B7280':(ip<45?'#C0392B':(ip<=49?'#92400E':'#065F46'));
-            const irrBg=ip===null?'#F9FAFB':(ip<45?'#FFF0F0':(ip<=49?'#FFFBEB':'#ECFDF5'));
-            const irrBc=ip===null?'#D1D5DB':(ip<45?'#FECACA':(ip<=49?'#FDE68A':'#6EE7B7'));
-            const card=(bg,bc)=>({flex:'1 1 150px',minWidth:148,background:bg,border:`1.5px solid ${bc}`,borderRadius:12,padding:'13px 16px',boxShadow:'0 1px 4px rgba(0,0,0,0.07)'});
-            return(
-              <div style={{marginBottom:20}}>
-                <div style={{display:'flex',gap:14,flexWrap:'wrap',marginBottom:14}}>
-                  <div style={card('#EFF6FF','#BFDBFE')}>
-                    <div style={{fontSize:11,color:'#1E40AF',fontWeight:600,marginBottom:4}}>Investment First 2 Years</div>
-                    <div style={{fontSize:22,fontWeight:800,color:'#1E40AF'}}>{Fk(inv2y)}</div>
-                    <div style={{fontSize:10,color:'#3B82F6',marginTop:2}}>{pnlYears.slice(0,2).join(' - ')||'--'}</div>
-                  </div>
-                  <div style={card(ebitdaTotal>=0?'#ECFDF5':'#FFF0F0',ebitdaTotal>=0?'#6EE7B7':'#FECACA')}>
-                    <div style={{fontSize:11,color:ebitdaTotal>=0?'#065F46':'#C0392B',fontWeight:600,marginBottom:4}}>EBITDA Acumulado</div>
-                    <div style={{fontSize:22,fontWeight:800,color:ebitdaTotal>=0?'#065F46':'#C0392B'}}>{Fk(ebitdaTotal)}</div>
-                    <div style={{fontSize:10,color:'#6B7280',marginTop:2}}>{pnlYears.length} {pnlYears.length===1?'año':'años'}</div>
-                  </div>
-                  <div style={card(npv>=0?'#ECFDF5':'#FFF0F0',npv>=0?'#6EE7B7':'#FECACA')}>
-                    <div style={{fontSize:11,color:npv>=0?'#065F46':'#C0392B',fontWeight:600,marginBottom:4}}>NPV @ 11.51%</div>
-                    <div style={{fontSize:22,fontWeight:800,color:npv>=0?'#065F46':'#C0392B'}}>{Fk(npv)}</div>
-                    <div style={{fontSize:10,color:'#6B7280',marginTop:2}}>Tasa de descuento 11.51%</div>
-                  </div>
-                  <div style={card(irrBg,irrBc)}>
-                    <div style={{fontSize:11,color:irrColor,fontWeight:600,marginBottom:4}}>IRR %</div>
-                    <div style={{fontSize:22,fontWeight:800,color:irrColor}}>{ip!==null?ip.toFixed(2)+' %':'--'}</div>
-                    <div style={{fontSize:10,color:irrColor,marginTop:2,fontWeight:600}}>{irrLabel}</div>
-                  </div>
-                </div>
-                <details style={{background:'#F8FAFF',border:'1px solid #E0E7FF',borderRadius:10,padding:'10px 16px',marginBottom:6}}>
-                  <summary style={{cursor:'pointer',fontWeight:600,color:'#3730A3',fontSize:12,userSelect:'none'}}>&#8505;&#xFE0F;&nbsp; &iquest;C&oacute;mo se calculan estos indicadores?</summary>
-                  <div style={{marginTop:10,fontSize:12,color:'#374151',lineHeight:1.7}}>
-                    <p><strong>Investment First 2 Years</strong> &mdash; Suma del <em>Total OpEx</em> de los primeros 2 a&ntilde;os ({pnlYears.slice(0,2).join(' y ')||'--'}), seg&uacute;n el filtro activo (Reales / Forecast / Consolidado).</p>
-                    <p><strong>EBITDA Acumulado</strong> &mdash; Suma del EBITDA de todos los a&ntilde;os. EBITDA = Utilidad Bruta &minus; Total OPEX. Positivo = la operaci&oacute;n genera m&aacute;s de lo que gasta.</p>
-                    <p><strong>NPV @ 11.51%</strong> &mdash; Valor Presente Neto: EBITDA_t / (1.1151)^t. NPV &gt; 0 = el proyecto crea valor. WACC estimado 11.51% biotech MX.</p>
-                    <p><strong>IRR</strong> &mdash; Tasa Interna de Retorno: tasa que hace NPV = 0 (Newton-Raphson). &gt;50% = Viable / 45-50% = Riesgo Moderado / &lt;45% = Riesgo Alto</p>
-                  </div>
-                </details>
-              </div>
-            );
-          })()}
-        </div>
+                            </div>
       )}
 {/* */}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
