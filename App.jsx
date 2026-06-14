@@ -179,6 +179,7 @@ export default function Dashboard() {
   const [expCF, setExpCF] = useState({});
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
   const [mainTab, setMainTab] = useState("dashboard");
+  const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
   const fd = useMemo(() => {
     let d = D;
@@ -1158,7 +1159,6 @@ export default function Dashboard() {
             <div style={S.foot}>Haz clic en una l\u00ednea para expandir el detalle de cuentas.</div>
 {/* ---- METODOLOGIA CF ---- */}
       {(()=>{
-        const [mOpen,setMOpen]=React.useState(false);
         const mHdr={background:"#1a1a2e",color:"#e0e0ff",padding:"10px 16px",cursor:"pointer",borderRadius:mOpen?"8px 8px 0 0":"8px",fontWeight:600,marginTop:"16px",display:"flex",alignItems:"center",gap:"8px"};
         const mBody={background:"#111128",color:"#c8c8e8",padding:"14px 18px",borderRadius:"0 0 8px 8px",fontSize:"13px",lineHeight:1.7};
         const li={marginBottom:"3px"};
