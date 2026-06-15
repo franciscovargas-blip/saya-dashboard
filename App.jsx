@@ -47,7 +47,7 @@ const OPEX_LINES=["Salaries & Wages","Sales & Marketing","Travel & Accomodation"
 const OPEX_LABELS={SW0001:"Salaries & Wages",SM0001:"Sales & Marketing",TA0001:"Travel & Accommodation",PF0001:"Professional Fees",OF0001:"Office Expenses"};
 {/* */}
 // Molecule mapping to Consolidado names
-const MOL_MAP={"Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ácido Hialurónico 2%":"Hyaxum","Bevacizumab 100":"Bevacizumab","Bevacizumab 400":"Bevacizumab","Hyaxum 1":"Hyaxum","Hyaxum 1.5 Plus":"Hyaxum","Hyaxum 2 Pro":"Hyaxum","Euxara":"Euxara","Fixed":"Fixed","ACHI":"Hyaxum","BEVA":"Bevacizumab","TERI":"Euxara","FIXED":"Fixed","PELI":"Peli","DENO":"Denosumab","Deno":"Denosumab","Teriparatida":"Euxara","SIME":"Sime","ACMI":"Acmi","Hyaxum 2% Pro":"Hyaxum","Hyaxum 1.5% Plus":"Hyaxum","Hyaxum 1.5 % Plus":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ezetimiba  10mg. + Atorvastatina 20 mg.":"Ezetimiba + Atorvastatina 10/20mg"};
+const MOL_MAP={"Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ácido Hialurónico 2%":"Hyaxum","Bevacizumab 100":"Bevacizumab","Bevacizumab 400":"Bevacizumab","Hyaxum 1":"Hyaxum","Hyaxum 1.5 Plus":"Hyaxum","Hyaxum 2 Pro":"Hyaxum","Euxara":"Euxara","Fixed":"Fixed","ACHI":"Hyaxum","BEVA":"Bevacizumab","TERI":"Euxara","FIXED":"Fixed","PELI":"Peli","DENO":"Denosumab","Deno":"Denosumab","Teriparatida":"Euxara","SIME":"Sime","ACMI":"Acmi","Hyaxum 2% Pro":"Hyaxum","Hyaxum 1.5% Plus":"Hyaxum","Hyaxum 1.5 % Plus":"Hyaxum","Ezetimiba  10mg. + Atorvastatina 20 mg.":"Ezetimiba + Atorvastatina 10/20mg"};
 const mapMol=m=>MOL_MAP[m]||m;
 {/* */}
 // Multi-select dropdown component
@@ -1287,14 +1287,14 @@ export default function Dashboard() {
             );
           })()}
           <div style={{overflowX:"auto"}}>
-          <table style={{borderCollapse:"collapse",width:"100%",fontSize:12}}>
+          <table style={{borderCollapse:"collapse",width:"100%",fontSize:14}}>
             <thead>
               <tr>
-                <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:11,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
-                {pnlYears.map(yr => (
+                <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:13,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
+                {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => (
                   <React.Fragment key={yr}>
                     <th
-                      style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:12,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
+                      style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:14,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
                       onClick={() => setExpPnlAnn(p => ({...p,[yr]:!p[yr]}))}
                     >
                       {expPnlAnn[yr] ? "▼" : "►"} {yr}
@@ -1306,6 +1306,7 @@ export default function Dashboard() {
                     {expPnlAnn[yr] && <th key="tot" style={({textAlign:"right",padding:"5px 6px",background:"#F4F6FB",fontWeight:700,fontSize:10,borderBottom:"2px solid #E4E8F2",borderLeft:"2px solid #B0B8D0"})}>Total</th>}
                   </React.Fragment>
                 ))}
+                <th style={{textAlign:"right",padding:"10px 16px",background:"#E8EEFF",fontWeight:700,fontSize:14,borderBottom:"2px solid #B0B8D0",borderLeft:"3px solid #6366F1",color:"#1E2A3A",whiteSpace:"nowrap"}}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -1317,17 +1318,17 @@ export default function Dashboard() {
                   : k==="totFin"
                     ? {background:"#fafbfe",borderTop:"1px solid #E4E8F2"}
                     : {background: isBold ? "#F4F6FB" : "transparent"};
-                const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:12,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
+                const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:14,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
                 return (
                   <React.Fragment key={k}>
                     {k==="sw" && (
                       <tr key="sep-sw">
-                        <td colSpan={pnlYears.reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+1} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
+                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
                       </tr>
                     )}
                     <tr style={rowStyle}>
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
-                      {pnlYears.map(yr => {
+                      {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
                         const isExp = expPnlAnn[yr];
                         const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
                         const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
@@ -1335,7 +1336,7 @@ export default function Dashboard() {
                         const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+bpl(yr,m,modeForYr)[k.replace("Pct","")],0)/fyNs : null;
                         return (
                           <React.Fragment key={yr}>
-                            <td style={{textAlign:"right",padding:"6px 12px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,color:k==="netProfit"?"#4C1D95":undefined}}>
+                            <td style={{textAlign:"right",padding:"8px 14px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,fontSize:14,color:k==="netProfit"?"#4C1D95":undefined}}>
                               {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
@@ -1348,6 +1349,22 @@ export default function Dashboard() {
                           </React.Fragment>
                         );
                       })}
+                    {(()=>{
+                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));});
+                      const tVal=ay.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[k],0);
+                      },0);
+                      const tNs=ay.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md).ns,0);
+                      },0);
+                      const tPct=isPct&&tNs?ay.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[k.replace("Pct","")],0);
+                      },0)/tNs:null;
+                      return <td key="total" style={{textAlign:"right",padding:"8px 14px",fontWeight:700,borderBottom:"1px solid #B0B8D0",borderLeft:"3px solid #6366F1",background:"#EEF2FF",color:k==="netProfit"?"#4C1D95":"#1E2A3A",fontSize:14,whiteSpace:"nowrap"}}>{isPct?P(tPct):F(tVal)}</td>;
+                    })()}
                     </tr>
                   </React.Fragment>
                 );
