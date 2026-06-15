@@ -551,7 +551,7 @@ export default function Dashboard() {
       aportaciones: detLeaf('301'),
       otraVariacion: (() => {
         const _CF = ["102","103","113","119","115","121","109","120","201","205","210","211","212","216","217","155","156","176","184","301"];
-        return B.filter(r => !r[4] && (r[0]||'') && !_CF.some(p => (r[0]||'').startsWith(p)) && r.slice(5,17).some(v => Math.abs(v||0) >= 1)).map(r => ({ name: r[1]||r[0], code: r[0], vals: Array.from({length:12},(_,i)=>r[5+i]||0) }));
+        return B.filter(r => !r[4] && r[2] >= 3 && (r[0]||'') && !_CF.some(p => (r[0]||'').startsWith(p)) && r.slice(5,17).some(v => Math.abs(v||0) >= 0.5)).map(r => ({ name: r[1]||r[0], code: r[0], vals: Array.from({length:12},(_,i)=>r[5+i]||0) }));
       })(),
     };
 {/* */}
