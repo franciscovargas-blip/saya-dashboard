@@ -1287,14 +1287,14 @@ export default function Dashboard() {
             );
           })()}
           <div style={{overflowX:"auto"}}>
-          <table style={{borderCollapse:"collapse",width:"100%",fontSize:12}}>
+          <table style={{borderCollapse:"collapse",width:"100%",fontSize:14}}>
             <thead>
               <tr>
-                <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:11,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
+                <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:13,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
                 {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>bpl(yr,m,md).ns!==0);}).map(yr => (
                   <React.Fragment key={yr}>
                     <th
-                      style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:12,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
+                      style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:14,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
                       onClick={() => setExpPnlAnn(p => ({...p,[yr]:!p[yr]}))}
                     >
                       {expPnlAnn[yr] ? "▼" : "►"} {yr}
@@ -1318,12 +1318,12 @@ export default function Dashboard() {
                   : k==="totFin"
                     ? {background:"#fafbfe",borderTop:"1px solid #E4E8F2"}
                     : {background: isBold ? "#F4F6FB" : "transparent"};
-                const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:12,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
+                const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:14,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
                 return (
                   <React.Fragment key={k}>
                     {k==="sw" && (
                       <tr key="sep-sw">
-                        <td colSpan={pnlYears.reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
+                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>bpl(yr,m,md).ns!==0);}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
                       </tr>
                     )}
                     <tr style={rowStyle}>
@@ -1336,7 +1336,7 @@ export default function Dashboard() {
                         const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+bpl(yr,m,modeForYr)[k.replace("Pct","")],0)/fyNs : null;
                         return (
                           <React.Fragment key={yr}>
-                            <td style={{textAlign:"right",padding:"6px 12px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,color:k==="netProfit"?"#4C1D95":undefined}}>
+                            <td style={{textAlign:"right",padding:"8px 14px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,fontSize:14,color:k==="netProfit"?"#4C1D95":undefined}}>
                               {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
