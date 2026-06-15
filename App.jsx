@@ -47,7 +47,7 @@ const OPEX_LINES=["Salaries & Wages","Sales & Marketing","Travel & Accomodation"
 const OPEX_LABELS={SW0001:"Salaries & Wages",SM0001:"Sales & Marketing",TA0001:"Travel & Accommodation",PF0001:"Professional Fees",OF0001:"Office Expenses"};
 {/* */}
 // Molecule mapping to Consolidado names
-const MOL_MAP={"Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ácido Hialurónico 2%":"Hyaxum","Bevacizumab 100":"Bevacizumab","Bevacizumab 400":"Bevacizumab","Hyaxum 1":"Hyaxum","Hyaxum 1.5 Plus":"Hyaxum","Hyaxum 2 Pro":"Hyaxum","Euxara":"Euxara","Fixed":"Fixed","ACHI":"Hyaxum","BEVA":"Bevacizumab","TERI":"Euxara","FIXED":"Fixed","PELI":"Peli","DENO":"Deno","SIME":"Sime","ACMI":"Acmi","Hyaxum 2% Pro":"Hyaxum","Hyaxum 1.5% Plus":"Hyaxum","Hyaxum 1.5 % Plus":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum"};
+const MOL_MAP={"Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ácido Hialurónico 2%":"Hyaxum","Bevacizumab 100":"Bevacizumab","Bevacizumab 400":"Bevacizumab","Hyaxum 1":"Hyaxum","Hyaxum 1.5 Plus":"Hyaxum","Hyaxum 2 Pro":"Hyaxum","Euxara":"Euxara","Fixed":"Fixed","ACHI":"Hyaxum","BEVA":"Bevacizumab","TERI":"Euxara","FIXED":"Fixed","PELI":"Peli","DENO":"Denosumab","Deno":"Denosumab","Teriparatida":"Euxara","SIME":"Sime","ACMI":"Acmi","Hyaxum 2% Pro":"Hyaxum","Hyaxum 1.5% Plus":"Hyaxum","Hyaxum 1.5 % Plus":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum"};
 const mapMol=m=>MOL_MAP[m]||m;
 {/* */}
 // Multi-select dropdown component
