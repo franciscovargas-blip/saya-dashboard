@@ -47,7 +47,7 @@ const OPEX_LINES=["Salaries & Wages","Sales & Marketing","Travel & Accomodation"
 const OPEX_LABELS={SW0001:"Salaries & Wages",SM0001:"Sales & Marketing",TA0001:"Travel & Accommodation",PF0001:"Professional Fees",OF0001:"Office Expenses"};
 {/* */}
 // Molecule mapping to Consolidado names
-const MOL_MAP={"Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ácido Hialurónico 2%":"Hyaxum","Bevacizumab 100":"Bevacizumab","Bevacizumab 400":"Bevacizumab","Hyaxum 1":"Hyaxum","Hyaxum 1.5 Plus":"Hyaxum","Hyaxum 2 Pro":"Hyaxum","Euxara":"Euxara","Fixed":"Fixed","ACHI":"Hyaxum","BEVA":"Bevacizumab","TERI":"Euxara","FIXED":"Fixed","PELI":"Peli","DENO":"Denosumab","Deno":"Denosumab","Teriparatida":"Euxara","SIME":"Sime","ACMI":"Acmi","Hyaxum 2% Pro":"Hyaxum","Hyaxum 1.5% Plus":"Hyaxum","Hyaxum 1.5 % Plus":"Hyaxum","Ezetimiba  10mg. + Atorvastatina 20 mg.":"Ezetimiba + Atorvastatina 10/20mg","Certolizumab 200mg/ml PFS":"Certolizumab","Ezetimiba + Atorvastatina 10/20mg":"Ezetimiba + Atorvastatina","Ezetimiba + Atorvastatina 10/40mg":"Ezetimiba + Atorvastatina"};
+const MOL_MAP={"Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum","Ácido Hialurónico 2%":"Hyaxum","Bevacizumab 100":"Bevacizumab","Bevacizumab 400":"Bevacizumab","Hyaxum 1":"Hyaxum","Hyaxum 1.5 Plus":"Hyaxum","Hyaxum 2 Pro":"Hyaxum","Euxara":"Euxara","Fixed":"Fixed","ACHI":"Hyaxum","BEVA":"Bevacizumab","TERI":"Euxara","FIXED":"Fixed","PELI":"Peli","DENO":"Denosumab","Deno":"Denosumab","Teriparatida":"Euxara","SIME":"Sime","ACMI":"Acmi","Hyaxum 2% Pro":"Hyaxum","Hyaxum 1.5% Plus":"Hyaxum","Hyaxum 1.5 % Plus":"Hyaxum","Ezetimiba  10mg. + Atorvastatina 20 mg.":"Ezetimiba + Atorvastatina 10/20mg"};
 const mapMol=m=>MOL_MAP[m]||m;
 {/* */}
 // Multi-select dropdown component
@@ -183,22 +183,6 @@ export default function Dashboard() {
   const [mainTab, setMainTab] = useState("dashboard");
   const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
-  const LAST_UPDATE="15 Jun 2026";
-  const PENDING_MOLS=[];
-  const UpdateNote = () => {
-    const nw={display:"flex",alignItems:"center",gap:"10px",padding:"5px 14px",background:"#F0F2FF",borderRadius:"8px",fontSize:"12px",color:"#5A6480",marginBottom:"12px",flexWrap:"wrap",borderLeft:"3px solid #6366F1"};
-    const ds={color:"#3D3A8C",fontWeight:700};
-    const ws={color:"#92400E",background:"#FEF3C7",borderRadius:"5px",padding:"2px 8px",fontWeight:600,marginLeft:"6px"};
-    return (
-      <div style={nw}>
-        <span>📅</span>
-        <span>Datos actualizados: <strong style={ds}>{LAST_UPDATE}</strong></span>
-        {PENDING_MOLS.length > 0 && (
-          <span style={ws}>⚠️ Sin clasificar: {PENDING_MOLS.join(", ")}</span>
-        )}
-      </div>
-    );
-  };
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[4])));
@@ -685,7 +669,6 @@ export default function Dashboard() {
       </div>
 {/* */}
       {mainTab === "dashboard" && <>
-      <UpdateNote/>
       {/* KPI CARDS */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))", gap: 8, marginBottom: 16 }}>
         {kpis.map((k, i) => (
@@ -1263,8 +1246,7 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
-          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>
-          <UpdateNote/>P&L por Año</div>
+          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
           <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
