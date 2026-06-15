@@ -1243,12 +1243,6 @@ export default function Dashboard() {
       }
 {/* */}
       {mainTab === "pnl-anual" && (
-        <div style={{padding:"20px",overflowX:"hidden"}}>
-          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
-          <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
-            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
-            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
-          </div>
           {/* KPI cards */}
           {(()=>{
             const RATE=0.1151;
@@ -1287,6 +1281,12 @@ export default function Dashboard() {
               </div>
             );
           })()}
+        <div style={{padding:"20px",overflowX:"hidden"}}>
+          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
+          <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
+            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
+            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
+          </div>
           <div style={{overflowX:"auto"}}>
           <table style={{borderCollapse:"collapse",width:"100%",fontSize:12}}>
             <thead>
