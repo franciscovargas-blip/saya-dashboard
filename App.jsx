@@ -1243,44 +1243,6 @@ export default function Dashboard() {
       }
 {/* */}
       {mainTab === "pnl-anual" && (
-          {/* KPI cards */}
-          {(()=>{
-            const RATE=0.1151;
-            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
-            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
-            const annualEBITDA=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebitda,0));
-            const inv2y=annualEBITDA.slice(0,2).reduce((s,v)=>s+v,0);
-            const ebitdaTotal=annualEBITDA.reduce((s,v)=>s+v,0);
-            const npv=annualEBITDA.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
-            let irr=null;
-            if(annualEBITDA.length>1){let r=0.2;for(let i=0;i<200;i++){const fv=annualEBITDA.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const df=annualEBITDA.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(df)<1e-12)break;const r2=r-fv/df;if(Math.abs(r2-r)<1e-8){r=r2;break;}r=r2;}irr=r;}
-            const ip=irr!==null?irr*100:null;
-            const badge=ip===null?null:ip<45?{t:'Riesgo Alto — No es viable',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
-            const Fk=v=>{const abs=Math.abs(v);const sign=v<0?'-':'';return sign+(abs>=1e6?(abs/1e6).toFixed(2)+'M':abs>=1e3?Math.round(abs/1e3).toLocaleString('es-MX')+'K':Math.round(abs).toLocaleString('es-MX'));}
-            return(
-              <div style={{display:'flex',gap:16,flexWrap:'wrap',margin:'20px 0 8px 0',padding:'0 2px'}}>
-                <div style={{flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
-                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>Investment First 2 Years</div>
-                  <div style={{fontSize:18,fontWeight:700,color:'#1E2A3A'}}>{Fk(inv2y)}</div>
-                </div>
-                <div style={{flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
-                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>EBITDA Acumulado</div>
-                  <div style={{fontSize:18,fontWeight:700,color:ebitdaTotal>=0?'#10B981':'#C0392B'}}>{Fk(ebitdaTotal)}</div>
-                </div>
-                <div style={{flex:'1 1 180px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
-                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>NPV 11.51%</div>
-                  <div style={{fontSize:18,fontWeight:700,color:npv>=0?'#10B981':'#C0392B'}}>{Fk(npv)}</div>
-                </div>
-                <div style={{flex:'1 1 220px',background:'#F8F9FD',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px'}}>
-                  <div style={{fontSize:11,color:'#8A90A8',fontWeight:500,marginBottom:4}}>IRR %</div>
-                  <div style={{display:'flex',alignItems:'center',gap:10}}>
-                    <span style={{fontSize:18,fontWeight:700,color:'#1E2A3A'}}>{ip!==null?ip.toFixed(2)+' %':'—'}</span>
-                    {badge&&<span style={{fontSize:11,fontWeight:600,color:badge.c,background:badge.bg,border:`1px solid {badge.bc}`,borderRadius:6,padding:'3px 9px'}}>{badge.t}</span>}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
         <div style={{padding:"20px",overflowX:"hidden"}}>
           <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
           <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
