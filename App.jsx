@@ -1306,6 +1306,7 @@ export default function Dashboard() {
                     {expPnlAnn[yr] && <th key="tot" style={({textAlign:"right",padding:"5px 6px",background:"#F4F6FB",fontWeight:700,fontSize:10,borderBottom:"2px solid #E4E8F2",borderLeft:"2px solid #B0B8D0"})}>Total</th>}
                   </React.Fragment>
                 ))}
+                <th style={{textAlign:"right",padding:"8px 14px",background:"#E8EEFF",fontWeight:700,fontSize:12,borderBottom:"2px solid #B0B8D0",borderLeft:"3px solid #6366F1",color:"#1E2A3A",whiteSpace:"nowrap"}}>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -1322,7 +1323,7 @@ export default function Dashboard() {
                   <React.Fragment key={k}>
                     {k==="sw" && (
                       <tr key="sep-sw">
-                        <td colSpan={pnlYears.reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+1} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
+                        <td colSpan={pnlYears.reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
                       </tr>
                     )}
                     <tr style={rowStyle}>
@@ -1348,6 +1349,21 @@ export default function Dashboard() {
                           </React.Fragment>
                         );
                       })}
+                    {(()=>{
+                      const tVal=pnlYears.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[k],0);
+                      },0);
+                      const tNs=pnlYears.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md).ns,0);
+                      },0);
+                      const tPct=isPct&&tNs?pnlYears.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[k.replace("Pct","")],0);
+                      },0)/tNs:null;
+                      return <td key="total" style={{textAlign:"right",padding:"6px 12px",fontWeight:700,borderBottom:"1px solid #B0B8D0",borderLeft:"3px solid #6366F1",background:"#EEF2FF",color:k==="netProfit"?"#4C1D95":"#1E2A3A",fontSize:11,whiteSpace:"nowrap"}}>{isPct?P(tPct):F(tVal)}</td>;
+                    })()}
                     </tr>
                   </React.Fragment>
                 );
