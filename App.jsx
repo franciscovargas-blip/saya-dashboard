@@ -1291,7 +1291,7 @@ export default function Dashboard() {
             <thead>
               <tr>
                 <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:11,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
-                {pnlYears.map(yr => (
+                {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>bpl(yr,m,md).ns!==0);}).map(yr => (
                   <React.Fragment key={yr}>
                     <th
                       style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:12,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
@@ -1328,7 +1328,7 @@ export default function Dashboard() {
                     )}
                     <tr style={rowStyle}>
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
-                      {pnlYears.map(yr => {
+                      {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>bpl(yr,m,md).ns!==0);}).map(yr => {
                         const isExp = expPnlAnn[yr];
                         const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
                         const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
