@@ -1258,7 +1258,7 @@ export default function Dashboard() {
             const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
             const inv=annualEBIT.filter(v=>v<0).reduce((s,v)=>s+v,0);
             const npv=annualEBIT.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
-            let irr=0;try{if(annualEBIT.length>1){let r=1.0;for(let i=0;i<300;i++){const fv=annualEBIT.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const df=annualEBIT.reduce((s,v,j)=>s-(j+1)*v/Math.pow(1+r,j+2),0);if(Math.abs(df)<1e-12)break;const r2=r-fv/df;if(!isFinite(r2))break;if(Math.abs(r2-r)<1e-8){irr=r2;break;}r=r2;}irr=r;}}catch(e){irr=0;}
+            let irr=0;try{if(annualEBIT.length>1&&annualEBIT.some(v=>v<0)&&annualEBIT.some(v=>v>0)){const npvAt=r=>annualEBIT.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const lo=-0.999,hi=9.999;const nlo=npvAt(lo),nhi=npvAt(hi);if(nlo*nhi<0){let a=lo,b=hi;for(let i=0;i<80;i++){const mid=(a+b)/2;if(npvAt(mid)*npvAt(a)<0)b=mid;else a=mid;if(b-a<1e-8)break;}irr=(a+b)/2;}}}catch(e){irr=0;}
             const ip=irr*100;
             const badge=ip===0?null:ip<45?{t:'Riesgo Alto',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
             const bSt=badge?Object.fromEntries([['fontSize',11],['fontWeight',600],['color',badge.c],['background',badge.bg],['border','1px solid '+badge.bc],['borderRadius',6],['padding','3px 9px']]):null;
@@ -1280,8 +1280,8 @@ export default function Dashboard() {
                 <div style={{flex:'1 1 170px',background:'#FFF7ED',border:'1.5px solid #FCD34D',borderRadius:12,padding:'13px 18px'}}>
                   <div style={{fontSize:11,color:'#92400E',fontWeight:600,marginBottom:4}}>IRR (EBIT) %</div>
                   <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-                    <span style={{fontSize:22,fontWeight:700,color:'#92400E'}}>{ip>0?ip.toFixed(2)+' %':'0.00 %'}</span>
-                    {badge&&<span style={bSt}>{badge.t}</span>}
+                    <span style={{fontSize:22,fontWeight:700,color:'#92400E'}}>{ip!==0?ip.toFixed(2)+' %':'0.00 %'}</span>
+                    
                   </div>
                 </div>
               </div>
