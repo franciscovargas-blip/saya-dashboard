@@ -190,7 +190,7 @@ export default function Dashboard() {
     const ws={color:"#92400E",background:"#FEF3C7",borderRadius:"5px",padding:"2px 8px",fontWeight:600,marginLeft:"6px"};
     return (
       <div style={nw}>
-        <span style=fontSize:"13px">📅</span>
+        <span style={{fontSize:"13px"}}>📅</span>
         <span>Datos actualizados: <strong style={ds}>{LAST_UPDATE}</strong></span>
         {PENDING_MOLS.length > 0 && (
           <span style={ws}>⚠️ Sin clasificar: {PENDING_MOLS.join(", ")}</span>
