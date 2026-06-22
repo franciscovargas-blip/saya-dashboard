@@ -679,16 +679,13 @@ export default function Dashboard() {
           const kExtra = c => ({fontSize:12,fontWeight:600,color:c,marginTop:4});
           const kExtraLbl = {fontSize:10,color:"#8A90A8",fontWeight:500};
           return (<React.Fragment>
-            {kpis.map((k, i) => {
-              const vc = (typeof k.v === "string" && k.v.startsWith("-")) ? "#E24B4A" : (k.c || "#1a1a2e");
-              return (
-                <div key={i} style={kCard(k.c)}>
-                  <div style={kLbl}>{k.l}</div>
-                  <div style={kVal(vc)}>{k.v}</div>
-                  <div style={kSub}>{k.s}</div>
-                </div>
-              );
-            })}
+            {kpis.map((k, i) => (
+              <div key={i} style={kCard(k.c)}>
+                <div style={kLbl}>{k.l}</div>
+                <div style={kVal("#1a1a2e")}>{k.v}</div>
+                <div style={kSub}>{k.s}</div>
+              </div>
+            ))}
             {cashFlow && (() => {
               const burnArr = cashFlow.months.slice(0, cm).map(mo => mo.netChange || 0);
               const burnYTD = burnArr.reduce((s,v)=>s+v,0);
@@ -697,7 +694,7 @@ export default function Dashboard() {
               return (
                 <div style={kCard(colYTD)}>
                   <div style={kLbl}>BURN MEXICO YTD</div>
-                  <div style={kVal(colYTD)}>{F(burnYTD)}</div>
+                  <div style={kVal("#1a1a2e")}>{F(burnYTD)}</div>
                   <div style={kSub}>Mes {MO[cm-1]}: {F(burnCM)}</div>
                 </div>
               );
