@@ -678,6 +678,30 @@ export default function Dashboard() {
             <div style={{ fontSize: 8, color: "#8A90A8", marginTop: 2 }}>{k.s}</div>
           </div>
         ))}
+        {cashFlow && (() => {
+          const burnYTD = cashFlow.months.slice(0, cm).reduce((s, mo) => s + (mo.netChange || 0), 0);
+          const burnCM  = cashFlow.months[cm-1] ? (cashFlow.months[cm-1].netChange || 0) : 0;
+          const colYTD  = burnYTD < 0 ? "#DC2626" : burnYTD > 0 ? "#065F46" : "#6B7280";
+          const colCM   = burnCM  < 0 ? "#DC2626" : burnCM  > 0 ? "#065F46" : "#6B7280";
+          const cardY   = {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:"3px solid "+colYTD};
+          const cardC   = {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:"3px solid "+colCM};
+          const kLbl    = {fontSize:10,color:"#8A90A8",letterSpacing:1,fontWeight:600,marginBottom:4};
+          const kValY   = {fontSize:18,fontWeight:700,color:colYTD};
+          const kValC   = {fontSize:18,fontWeight:700,color:colCM};
+          const kSub    = {fontSize:10,color:"#8A90A8",marginTop:2};
+          return (<React.Fragment>
+            <div style={cardY}>
+              <div style={kLbl}>BURN MEXICO YTD</div>
+              <div style={kValY}>{F(burnYTD)}</div>
+              <div style={kSub}>Ene–{MO[cm-1]} {CUR_YEAR}</div>
+            </div>
+            <div style={cardC}>
+              <div style={kLbl}>BURN MEXICO {MO[cm-1].toUpperCase()}</div>
+              <div style={kValC}>{F(burnCM)}</div>
+              <div style={kSub}>Mes corriente</div>
+            </div>
+          </React.Fragment>);
+        })()}
       </div>
 {/* */}
       {/* P&L TABLE */}
@@ -1106,6 +1130,44 @@ export default function Dashboard() {
         );
         return (
           <div style={S.wrap}>
+            {(()=>{
+              const burnTotal=rows.reduce((s,mo)=>s+(mo.netChange||0),0);
+              const colT=burnTotal<0?"#7F1D1D":burnTotal>0?"#065F46":"#6B7280";
+              const bs={
+                wrap:{background:"linear-gradient(135deg,#FEF2F2 0%,#FEE2E2 100%)",border:"2px solid #DC2626",borderRadius:12,padding:"16px 20px",marginBottom:18},
+                head:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:12},
+                title:{fontSize:17,fontWeight:800,color:"#7F1D1D"},
+                sub:{fontSize:11,color:"#991B1B"},
+                right:{textAlign:"right"},
+                lbl:{fontSize:10,color:"#991B1B",fontWeight:600,letterSpacing:0.5},
+                val:{fontSize:24,fontWeight:800,color:colT},
+                grid:{display:"flex",gap:6,flexWrap:"wrap"},
+                cell:{flex:"1 1 70px",minWidth:65,background:"#fff",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #FCA5A5"},
+                cellLbl:{fontSize:10,color:"#991B1B",fontWeight:600}
+              };
+              const cellVal=v=>({fontSize:12,fontWeight:700,color:v<0?"#B91C1C":v>0?"#065F46":"#9CA3AF"});
+              return (
+              <div style={bs.wrap}>
+                <div style={bs.head}>
+                  <div>
+                    <div style={bs.title}>🔥 Burn Mexico</div>
+                    <div style={bs.sub}>Incremento (Decremento) Neto en Efectivo · Ene–{MO[cm-1]} {CUR_YEAR}</div>
+                  </div>
+                  <div style={bs.right}>
+                    <div style={bs.lbl}>ACUMULADO YTD</div>
+                    <div style={bs.val}>{Fk(burnTotal)}</div>
+                  </div>
+                </div>
+                <div style={bs.grid}>
+                  {rows.map(mo=>(
+                    <div key={mo.m} style={bs.cell}>
+                      <div style={bs.cellLbl}>{MO[mo.m-1]}</div>
+                      <div style={cellVal(mo.netChange||0)}>{Fk(mo.netChange||0)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>);
+            })()}
             <div style={S.hdr}>
               <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
               <div>
@@ -1151,8 +1213,7 @@ export default function Dashboard() {
                   {totRow('totalFinanciamiento', '= Flujo Neto de Actividades de Financiamiento', false)}
                   {/* ── OTRAS VARIACIONES (cuentas no clasificadas) ── */}
                   {cfRow('otraVariacion', '(+/\u2212) Otras variaciones de efectivo no clasificadas', 'otraVariacion', true)}
-                  {/* ── CUADRE ── */}
-                  {totRow('netChange',    'Incremento (Decremento) Neto en Efectivo', true)}
+                  {/* netChange moved to Burn Mexico section above */}
                   {balRow('saldoInicial', 'Saldo Inicial de Efectivo y Equivalentes')}
                   {balRow('saldoFinal',   'Saldo Final de Efectivo y Equivalentes')}
                 </tbody>
