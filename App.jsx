@@ -671,33 +671,40 @@ export default function Dashboard() {
       {mainTab === "dashboard" && <>
       {/* KPI CARDS */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))", gap: 8, marginBottom: 16 }}>
-        {kpis.map((k, i) => (
-          <div key={i} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: "10px 12px", borderTop: `3px solid ${k.c}` }}>
-            <div style={{ fontSize: 7, color: "#8A90A8", letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>{k.l}</div>
-            <div style={{ fontSize: 18, fontWeight: 500, color: k.v.startsWith("-") ? "#E24B4A" : "#1a1a2e", fontFamily: "serif" }}>{k.v}</div>
-            <div style={{ fontSize: 8, color: "#8A90A8", marginTop: 2 }}>{k.s}</div>
-          </div>
-        ))}
-        {cashFlow && (() => {
-          const burnArr = cashFlow.months.slice(0, cm).map(mo => (mo.totalInversion||0) + (mo.totalFinanciamiento||0));
-          const burnYTD = burnArr.reduce((s,v)=>s+v,0);
-          const burnCM  = burnArr.length ? burnArr[burnArr.length-1] : 0;
-          const colYTD  = burnYTD < 0 ? "#DC2626" : burnYTD > 0 ? "#065F46" : "#6B7280";
-          const colCM   = burnCM  < 0 ? "#DC2626" : burnCM  > 0 ? "#065F46" : "#6B7280";
-          const card    = {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:"3px solid "+colYTD};
-          const kLbl    = {fontSize:10,color:"#8A90A8",letterSpacing:1,fontWeight:600,marginBottom:4};
-          const kValY   = {fontSize:18,fontWeight:700,color:colYTD,lineHeight:1.1};
-          const kSub    = {fontSize:10,color:"#8A90A8",marginTop:2};
-          const kCMrow  = {fontSize:12,fontWeight:600,color:colCM,marginTop:4};
-          const kCMlbl  = {fontSize:10,color:"#8A90A8",fontWeight:500};
-          return (
-            <div style={card}>
-              <div style={kLbl}>BURN MEXICO</div>
-              <div style={kValY}>{F(burnYTD)}</div>
-              <div style={kSub}>YTD Ene–{MO[cm-1]}</div>
-              <div style={kCMrow}>{F(burnCM)} <span style={kCMlbl}>· {MO[cm-1]}</span></div>
-            </div>
-          );
+        {(() => {
+          const kCard = c => ({background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:"3px solid "+c});
+          const kLbl  = {fontSize:10,color:"#8A90A8",letterSpacing:1,fontWeight:600,marginBottom:4,textTransform:"uppercase"};
+          const kVal  = c => ({fontSize:18,fontWeight:700,color:c,lineHeight:1.1});
+          const kSub  = {fontSize:10,color:"#8A90A8",marginTop:2};
+          const kExtra = c => ({fontSize:12,fontWeight:600,color:c,marginTop:4});
+          const kExtraLbl = {fontSize:10,color:"#8A90A8",fontWeight:500};
+          return (<React.Fragment>
+            {kpis.map((k, i) => {
+              const vc = (typeof k.v === "string" && k.v.startsWith("-")) ? "#E24B4A" : (k.c || "#1a1a2e");
+              return (
+                <div key={i} style={kCard(k.c)}>
+                  <div style={kLbl}>{k.l}</div>
+                  <div style={kVal(vc)}>{k.v}</div>
+                  <div style={kSub}>{k.s}</div>
+                </div>
+              );
+            })}
+            {cashFlow && (() => {
+              const burnArr = cashFlow.months.slice(0, cm).map(mo => (mo.totalInversion||0) + (mo.totalFinanciamiento||0));
+              const burnYTD = burnArr.reduce((s,v)=>s+v,0);
+              const burnCM  = burnArr.length ? burnArr[burnArr.length-1] : 0;
+              const colYTD  = burnYTD < 0 ? "#E24B4A" : burnYTD > 0 ? "#065F46" : "#6B7280";
+              const colCM   = burnCM  < 0 ? "#E24B4A" : burnCM  > 0 ? "#065F46" : "#6B7280";
+              return (
+                <div style={kCard(colYTD)}>
+                  <div style={kLbl}>BURN MEXICO</div>
+                  <div style={kVal(colYTD)}>{F(burnYTD)}</div>
+                  <div style={kSub}>YTD Ene–{MO[cm-1]}</div>
+                  <div style={kExtra(colCM)}>{F(burnCM)} <span style={kExtraLbl}>· {MO[cm-1]}</span></div>
+                </div>
+              );
+            })()}
+          </React.Fragment>);
         })()}
       </div>
 {/* */}
@@ -1151,23 +1158,16 @@ export default function Dashboard() {
                   <div style={bs.sub}>Actividades de Inversión + Actividades de Financiamiento · Ene–{MO[cm-1]} {CUR_YEAR}</div>
                 </div>
                 <div style={bs.grid}>
-                  {burnMonths.map((x, idx) => {
-                    const isLast = idx === burnMonths.length - 1;
-                    return (
-                      <React.Fragment key={x.m}>
-                        {isLast && (
-                          <div style={bs.totalCell}>
-                            <div style={bs.totalLbl}>YTD TOTAL</div>
-                            <div style={totalVal(burnTotal)}>{Fk(burnTotal)}</div>
-                          </div>
-                        )}
-                        <div style={bs.cell}>
-                          <div style={bs.cellLbl}>{MO[x.m-1]}</div>
-                          <div style={cellVal(x.burn)}>{Fk(x.burn)}</div>
-                        </div>
-                      </React.Fragment>
-                    );
-                  })}
+                  {burnMonths.map(x => (
+                    <div key={x.m} style={bs.cell}>
+                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
+                      <div style={cellVal(x.burn)}>{Fk(x.burn)}</div>
+                    </div>
+                  ))}
+                  <div style={bs.totalCell}>
+                    <div style={bs.totalLbl}>YTD TOTAL</div>
+                    <div style={totalVal(burnTotal)}>{Fk(burnTotal)}</div>
+                  </div>
                 </div>
               </div>);
             })()}
