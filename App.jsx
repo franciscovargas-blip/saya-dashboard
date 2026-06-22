@@ -679,28 +679,25 @@ export default function Dashboard() {
           </div>
         ))}
         {cashFlow && (() => {
-          const burnYTD = cashFlow.months.slice(0, cm).reduce((s, mo) => s + (mo.netChange || 0), 0);
-          const burnCM  = cashFlow.months[cm-1] ? (cashFlow.months[cm-1].netChange || 0) : 0;
+          const burnArr = cashFlow.months.slice(0, cm).map(mo => (mo.totalInversion||0) + (mo.totalFinanciamiento||0));
+          const burnYTD = burnArr.reduce((s,v)=>s+v,0);
+          const burnCM  = burnArr.length ? burnArr[burnArr.length-1] : 0;
           const colYTD  = burnYTD < 0 ? "#DC2626" : burnYTD > 0 ? "#065F46" : "#6B7280";
           const colCM   = burnCM  < 0 ? "#DC2626" : burnCM  > 0 ? "#065F46" : "#6B7280";
-          const cardY   = {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:"3px solid "+colYTD};
-          const cardC   = {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:"3px solid "+colCM};
+          const card    = {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"10px 12px",borderTop:"3px solid "+colYTD};
           const kLbl    = {fontSize:10,color:"#8A90A8",letterSpacing:1,fontWeight:600,marginBottom:4};
-          const kValY   = {fontSize:18,fontWeight:700,color:colYTD};
-          const kValC   = {fontSize:18,fontWeight:700,color:colCM};
+          const kValY   = {fontSize:18,fontWeight:700,color:colYTD,lineHeight:1.1};
           const kSub    = {fontSize:10,color:"#8A90A8",marginTop:2};
-          return (<React.Fragment>
-            <div style={cardY}>
-              <div style={kLbl}>BURN MEXICO YTD</div>
+          const kCMrow  = {fontSize:12,fontWeight:600,color:colCM,marginTop:4};
+          const kCMlbl  = {fontSize:10,color:"#8A90A8",fontWeight:500};
+          return (
+            <div style={card}>
+              <div style={kLbl}>BURN MEXICO</div>
               <div style={kValY}>{F(burnYTD)}</div>
-              <div style={kSub}>Ene–{MO[cm-1]} {CUR_YEAR}</div>
+              <div style={kSub}>YTD Ene–{MO[cm-1]}</div>
+              <div style={kCMrow}>{F(burnCM)} <span style={kCMlbl}>· {MO[cm-1]}</span></div>
             </div>
-            <div style={cardC}>
-              <div style={kLbl}>BURN MEXICO {MO[cm-1].toUpperCase()}</div>
-              <div style={kValC}>{F(burnCM)}</div>
-              <div style={kSub}>Mes corriente</div>
-            </div>
-          </React.Fragment>);
+          );
         })()}
       </div>
 {/* */}
@@ -1131,40 +1128,46 @@ export default function Dashboard() {
         return (
           <div style={S.wrap}>
             {(()=>{
-              const burnTotal=rows.reduce((s,mo)=>s+(mo.netChange||0),0);
-              const colT=burnTotal<0?"#7F1D1D":burnTotal>0?"#065F46":"#6B7280";
-              const bs={
-                wrap:{background:"linear-gradient(135deg,#FEF2F2 0%,#FEE2E2 100%)",border:"2px solid #DC2626",borderRadius:12,padding:"16px 20px",marginBottom:18},
-                head:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:12},
-                title:{fontSize:17,fontWeight:800,color:"#7F1D1D"},
-                sub:{fontSize:11,color:"#991B1B"},
-                right:{textAlign:"right"},
-                lbl:{fontSize:10,color:"#991B1B",fontWeight:600,letterSpacing:0.5},
-                val:{fontSize:24,fontWeight:800,color:colT},
+              // Burn = Actividades de Inversion + Actividades de Financiamiento
+              const burnMonths = rows.map(mo => ({ m: mo.m, burn: (mo.totalInversion||0) + (mo.totalFinanciamiento||0) }));
+              const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
+              const bs = {
+                wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
+                head:{marginBottom:12},
+                title:{fontSize:17,fontWeight:800,color:"#1E3A8A"},
+                sub:{fontSize:11,color:"#1E40AF",marginTop:2},
                 grid:{display:"flex",gap:6,flexWrap:"wrap"},
-                cell:{flex:"1 1 70px",minWidth:65,background:"#fff",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #FCA5A5"},
-                cellLbl:{fontSize:10,color:"#991B1B",fontWeight:600}
+                cell:{flex:"1 1 70px",minWidth:65,background:"#fff",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
+                totalCell:{flex:"1 1 80px",minWidth:75,background:"#1E40AF",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
+                cellLbl:{fontSize:10,color:"#1E40AF",fontWeight:600},
+                totalLbl:{fontSize:10,color:"#DBEAFE",fontWeight:700,letterSpacing:0.5}
               };
-              const cellVal=v=>({fontSize:12,fontWeight:700,color:v<0?"#B91C1C":v>0?"#065F46":"#9CA3AF"});
+              const cellVal = v => ({fontSize:12,fontWeight:700,color:v<0?"#B91C1C":v>0?"#065F46":"#9CA3AF"});
+              const totalVal = v => ({fontSize:13,fontWeight:800,color:v<0?"#FCA5A5":v>0?"#86EFAC":"#FFFFFF"});
               return (
               <div style={bs.wrap}>
                 <div style={bs.head}>
-                  <div>
-                    <div style={bs.title}>🔥 Burn Mexico</div>
-                    <div style={bs.sub}>Incremento (Decremento) Neto en Efectivo · Ene–{MO[cm-1]} {CUR_YEAR}</div>
-                  </div>
-                  <div style={bs.right}>
-                    <div style={bs.lbl}>ACUMULADO YTD</div>
-                    <div style={bs.val}>{Fk(burnTotal)}</div>
-                  </div>
+                  <div style={bs.title}>Burn Mexico</div>
+                  <div style={bs.sub}>Actividades de Inversión + Actividades de Financiamiento · Ene–{MO[cm-1]} {CUR_YEAR}</div>
                 </div>
                 <div style={bs.grid}>
-                  {rows.map(mo=>(
-                    <div key={mo.m} style={bs.cell}>
-                      <div style={bs.cellLbl}>{MO[mo.m-1]}</div>
-                      <div style={cellVal(mo.netChange||0)}>{Fk(mo.netChange||0)}</div>
-                    </div>
-                  ))}
+                  {burnMonths.map((x, idx) => {
+                    const isLast = idx === burnMonths.length - 1;
+                    return (
+                      <React.Fragment key={x.m}>
+                        {isLast && (
+                          <div style={bs.totalCell}>
+                            <div style={bs.totalLbl}>YTD TOTAL</div>
+                            <div style={totalVal(burnTotal)}>{Fk(burnTotal)}</div>
+                          </div>
+                        )}
+                        <div style={bs.cell}>
+                          <div style={bs.cellLbl}>{MO[x.m-1]}</div>
+                          <div style={cellVal(x.burn)}>{Fk(x.burn)}</div>
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
               </div>);
             })()}
