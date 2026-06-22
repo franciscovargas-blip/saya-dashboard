@@ -1197,37 +1197,45 @@ export default function Dashboard() {
                   <table style={ds.tbl}>
                     <thead>
                       <tr>
-                        <th style={ds.thL}>Mes</th>
-                        <th style={ds.th}>Saldo Inicial</th>
-                        <th style={ds.th}>(+) Operación</th>
-                        <th style={ds.th}>(+) Inversión</th>
-                        <th style={ds.th}>(+) Financiamiento</th>
-                        <th style={ds.th}>(+) Otras Var.</th>
-                        <th style={ds.th}>= Burn (Neto)</th>
-                        <th style={ds.th}>Saldo Final</th>
+                        <th style={ds.thL}>Concepto</th>
+                        {dRows.map(r => <th key={r.m} style={ds.th}>{MO[r.m-1]}</th>)}
+                        <th style={ds.th}>YTD</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {dRows.map(r => (
-                        <tr key={r.m}>
-                          <td style={ds.tdL}>{MO[r.m-1]}</td>
-                          <td style={ds.td}>{F(r.saldoInicial)}</td>
-                          <td style={ds.td}>{F(r.totalOperacion)}</td>
-                          <td style={ds.td}>{F(r.totalInversion)}</td>
-                          <td style={ds.td}>{F(r.totalFinanciamiento)}</td>
-                          <td style={ds.td}>{F(r.otraVariacion)}</td>
-                          <td style={burnCol(r.netChange)}>{F(r.netChange)}</td>
-                          <td style={ds.td}>{F(r.saldoFinal)}</td>
-                        </tr>
-                      ))}
                       <tr>
-                        <td style={ds.tdTotL}>YTD</td>
+                        <td style={ds.tdL}>Saldo Inicial</td>
+                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.saldoInicial)}</td>)}
                         <td style={ds.tdTot}>{F(sIni)}</td>
+                      </tr>
+                      <tr>
+                        <td style={ds.tdL}>(+) Operación</td>
+                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.totalOperacion)}</td>)}
                         <td style={ds.tdTot}>{F(tOp)}</td>
+                      </tr>
+                      <tr>
+                        <td style={ds.tdL}>(+) Inversión</td>
+                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.totalInversion)}</td>)}
                         <td style={ds.tdTot}>{F(tInv)}</td>
+                      </tr>
+                      <tr>
+                        <td style={ds.tdL}>(+) Financiamiento</td>
+                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.totalFinanciamiento)}</td>)}
                         <td style={ds.tdTot}>{F(tFin)}</td>
+                      </tr>
+                      <tr>
+                        <td style={ds.tdL}>(+) Otras Var.</td>
+                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.otraVariacion)}</td>)}
                         <td style={ds.tdTot}>{F(tOtra)}</td>
+                      </tr>
+                      <tr>
+                        <td style={ds.tdTotL}>= Burn (Neto)</td>
+                        {dRows.map(r => <td key={r.m} style={burnCol(r.netChange)}>{F(r.netChange)}</td>)}
                         <td style={burnTotCol(tNet)}>{F(tNet)}</td>
+                      </tr>
+                      <tr>
+                        <td style={ds.tdL}>Saldo Final</td>
+                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.saldoFinal)}</td>)}
                         <td style={ds.tdTot}>{F(sFin)}</td>
                       </tr>
                     </tbody>
