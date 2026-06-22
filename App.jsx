@@ -690,17 +690,15 @@ export default function Dashboard() {
               );
             })}
             {cashFlow && (() => {
-              const burnArr = cashFlow.months.slice(0, cm).map(mo => (mo.totalInversion||0) + (mo.totalFinanciamiento||0));
+              const burnArr = cashFlow.months.slice(0, cm).map(mo => mo.netChange || 0);
               const burnYTD = burnArr.reduce((s,v)=>s+v,0);
               const burnCM  = burnArr.length ? burnArr[burnArr.length-1] : 0;
               const colYTD  = burnYTD < 0 ? "#E24B4A" : burnYTD > 0 ? "#065F46" : "#6B7280";
-              const colCM   = burnCM  < 0 ? "#E24B4A" : burnCM  > 0 ? "#065F46" : "#6B7280";
               return (
                 <div style={kCard(colYTD)}>
-                  <div style={kLbl}>BURN MEXICO</div>
+                  <div style={kLbl}>BURN MEXICO YTD</div>
                   <div style={kVal(colYTD)}>{F(burnYTD)}</div>
-                  <div style={kSub}>YTD Ene–{MO[cm-1]}</div>
-                  <div style={kExtra(colCM)}>{F(burnCM)} <span style={kExtraLbl}>· {MO[cm-1]}</span></div>
+                  <div style={kSub}>Mes {MO[cm-1]}: {F(burnCM)}</div>
                 </div>
               );
             })()}
@@ -1135,8 +1133,8 @@ export default function Dashboard() {
         return (
           <div style={S.wrap}>
             {(()=>{
-              // Burn = Actividades de Inversion + Actividades de Financiamiento
-              const burnMonths = rows.map(mo => ({ m: mo.m, burn: (mo.totalInversion||0) + (mo.totalFinanciamiento||0) }));
+              // Burn = Incremento (Decremento) Neto en Efectivo
+              const burnMonths = rows.map(mo => ({ m: mo.m, burn: mo.netChange || 0 }));
               const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
               const bs = {
                 wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
