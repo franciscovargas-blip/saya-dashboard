@@ -1150,7 +1150,7 @@ export default function Dashboard() {
               <div style={bs.wrap}>
                 <div style={bs.head}>
                   <div style={bs.title}>Burn Mexico</div>
-                  <div style={bs.sub}>Actividades de Inversión + Actividades de Financiamiento · Ene–{MO[cm-1]} {CUR_YEAR}</div>
+                  <div style={bs.sub}>Ene–{MO[cm-1]} {CUR_YEAR}</div>
                 </div>
                 <div style={bs.grid}>
                   {burnMonths.map(x => (
@@ -1165,6 +1165,75 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>);
+            })()}
+            {cashFlow && (() => {
+              const dRows = cashFlow.months.slice(0, cm);
+              const ds = {
+                wrap: {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",marginBottom:18},
+                title: {fontSize:14,fontWeight:700,color:"#1a1a2e",marginBottom:4},
+                sub: {fontSize:11,color:"#6B7280",marginBottom:10},
+                tbl: {width:"100%",borderCollapse:"collapse",fontSize:11},
+                th: {padding:"6px 8px",textAlign:"right",borderBottom:"2px solid #1a1a2e",color:"#1a1a2e",fontWeight:700,whiteSpace:"nowrap"},
+                thL: {padding:"6px 8px",textAlign:"left",borderBottom:"2px solid #1a1a2e",color:"#1a1a2e",fontWeight:700},
+                td: {padding:"5px 8px",textAlign:"right",borderBottom:"1px solid #F0F2F7",whiteSpace:"nowrap",color:"#1a1a2e"},
+                tdL: {padding:"5px 8px",textAlign:"left",borderBottom:"1px solid #F0F2F7",fontWeight:600,color:"#1a1a2e"},
+                tdTot: {padding:"7px 8px",textAlign:"right",borderTop:"2px solid #1a1a2e",fontWeight:800,color:"#1a1a2e",whiteSpace:"nowrap",background:"#F8FAFC"},
+                tdTotL: {padding:"7px 8px",textAlign:"left",borderTop:"2px solid #1a1a2e",fontWeight:800,color:"#1a1a2e",background:"#F8FAFC"}
+              };
+              const burnCol = v => ({padding:"5px 8px",textAlign:"right",borderBottom:"1px solid #F0F2F7",fontWeight:700,whiteSpace:"nowrap",color: v<0?"#B91C1C":v>0?"#065F46":"#6B7280"});
+              const burnTotCol = v => ({padding:"7px 8px",textAlign:"right",borderTop:"2px solid #1a1a2e",fontWeight:800,whiteSpace:"nowrap",background:"#F8FAFC",color: v<0?"#B91C1C":v>0?"#065F46":"#6B7280"});
+              const sumK = k => dRows.reduce((s,r)=>s+(r[k]||0),0);
+              const tOp = sumK("totalOperacion");
+              const tInv = sumK("totalInversion");
+              const tFin = sumK("totalFinanciamiento");
+              const tOtra = sumK("otraVariacion");
+              const tNet = sumK("netChange");
+              const sIni = dRows.length ? dRows[0].saldoInicial : 0;
+              const sFin = dRows.length ? dRows[dRows.length-1].saldoFinal : 0;
+              return (
+                <div style={ds.wrap}>
+                  <div style={ds.title}>Detalle del cálculo — Burn Mexico</div>
+                  <div style={ds.sub}>Validación NIF B-2: Saldo Inicial + Operación + Inversión + Financiamiento + Otras Variaciones = Saldo Final · Ene–{MO[cm-1]} {CUR_YEAR}</div>
+                  <table style={ds.tbl}>
+                    <thead>
+                      <tr>
+                        <th style={ds.thL}>Mes</th>
+                        <th style={ds.th}>Saldo Inicial</th>
+                        <th style={ds.th}>(+) Operación</th>
+                        <th style={ds.th}>(+) Inversión</th>
+                        <th style={ds.th}>(+) Financiamiento</th>
+                        <th style={ds.th}>(+) Otras Var.</th>
+                        <th style={ds.th}>= Burn (Neto)</th>
+                        <th style={ds.th}>Saldo Final</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dRows.map(r => (
+                        <tr key={r.m}>
+                          <td style={ds.tdL}>{MO[r.m-1]}</td>
+                          <td style={ds.td}>{F(r.saldoInicial)}</td>
+                          <td style={ds.td}>{F(r.totalOperacion)}</td>
+                          <td style={ds.td}>{F(r.totalInversion)}</td>
+                          <td style={ds.td}>{F(r.totalFinanciamiento)}</td>
+                          <td style={ds.td}>{F(r.otraVariacion)}</td>
+                          <td style={burnCol(r.netChange)}>{F(r.netChange)}</td>
+                          <td style={ds.td}>{F(r.saldoFinal)}</td>
+                        </tr>
+                      ))}
+                      <tr>
+                        <td style={ds.tdTotL}>YTD</td>
+                        <td style={ds.tdTot}>{F(sIni)}</td>
+                        <td style={ds.tdTot}>{F(tOp)}</td>
+                        <td style={ds.tdTot}>{F(tInv)}</td>
+                        <td style={ds.tdTot}>{F(tFin)}</td>
+                        <td style={ds.tdTot}>{F(tOtra)}</td>
+                        <td style={burnTotCol(tNet)}>{F(tNet)}</td>
+                        <td style={ds.tdTot}>{F(sFin)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              );
             })()}
             <div style={S.hdr}>
               <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
