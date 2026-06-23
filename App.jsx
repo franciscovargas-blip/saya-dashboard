@@ -1129,120 +1129,6 @@ export default function Dashboard() {
         );
         return (
           <div style={S.wrap}>
-            {(()=>{
-              // Burn = Incremento (Decremento) Neto en Efectivo
-              const burnMonths = rows.map(mo => ({ m: mo.m, burn: mo.netChange || 0 }));
-              const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
-              const bs = {
-                wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
-                head:{marginBottom:12},
-                title:{fontSize:17,fontWeight:800,color:"#1E3A8A"},
-                sub:{fontSize:11,color:"#1E40AF",marginTop:2},
-                grid:{display:"flex",gap:6,flexWrap:"wrap"},
-                cell:{flex:"1 1 70px",minWidth:65,background:"#fff",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
-                totalCell:{flex:"1 1 80px",minWidth:75,background:"#1E40AF",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
-                cellLbl:{fontSize:10,color:"#1E40AF",fontWeight:600},
-                totalLbl:{fontSize:10,color:"#DBEAFE",fontWeight:700,letterSpacing:0.5}
-              };
-              const cellVal = v => ({fontSize:12,fontWeight:700,color:v<0?"#B91C1C":v>0?"#065F46":"#9CA3AF"});
-              const totalVal = v => ({fontSize:13,fontWeight:800,color:v<0?"#FCA5A5":v>0?"#86EFAC":"#FFFFFF"});
-              return (
-              <div style={bs.wrap}>
-                <div style={bs.head}>
-                  <div style={bs.title}>Burn Mexico</div>
-                  <div style={bs.sub}>Ene–{MO[cm-1]} {CUR_YEAR}</div>
-                </div>
-                <div style={bs.grid}>
-                  {burnMonths.map(x => (
-                    <div key={x.m} style={bs.cell}>
-                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
-                      <div style={cellVal(x.burn)}>{Fk(x.burn)}</div>
-                    </div>
-                  ))}
-                  <div style={bs.totalCell}>
-                    <div style={bs.totalLbl}>YTD TOTAL</div>
-                    <div style={totalVal(burnTotal)}>{Fk(burnTotal)}</div>
-                  </div>
-                </div>
-              </div>);
-            })()}
-            {cashFlow && (() => {
-              const dRows = cashFlow.months.slice(0, cm);
-              const ds = {
-                wrap: {background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",marginBottom:18},
-                title: {fontSize:14,fontWeight:700,color:"#1a1a2e",marginBottom:4},
-                sub: {fontSize:11,color:"#6B7280",marginBottom:10},
-                tbl: {width:"100%",borderCollapse:"collapse",fontSize:11},
-                th: {padding:"6px 8px",textAlign:"right",borderBottom:"2px solid #1a1a2e",color:"#1a1a2e",fontWeight:700,whiteSpace:"nowrap"},
-                thL: {padding:"6px 8px",textAlign:"left",borderBottom:"2px solid #1a1a2e",color:"#1a1a2e",fontWeight:700},
-                td: {padding:"5px 8px",textAlign:"right",borderBottom:"1px solid #F0F2F7",whiteSpace:"nowrap",color:"#1a1a2e"},
-                tdL: {padding:"5px 8px",textAlign:"left",borderBottom:"1px solid #F0F2F7",fontWeight:600,color:"#1a1a2e"},
-                tdTot: {padding:"7px 8px",textAlign:"right",borderTop:"2px solid #1a1a2e",fontWeight:800,color:"#1a1a2e",whiteSpace:"nowrap",background:"#F8FAFC"},
-                tdTotL: {padding:"7px 8px",textAlign:"left",borderTop:"2px solid #1a1a2e",fontWeight:800,color:"#1a1a2e",background:"#F8FAFC"}
-              };
-              const burnCol = v => ({padding:"5px 8px",textAlign:"right",borderBottom:"1px solid #F0F2F7",fontWeight:700,whiteSpace:"nowrap",color: v<0?"#B91C1C":v>0?"#065F46":"#6B7280"});
-              const burnTotCol = v => ({padding:"7px 8px",textAlign:"right",borderTop:"2px solid #1a1a2e",fontWeight:800,whiteSpace:"nowrap",background:"#F8FAFC",color: v<0?"#B91C1C":v>0?"#065F46":"#6B7280"});
-              const sumK = k => dRows.reduce((s,r)=>s+(r[k]||0),0);
-              const tOp = sumK("totalOperacion");
-              const tInv = sumK("totalInversion");
-              const tFin = sumK("totalFinanciamiento");
-              const tOtra = sumK("otraVariacion");
-              const tNet = sumK("netChange");
-              const sIni = dRows.length ? dRows[0].saldoInicial : 0;
-              const sFin = dRows.length ? dRows[dRows.length-1].saldoFinal : 0;
-              return (
-                <div style={ds.wrap}>
-                  <div style={ds.title}>Detalle del cálculo — Burn Mexico</div>
-                  <div style={ds.sub}>Validación NIF B-2: Saldo Inicial + Operación + Inversión + Financiamiento + Otras Variaciones = Saldo Final · Ene–{MO[cm-1]} {CUR_YEAR}</div>
-                  <table style={ds.tbl}>
-                    <thead>
-                      <tr>
-                        <th style={ds.thL}>Concepto</th>
-                        {dRows.map(r => <th key={r.m} style={ds.th}>{MO[r.m-1]}</th>)}
-                        <th style={ds.th}>YTD</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style={ds.tdL}>Saldo Inicial</td>
-                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.saldoInicial)}</td>)}
-                        <td style={ds.tdTot}>{F(sIni)}</td>
-                      </tr>
-                      <tr>
-                        <td style={ds.tdL}>(+) Operación</td>
-                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.totalOperacion)}</td>)}
-                        <td style={ds.tdTot}>{F(tOp)}</td>
-                      </tr>
-                      <tr>
-                        <td style={ds.tdL}>(+) Inversión</td>
-                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.totalInversion)}</td>)}
-                        <td style={ds.tdTot}>{F(tInv)}</td>
-                      </tr>
-                      <tr>
-                        <td style={ds.tdL}>(+) Financiamiento</td>
-                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.totalFinanciamiento)}</td>)}
-                        <td style={ds.tdTot}>{F(tFin)}</td>
-                      </tr>
-                      <tr>
-                        <td style={ds.tdL}>(+) Otras Var.</td>
-                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.otraVariacion)}</td>)}
-                        <td style={ds.tdTot}>{F(tOtra)}</td>
-                      </tr>
-                      <tr>
-                        <td style={ds.tdTotL}>= Burn (Neto)</td>
-                        {dRows.map(r => <td key={r.m} style={burnCol(r.netChange)}>{F(r.netChange)}</td>)}
-                        <td style={burnTotCol(tNet)}>{F(tNet)}</td>
-                      </tr>
-                      <tr>
-                        <td style={ds.tdL}>Saldo Final</td>
-                        {dRows.map(r => <td key={r.m} style={ds.td}>{F(r.saldoFinal)}</td>)}
-                        <td style={ds.tdTot}>{F(sFin)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              );
-            })()}
             <div style={S.hdr}>
               <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
               <div>
@@ -1288,7 +1174,7 @@ export default function Dashboard() {
                   {totRow('totalFinanciamiento', '= Flujo Neto de Actividades de Financiamiento', false)}
                   {/* ── OTRAS VARIACIONES (cuentas no clasificadas) ── */}
                   {cfRow('otraVariacion', '(+/\u2212) Otras variaciones de efectivo no clasificadas', 'otraVariacion', true)}
-                  {/* netChange moved to Burn Mexico section above */}
+                  {totRow('netChange', 'Variación neta del efectivo', false)}
                   {balRow('saldoInicial', 'Saldo Inicial de Efectivo y Equivalentes')}
                   {balRow('saldoFinal',   'Saldo Final de Efectivo y Equivalentes')}
                 </tbody>
