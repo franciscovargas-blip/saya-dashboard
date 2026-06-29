@@ -564,9 +564,11 @@ export default function Dashboard() {
   const balData=useMemo(()=>{
     if(!B||B.length===0)return null;
     const enriched=B.map(r=>({code:r[0],name:r[1],depth:r[2],section:r[3],isTotal:r[4],vals:r.slice(5),cum:bVal(r,cm),mov:r[5+cm-1]||0}));
-    const totAct=enriched.find(r=>r.name==="Total Activos");
-    const totPas=enriched.find(r=>r.name==="Total Pasivos");
-    const totCap=enriched.find(r=>r.name==="Total Capital Contable");
+    const totActCP=enriched.find(r=>r.code==="100-01-000");
+    const totActLP=enriched.find(r=>r.code==="100-02-000");
+    const totAct=totActCP&&totActLP?{...totActCP,cum:(totActCP.cum||0)+(totActLP.cum||0),mov:(totActCP.mov||0)+(totActLP.mov||0),vals:totActCP.vals.map((v,i)=>(v||0)+(totActLP.vals[i]||0))}:enriched.find(r=>r.name==="Total Activos");
+    const totPas=enriched.find(r=>r.code==="200-01-000")||enriched.find(r=>r.name==="Total Pasivos");
+    const totCap=totAct&&totPas?{name:"Total Capital Contable",cum:(totAct.cum||0)-(totPas.cum||0),mov:(totAct.mov||0)-(totPas.mov||0),vals:(totAct.vals||[]).map((v,i)=>(v||0)-((totPas.vals||[])[i]||0))}:enriched.find(r=>r.name==="Total Capital Contable");
     const perGan=enriched.find(r=>r.name==="Período ganancias");
     return{enriched,totAct,totPas,totCap,perGan};
   },[cm]);
