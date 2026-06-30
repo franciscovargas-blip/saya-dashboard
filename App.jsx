@@ -472,7 +472,7 @@ export default function Dashboard() {
       // Solo Feb+ tienen movimientos reales; enero se muestra como 0
       const equComputo  = -mvLeaf('156', mi);
       const mobEquipo   = -mvLeaf('155', mi);
-      const intangibles = mi === 0 ? 0 : -mvLeaf('176', mi);
+      const intangibles = -mvLeaf('176', mi);
       const depositos   = mi === 0 ? 0 : -mvLeaf('184', mi);
       const totalInversion = equComputo + mobEquipo + intangibles + depositos;
 {/* */}
