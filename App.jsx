@@ -108,6 +108,7 @@ const P=v=>(!isFinite(v)||isNaN(v)||v===0)?"—":`${(v*100).toFixed(1)}%`;
 const gV=(d,pl,or,yr,m)=>d.filter(r=>r[0]===pl&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
 const gVms=(d,pl,or,yr,ms)=>ms.reduce((s,m)=>s+gV(d,pl,or,yr,m),0);
 const mols=[...new Set(D.map(r=>mapMol(r[4])))].sort();
+const molsModelos=[...new Set(D.map(r=>r[4]).filter(m=>m&&m!=="--"&&m!=="—"))].sort();
 const areas=[...new Set(D.map(r=>r[4]))].filter(a=>a!=="—").sort();
 {/* */}
 // Build P&L for a single month given a data source mode: "forecast", "reales", "consolidado"
@@ -170,6 +171,7 @@ const OPEX_KEY_SET = new Set(["cogs","sw","sm","ta","pf","of","reg","sh","mob","
 export default function Dashboard() {
   const [cm, setCm] = useState(5);
   const [selMols, setSelMols] = useState([]);
+  const [selMolsModelos, setSelMolsModelos] = useState([]);
   const [selAreas, setSelAreas] = useState([]);
   const [view, setView] = useState("consolidado");
   const [expP, setExpP] = useState({});
@@ -187,9 +189,10 @@ export default function Dashboard() {
   const fd = useMemo(() => {
     let d = D;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[4])));
+    if (selMolsModelos.length > 0) d = d.filter(r => selMolsModelos.includes(r[4]));
     if (selAreas.length > 0) d = d.filter(r => selAreas.includes(r[5]));
     return d;
-  }, [selMols, selAreas]);
+  }, [selMols, selMolsModelos, selAreas]);
   const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
   const allM = Array.from({ length: 12 }, (_, i) => i + 1);
   const allYears = [...new Set(D.map(r=>r[2]))].sort();
@@ -644,7 +647,8 @@ export default function Dashboard() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
-          <MultiSel options={mols} selected={selMols} onChange={setSelMols} label="Todas moléculas"/>
+          <MultiSel options={mols} selected={selMols} onChange={setSelMols} label="Todas moléculas agrupadas"/>
+          <MultiSel options={molsModelos} selected={selMolsModelos} onChange={setSelMolsModelos} label="Todas moléculas modelos"/>
           <MultiSel options={areas} selected={selAreas} onChange={setSelAreas} label="Todas áreas"/>
           <div style={{ display: "flex", borderRadius: 6, border: "1px solid #D0D5E8", overflow: "hidden" }}>
             {[["forecast", "Forecast"], ["reales", "Reales"], ["consolidado", "Consolidado"]].map(([v, l]) => (
