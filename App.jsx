@@ -569,7 +569,7 @@ export default function Dashboard() {
     const totPas=enriched.find(r=>r.name==="Total Pasivos");
     const totCap=enriched.find(r=>r.name==="Total Capital Contable");
     const perGan=enriched.find(r=>r.code==="PYG"||r.name==="Período ganancias"||r.name==="Periodo ganancias");
-    const totCapAdj=totCap?{...totCap,cum:(totCap.cum||0)+(perGan?perGan.cum||0:0),mov:(totCap.mov||0)+(perGan?perGan.mov||0:0),vals:totCap.vals.map((v,i)=>(v||0)+((perGan&&perGan.vals)?(perGan.vals[i]||0):0))}:totCap;
+    const totCapAdj=totCap;  // NET values (PYG already embedded in const B)
     return{enriched,totAct,totPas,totCap:totCapAdj,perGan};
   },[cm]);
   const toggleB=k=>setExpB(p=>({...p,[k]:!p[k]}));
