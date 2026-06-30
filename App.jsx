@@ -1088,13 +1088,11 @@ export default function Dashboard() {
                   {label}
                 </td>
                 {vals.map((v, i) => <td key={i} style={numS(v)}>{Fk(v)}</td>)}
-                <td style={numT(total)}>{Fk(total)}</td>
               </tr>
               {isExp && dets.filter(a => a.vals.slice(0,cm).some(v => v !== 0)).map((a, ai) => (
                 <tr key={ai} style={S.trDet}>
                   <td style={S.tdDet}><span style={S.arrow}>└</span>{a.name}</td>
                   {a.vals.slice(0,cm).map((v,i2) => <td key={i2} style={S.tdDetN}>{v===0?'':Fk(v)}</td>)}
-                  <td style={S.tdDetN}>{Fk(a.vals.slice(0,cm).reduce((s,v)=>s+v,0))}</td>
                 </tr>
               ))}
             </React.Fragment>
@@ -1107,13 +1105,11 @@ export default function Dashboard() {
             <tr key={key} style={S.trBal}>
               <td style={S.tdBal}>{label}</td>
               {vals.map((v,i) => <td key={i} style={numB(v)}>{Fk(v)}</td>)}
-              <td style={numB(total)}>{Fk(total)}</td>
             </tr>
           ) : (
             <tr key={key} style={S.trTot}>
               <td style={S.tdTot}>{label}</td>
               {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
-              <td style={numT(total)}>{Fk(total)}</td>
             </tr>
           );
         };
@@ -1123,12 +1119,11 @@ export default function Dashboard() {
             <tr key={key} style={S.trTot}>
               <td style={S.tdTot}>{label}</td>
               {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
-              <td style={S.tdTot}>{'\u2014'}</td>
             </tr>
           );
         };
         const secH = (label, st) => (
-          <tr key={'h_'+label}><td colSpan={cm+2} style={st}>{label}</td></tr>
+          <tr key={'h_'+label}><td colSpan={cm+1} style={st}>{label}</td></tr>
         );
         return (
           <div style={S.wrap}>
@@ -1207,7 +1202,6 @@ export default function Dashboard() {
                   <tr>
                     <th style={S.thLabel}>Concepto</th>
                     {rows.map(mo => <th key={mo.m} style={S.th}>{MO[mo.m-1]}</th>)}
-                    <th style={S.th}>Acum.</th>
                   </tr>
                 </thead>
                 <tbody>
