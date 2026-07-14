@@ -1336,218 +1336,248 @@ export default function Dashboard() {
 {/* */}
       <div style={{marginTop:32}}><div style={{fontSize:12,fontWeight:700,color:"#8A90A8",letterSpacing:1,marginBottom:8}}>NEXT STEPS</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["waterfall"]:!p["waterfall"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🌊</span><span>EBITDA Bridge — Waterfall</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["waterfall"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["waterfall"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const pl=buildPL(fd,CUR_YEAR,cm,cm,"consolidado");const ytdPl={ns:0,cogs:0,gp:0,sw:0,sm:0,ta:0,pf:0,of_:0,reg:0,sh:0,mob:0,ops:0,oth:0,totOpex:0,ebitda:0};ytdM.forEach(m=>{const r=buildPL(fd,CUR_YEAR,m,cm,"consolidado");Object.keys(ytdPl).forEach(k=>{ytdPl[k]+=(r[k]||r['of_'[k]==='of_'?k:'of_'[k]]||0);});});const steps=[{l:"Net Sales",v:ytdPl.ns,color:"#185FA5",isBar:true},{l:"(-) COGS",v:-Math.abs(ytdPl.cogs),color:"#E24B4A",isBar:false},{l:"Gross Profit",v:ytdPl.gp,color:"#1D9E75",isBar:true,isSub:true},{l:"(-) S&W",v:-Math.abs(ytdPl.sw),color:"#E24B4A55",isBar:false},{l:"(-) S&M",v:-Math.abs(ytdPl.sm),color:"#E24B4A55",isBar:false},{l:"(-) Prof Fees",v:-Math.abs(ytdPl.pf),color:"#E24B4A55",isBar:false},{l:"(-) Operations",v:-Math.abs(ytdPl.ops),color:"#E24B4A55",isBar:false},{l:"(-) Otros OPEX",v:-Math.abs(ytdPl.ta+ytdPl.reg+ytdPl.sh+ytdPl.mob+ytdPl.oth),color:"#E24B4A55",isBar:false},{l:"EBITDA",v:ytdPl.ebitda,color:ytdPl.ebitda>=0?"#1D9E75":"#E24B4A",isBar:true,isSub:true}];const maxAbs=Math.max(...steps.map(s=>Math.abs(s.v)),1);const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":v<-1e3?Math.round(v/1e3)+"K":"0";return(<div><div style={{fontSize:11,color:"#8A90A8",marginBottom:12}}>YTD {MO[cm-1]} 2026 — Consolidado</div>{steps.map((s,i)=>{const barPct=Math.abs(s.v)/maxAbs*100;const isNeg=s.v<0;return(<div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}><div style={{width:130,fontSize:10,color:s.isSub?"#1E2A3A":"#555",fontWeight:s.isSub?700:400,textAlign:"right",flexShrink:0}}>{s.l}</div><div style={{flex:1,height:22,position:"relative",background:"#F0F2FA",borderRadius:4}}><div style={{position:"absolute",height:"100%",width:barPct+"%",background:s.color,borderRadius:4,[isNeg?"right":"left"]:0}}/><div style={{position:"absolute",left:0,right:0,top:0,height:22,display:"flex",alignItems:"center",justifyContent:isNeg?"flex-start":"flex-end",paddingLeft:6,paddingRight:6,fontSize:9,fontWeight:700,color:s.isSub?"#fff":"#1E2A3A"}}>{barPct>12?fmt(s.v):""}</div></div><div style={{width:70,textAlign:"right",fontSize:10,fontWeight:s.isSub?700:400,color:isNeg?"#E24B4A":"#1D9E75",flexShrink:0}}>{fmt(s.v)}</div></div>);})}</div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["bva"]:!p["bva"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🎯</span><span>Budget vs Actual — Forecast vs Real (Mes Corriente)</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["bva"] ? "▲ Ocultar" : "▼ Ver an��lisis"}</span></button>{optSec["bva"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const real=buildPL(fd,CUR_YEAR,cm,cm,"reales");const fore=buildPL(fd,CUR_YEAR,cm,cm,"forecast");const rows=[["Net Sales",fore.ns,real.ns],["Gross Profit",fore.gp,real.gp],["%  Gross Margin",fore.gmPct,real.gmPct,true],["Total OPEX",fore.totOpex,real.totOpex],["EBITDA",fore.ebitda,real.ebitda],["%  EBITDA",fore.ebitdaPct,real.ebitdaPct,true],["Net Profit",fore.netProfit,real.netProfit]];const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":v<=-1e3?Math.round(v/1e3)+"K":"0";const fmtPct=v=>(v*100).toFixed(1)+"%";return(<div><div style={{fontSize:11,color:"#8A90A8",marginBottom:10}}>Mes {MO[cm-1]} 2026</div><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}><thead><tr style={{background:"#F8F9FD"}}><th style={{padding:"8px 12px",textAlign:"left",fontWeight:600,color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Línea P&L</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#534AB7",borderBottom:"1px solid #E4E8F2"}}>Forecast</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1D9E75",borderBottom:"1px solid #E4E8F2"}}>Real</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Δ</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Δ%</th><th style={{padding:"8px 12px",textAlign:"center",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Status</th></tr></thead><tbody>{rows.map(([lbl,fv,rv,isPct],i)=>{const delta=rv-fv;const deltaPct=fv?delta/Math.abs(fv):0;const isOpex=lbl.includes("OPEX");const good=isOpex?delta<=0:delta>=0;const status=Math.abs(deltaPct)<0.03?"🟡":good?"🟢":"🔴";return(<tr key={i} style={{background:i%2===0?"#fff":"#FAFBFE",borderBottom:"1px solid #F0F2FA"}}><td style={{padding:"7px 12px",fontWeight:lbl.includes("EBITDA")||lbl.includes("Net")?700:400}}>{lbl}</td><td style={{padding:"7px 12px",textAlign:"right",color:"#534AB7"}}>{isPct?fmtPct(fv):fmt(fv)}</td><td style={{padding:"7px 12px",textAlign:"right",color:"#1D9E75"}}>{isPct?fmtPct(rv):fmt(rv)}</td><td style={{padding:"7px 12px",textAlign:"right",color:good?"#1D9E75":"#E24B4A",fontWeight:600}}>{isPct?fmtPct(delta):(delta>=0?"+":"")+fmt(delta)}</td><td style={{padding:"7px 12px",textAlign:"right",color:good?"#1D9E75":"#E24B4A"}}>{(deltaPct*100).toFixed(1)+"%"}</td><td style={{padding:"7px 12px",textAlign:"center",fontSize:14}}>{status}</td></tr>);})}</tbody></table></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["burn"]:!p["burn"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🔥</span><span>Burn Rate & Runway — ¿Cuántos meses de caja quedan?</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["burn"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["burn"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const cashRow=B.find(r=>(r[1]||r[0]).toString().toLowerCase().includes("caja")||r[0]==="110-00-000"||r[0]==="111-00-000");const cashNow=cashRow?(cashRow[4+cm]||0):0;const burnArr=ytdM.map(m=>{const pl=buildPL(fd,CUR_YEAR,m,cm,"reales");return pl.ebitda;});const avgBurn=burnArr.length?burnArr.reduce((s,v)=>s+v,0)/burnArr.length:0;const runway=avgBurn<0&&cashNow>0?Math.round(cashNow/Math.abs(avgBurn)):null;const runColor=runway===null?"#1D9E75":runway>12?"#1D9E75":runway>6?"#D97706":"#E24B4A";const runLabel=runway===null?"EBITDA positivo ✓":runway>12?runway+" meses ✅":runway>6?runway+" meses ⚠️":runway+" meses 🚨";const fmt=v=>v>=1e6?(v/1e6).toFixed(2)+"M":v>=1e3?Math.round(v/1e3)+"K":Math.round(v).toLocaleString();return(<div style={{display:"flex",gap:16,flexWrap:"wrap"}}><div style={{flex:"1 1 180px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Caja Disponible (Mes {MO[cm-1]})</div><div style={{fontSize:22,fontWeight:700,color:"#1E2A3A"}}>{fmt(cashNow)}</div></div><div style={{flex:"1 1 180px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Burn Rate Promedio YTD</div><div style={{fontSize:22,fontWeight:700,color:avgBurn<0?"#E24B4A":"#1D9E75"}}>{fmt(avgBurn)}/mes</div></div><div style={{flex:"1 1 180px",background:runColor+"11",border:"2px solid "+runColor,borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Runway estimado</div><div style={{fontSize:22,fontWeight:700,color:runColor}}>{runLabel}</div></div><div style={{flex:"1 1 100%",marginTop:8}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:6}}>EBITDA mensual YTD</div><div style={{display:"flex",alignItems:"flex-end",gap:4,height:60}}>{burnArr.map((v,i)=>{const maxV=Math.max(...burnArr.map(Math.abs),1);const h=Math.round(Math.abs(v)/maxV*50);return(<div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1}}><div style={{width:"100%",height:h+"px",background:v>=0?"#1D9E75":"#E24B4A",borderRadius:"3px 3px 0 0"}}/><div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>{MO[i]}</div></div>);})}</div></div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["gmtrend"]:!p["gmtrend"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>📈</span><span>Tendencia Gross Margin & EBITDA % — Mensual</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["gmtrend"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["gmtrend"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const months=Array.from({length:cm},(_, i)=>i+1);const gmData=months.map(m=>{const pl=buildPL(fd,CUR_YEAR,m,cm,"consolidado");return{m:MO[m-1],gm:pl.gmPct*100,ebitda:pl.ebitdaPct*100,ns:pl.ns};});const maxNS=Math.max(...gmData.map(d=>d.ns),1);return(<div><div style={{display:"flex",gap:16,marginBottom:8}}><span style={{fontSize:10,color:"#1D9E75",fontWeight:600}}>— Gross Margin %</span><span style={{fontSize:10,color:"#534AB7",fontWeight:600}}>— EBITDA %</span><span style={{fontSize:10,color:"#185FA5",fontWeight:600}}>■ Net Sales</span></div><div style={{display:"flex",alignItems:"flex-end",gap:6,height:120,paddingBottom:20,position:"relative"}}>{[0,25,50,75,100].map(v=>(<div key={v} style={{position:"absolute",left:0,right:0,bottom:v/100*100+"px",borderTop:"1px dashed #E4E8F2",fontSize:8,color:"#ccc"}}>{v}%</div>))}{gmData.map((d,i)=>{const barH=Math.round(d.ns/maxNS*80);return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}><div style={{position:"absolute",bottom:20,width:"70%",height:barH+"px",background:"#185FA522",borderRadius:"3px 3px 0 0"}}/><div style={{position:"absolute",bottom:20+Math.round(d.gm/100*80)+"px",width:8,height:8,background:"#1D9E75",borderRadius:"50%",transform:"translateX(-50%)",left:"50%"}}/><div style={{position:"absolute",bottom:20+Math.round(Math.max(d.ebitda,-30)/100*80)+"px",width:8,height:8,background:"#534AB7",borderRadius:"50%",transform:"translateX(-50%)",left:"50%"}}/><div style={{position:"absolute",bottom:0,fontSize:8,color:"#8A90A8"}}>{d.m}</div></div>);})}</div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["concentration"]:!p["concentration"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>⚠️</span><span>Concentración de Riesgo — Top Partners YTD</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["concentration"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["concentration"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const total=pareto.reduce((s,p)=>s+Math.abs(p.total),0);const top3=pareto.slice(0,3).reduce((s,p)=>s+Math.abs(p.total),0);const top1=pareto[0]?Math.abs(pareto[0].total):0;const concPct=total?top3/total:0;const concColor=concPct>0.7?"#E24B4A":concPct>0.5?"#D97706":"#1D9E75";const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":"0";return(<div><div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:16}}><div style={{flex:"1 1 160px",background:concColor+"11",border:"2px solid "+concColor,borderRadius:10,padding:"14px 18px"}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:4}}>Top 3 Partners = % del gasto total</div><div style={{fontSize:24,fontWeight:700,color:concColor}}>{(concPct*100).toFixed(1)+"%"}</div><div style={{fontSize:9,color:concColor,marginTop:4}}>{concPct>0.7?"⚠ Alta concentración":concPct>0.5?"Concentración moderada":"✓ Diversificado"}</div></div><div style={{flex:"1 1 160px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 18px"}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:4}}>Mayor partner individual</div><div style={{fontSize:14,fontWeight:700,color:"#1E2A3A",marginBottom:4}}>{pareto[0]?pareto[0].partner:"—"}</div><div style={{fontSize:12,color:"#534AB7",fontWeight:600}}>{fmt(top1)} ({total?(top1/total*100).toFixed(1)+"%":"—"})</div></div></div><div style={{fontSize:10,color:"#8A90A8",marginBottom:6}}>Distribución acumulada (Curva de Pareto YTD)</div><div style={{display:"flex",alignItems:"flex-end",gap:3}}>{pareto.slice(0,10).map((p,i)=>{const h=total?Math.round(Math.abs(p.total)/total*120):0;const cumH=Math.round(p.cumPct*100);return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}><div style={{width:"80%",height:h+"px",background:"#534AB7",borderRadius:"3px 3px 0 0",marginBottom:2}}/><div style={{fontSize:7,color:"#8A90A8",textAlign:"center",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",width:"100%"}}>{p.partner.split(" ")[0]}</div><div style={{fontSize:7,color:"#534AB7",fontWeight:600}}>{cumH+"%"}</div></div>);})}</div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["breakeven"]:!p["breakeven"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🎯</span><span>Break-even Tracker — ¿Cuándo cruza el EBITDA a positivo?</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["breakeven"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["breakeven"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const years=pnlYears;const ebitdaByYear=years.map(yr=>({yr,v:allM.reduce((s,m)=>s+buildPL(fd,yr,m,cm,"forecast").ebitda,0)}));const bkIdx=ebitdaByYear.findIndex(d=>d.v>=0);const bkYear=bkIdx>=0?ebitdaByYear[bkIdx].yr:null;const maxAbs=Math.max(...ebitdaByYear.map(d=>Math.abs(d.v)),1);const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":Math.round(v)+"";return(<div>{bkYear&&<div style={{background:"#ECFDF5",border:"1px solid #10B981",borderRadius:8,padding:"10px 16px",marginBottom:14,fontSize:12,fontWeight:600,color:"#065F46"}}>🎯 Break-even proyectado: <strong>{bkYear}</strong> — EBITDA: {fmt(ebitdaByYear[bkIdx].v)}</div>}{!bkYear&&<div style={{background:"#FFF0F0",border:"1px solid #E24B4A",borderRadius:8,padding:"10px 16px",marginBottom:14,fontSize:12,color:"#C0392B"}}>⚠ No se proyecta break-even en el período de forecast</div>}<div style={{display:"flex",alignItems:"flex-end",gap:6,height:100}}>{ebitdaByYear.map((d,i)=>{const h=Math.round(Math.abs(d.v)/maxAbs*80);const isPos=d.v>=0;const isBK=d.yr===bkYear;return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>{isBK&&<div style={{fontSize:9,color:"#1D9E75",fontWeight:700,marginBottom:2}}>BE✓</div>}<div style={{width:"85%",height:h+"px",background:isPos?"#1D9E75":"#E24B4A",borderRadius:"3px 3px 0 0",boxShadow:isBK?"0 0 8px #1D9E75":"none"}}/><div style={{fontSize:8,color:"#8A90A8",marginTop:3}}>{d.yr}</div><div style={{fontSize:8,fontWeight:600,color:isPos?"#1D9E75":"#E24B4A"}}>{fmt(d.v)}</div></div>);})}</div><div style={{display:"flex",gap:12,marginTop:8}}><span style={{fontSize:9,color:"#E24B4A"}}>■ EBITDA negativo (inversión)</span><span style={{fontSize:9,color:"#1D9E75"}}>■ EBITDA positivo</span></div></div>);})()}</div>)}</div></div>
 
-      {/* ═══ PHARMA EXECUTIVE ANALYSIS ═══ */}
-      <div style={{margin:"28px 0 8px",borderTop:"2px dashed #E4E8F2",paddingTop:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div style={{fontSize:13,fontWeight:800,color:"#1a1a2e",letterSpacing:-0.3}}>📊 Análisis Ejecutivo Pharma</div>
-        <div style={{fontSize:10,color:"#8A90A8"}}>Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}</div>
+      {/* ===== PHARMA EXECUTIVE ANALYSIS ===== */}
+
+      <div style={{margin:'28px 0 8px',borderTop:'2px dashed #E4E8F2',paddingTop:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:-0.3}}>
+          📊 Análisis Ejecutivo Pharma
+        </div>
+        <div style={{fontSize:10,color:'#8A90A8'}}>
+          Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}
+        </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-      {(()=>{
-        const plYTD = buildPL(fd, CUR_YEAR, 1, cm, "consolidado");
-        const nsM   = cm > 0 ? Math.abs(plYTD.ns)   / cm : 1;
-        const cgM   = cm > 0 ? Math.abs(plYTD.cogs) / cm : 1;
-        const gCum  = pfx => {
-          if (!balData) return 0;
-          const row = balData.enriched.find(r => r.code && r.code.startsWith(pfx) && r.code.endsWith("-000")) ||
-                      balData.enriched.find(r => r.code && r.code.startsWith(pfx));
-          return row ? Math.abs(row.cum) : 0;
-        };
-        const cxcV  = gCum("121");
-        const provV = gCum("201");
-        const invV  = gCum("115");
-        const dso   = nsM > 0 ? Math.round(cxcV  / nsM * 30) : 0;
-        const dpo   = cgM > 0 ? Math.round(provV / cgM * 30) : 0;
-        const dio   = cgM > 0 ? Math.round(invV  / cgM * 30) : 0;
-        const ccc   = dso + dio - dpo;
-        const wm = [
-          {l:"DSO",sl:"Cobranza",v:dso,c:"#534AB7"},
-          {l:"DPO",sl:"Proveedores",v:dpo,c:"#1D9E75"},
-          {l:"DIO",sl:"Inventario",v:dio,c:"#F59E0B"},
-          {l:"CCC",sl:"Ciclo de Caja",v:ccc,c:ccc>120?"#E24B4A":"#534AB7",hi:true},
-        ];
-        return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",borderTop:"3px solid #534AB7"}}>
-            <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e",marginBottom:10}}>⚙️ Capital de Trabajo</div>
-            <div style={{display:"flex",gap:8,justifyContent:"space-between"}}>
-            {wm.map((m,i)=>(
-              <div key={i} style={{flex:1,background:m.hi?"linear-gradient(135deg,#534AB7,#7C3AED)":"#f8f9fe",borderRadius:8,padding:"12px 6px",textAlign:"center",border:"1px solid #E4E8F2",borderTop:"3px solid "+m.c}}>
-                <div style={{fontSize:22,fontWeight:800,color:m.hi?"#fff":m.c,lineHeight:1}}>{m.v}</div>
-                <div style={{fontSize:8,color:m.hi?"rgba(255,255,255,0.7)":"#8A90A8",marginTop:2}}>días</div>
-                <div style={{fontSize:9,fontWeight:700,color:m.hi?"rgba(255,255,255,0.9)":"#534AB7",marginTop:4}}>{m.l}</div>
-                <div style={{fontSize:8,color:m.hi?"rgba(255,255,255,0.6)":"#8A90A8"}}>{m.sl}</div>
+
+      {/* --- Row 1: Capital de Trabajo + Inventarios --- */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+
+        {/* Capital de Trabajo */}
+        {(() => {
+          const plYTD = buildPL(fd, CUR_YEAR, 1, cm, 'consolidado');
+          const nsM  = cm > 0 ? Math.abs(plYTD.ns)   / cm : 1;
+          const cgM  = cm > 0 ? Math.abs(plYTD.cogs) / cm : 1;
+          const getVal = pfx => {
+            if (!balData) return 0;
+            const row = balData.enriched.find(r => r.code && r.code.startsWith(pfx) && r.code.endsWith('-000'))
+                     || balData.enriched.find(r => r.code && r.code.startsWith(pfx));
+            return row ? Math.abs(row.cum) : 0;
+          };
+          const cxcV = getVal('121');
+          const prvV = getVal('201');
+          const invV = getVal('115');
+          const dso  = nsM > 0 ? Math.round(cxcV / nsM * 30) : 0;
+          const dpo  = cgM > 0 ? Math.round(prvV / cgM * 30) : 0;
+          const dio  = cgM > 0 ? Math.round(invV / cgM * 30) : 0;
+          const ccc  = dso + dio - dpo;
+          const items = [
+            {l:'DSO', sub:'Cobranza',      v:dso, c:'#534AB7'},
+            {l:'DPO', sub:'Proveedores',   v:dpo, c:'#1D9E75'},
+            {l:'DIO', sub:'Inventario',    v:dio, c:'#F59E0B'},
+            {l:'CCC', sub:'Ciclo de Caja', v:ccc, c:ccc>120?'#E24B4A':'#534AB7', hi:true},
+          ];
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #534AB7'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10}}>
+                ⚙️ Capital de Trabajo
               </div>
-            ))}
-            </div>
-            <div style={{marginTop:10,padding:"8px 10px",background:"#faf7ff",borderRadius:6,fontSize:9,color:"#534AB7"}}>
-              <strong>CCC = DSO + DIO - DPO</strong> · Menor CCC = mejor ciclo de conversión
-            </div>
-          </div>
-        );
-      })()}
-      {(()=>{
-        const plYTD3  = buildPL(fd, CUR_YEAR, 1, cm, "consolidado");
-        const invVal3 = balData ? ({
-          const r3 = balData.enriched.find(x => x.code && x.code.startsWith("115") && x.code.endsWith("-000"));
-          return r3 ? Math.abs(r3.cum) : 0;
-        })() : 0;
-        const cgM3    = cm > 0 ? Math.abs(plYTD3.cogs) / cm : 1;
-        const daysInv = cgM3 > 0 ? Math.round(invVal3 / cgM3 * 30) : 0;
-        const rotInv  = invVal3 > 0 ? (Math.abs(plYTD3.cogs) * 12 / cm / invVal3).toFixed(1) : "N/A";
-        const maxMolV = areaTable.length > 0 ? Math.max(...areaTable.map(r => Math.abs(r.total))) : 1;
-        return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",borderTop:"3px solid #F59E0B"}}>
-            <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e",marginBottom:8}}>📦 Inventarios · OPEX por Molécula (YTD)</div>
-            <div style={{display:"flex",gap:8,marginBottom:10}}>
-              <div style={{flex:1,background:"#faf7ff",borderRadius:8,padding:"8px",textAlign:"center"}}>
-                <div style={{fontSize:16,fontWeight:800,color:"#534AB7"}}>{F(invVal3)}</div>
-                <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Valor Inventario</div>
-              </div>
-              <div style={{flex:1,background:"#fffbf0",borderRadius:8,padding:"8px",textAlign:"center"}}>
-                <div style={{fontSize:16,fontWeight:800,color:"#F59E0B"}}>{daysInv} d</div>
-                <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Días de Inventario</div>
-              </div>
-              <div style={{flex:1,background:"#f0fff4",borderRadius:8,padding:"8px",textAlign:"center"}}>
-                <div style={{fontSize:16,fontWeight:800,color:"#1D9E75"}}>{rotInv}x</div>
-                <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Rotación (12m)</div>
-              </div>
-            </div>
-            <div style={{fontSize:9,fontWeight:600,color:"#8A90A8",marginBottom:4,letterSpacing:0.5,textTransform:"uppercase"}}>Top Moléculas por Inversión</div>
-            {areaTable.slice(0,6).map((r,i)=>}{
-              const barPct = maxMolV > 0 ? Math.abs(r.total) / maxMolV * 100 : 0;
-              return (
-                <div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
-                  <div style={{width:88,fontSize:8,color:"#1a1a2e",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flexShrink:0}}>{r.mol}</div>
-                  <div style={{flex:1,height:12,background:"#f0f2fa",borderRadius:4,overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${barPct}%`,background:"linear-gradient(90deg,#F59E0B,#FCD34D)",borderRadius:4}}/>
+              <div style={{display:'flex',gap:8,justifyContent:'space-between'}}>
+                {items.map((it, i) => (
+                  <div key={i} style={{
+                    flex:1,
+                    background:it.hi?'linear-gradient(135deg,#534AB7,#7C3AED)':'#f8f9fe',
+                    borderRadius:8,padding:'12px 6px',textAlign:'center',
+                    border:'1px solid #E4E8F2',borderTop:'3px solid '+it.c
+                  }}>
+                    <div style={{fontSize:22,fontWeight:800,color:it.hi?'#fff':it.c,lineHeight:1}}>{it.v}</div>
+                    <div style={{fontSize:8,color:it.hi?'rgba(255,255,255,0.7)':'#8A90A8',marginTop:2}}>días</div>
+                    <div style={{fontSize:9,fontWeight:700,color:it.hi?'rgba(255,255,255,0.9)':'#534AB7',marginTop:4}}>{it.l}</div>
+                    <div style={{fontSize:8,color:it.hi?'rgba(255,255,255,0.6)':'#8A90A8'}}>{it.sub}</div>
                   </div>
-                  <div style={{width:58,textAlign:"right",fontSize:8,fontWeight:700,color:"#F59E0B",flexShrink:0}}>{F(r.total)}</div>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })()}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-      {(()=>{
-        const totalRealMol = areaTable.reduce((s,r) => s + Math.abs(r.total), 0);
-        const fcastMapMol  = {};
-        fd.filter(r => r[1]==="Forecast" && OC_ALL.includes(r[0]) && ytdM.includes(r[3]))
-          .forEach(r => { const mol = mapMol(r[4]); fcastMapMol[mol] = (fcastMapMol[mol]||0) + r[9]; });
-        const molRows = areaTable.slice(0, 8).map(r => {
-          const fcast = Math.abs(fcastMapMol[r.mol] || 0);
-          const real  = Math.abs(r.total);
-          const ejec  = fcast > 0 ? real / fcast * 100 : null;
-          const pctT  = totalRealMol > 0 ? real / totalRealMol * 100 : 0;
-          return { mol: r.mol, fcast, real, ejec, pctT };
-        });
-        const totFM = molRows.reduce((s,r)=>s+r.fcast,0);
-        const totRM = molRows.reduce((s,r)=>s+r.real ,0);
-        const totEM = totFM > 0 ? totRM/totFM*100 : 0;
-        return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",borderTop:"3px solid #1D9E75"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>💊 Inversión en Moléculas (YTD)</div>
-              <div style={{fontSize:10,fontWeight:800,color:"#1D9E75"}}>TOTAL {F(totalRealMol)}</div>
-            </div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
-              <thead><tr>
-                {["Molécula","Inversión","% Ejec vs Presup","% Total"].map((h,i)=>(
-                  <th key={i} style={{fontSize:8,color:"#8A90A8",fontWeight:600,padding:"3px 5px",borderBottom:"1px solid #E4E8F2",textAlign:i===0?"left":"right",whiteSpace:"nowrap"}}>{h}</th>
                 ))}
-              </tr></thead>
-              <tbody>
-              {molRows.map((r,i)=>(
-                <tr key={i} style={{background:i%2===0?"#fff":"#fafbfe"}}>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",maxWidth:90,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.mol}</td>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",fontWeight:600}}>{F(r.real)}</td>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right"}}>
-                    {r.ejec !== null ? (
-                      <div style={{display:"flex",alignItems:"center",gap:4,justifyContent:"flex-end"}}>
-                        <div style={{width:44,height:6,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}>
-                          <div style={{height:"100%",width:`${Math.min(r.ejec,100)}%`,background:r.ejec>=100?"#E24B4A":"#1D9E75",borderRadius:3}}/>
-                        </div>
-                        <span style={{fontWeight:700,color:r.ejec>=100?"#E24B4A":"#1D9E75"}}>{r.ejec.toFixed(0)+"%"}</span>
-                      </div>
-                    ) : <span style={{color:"#B0B6C3"}}>N/A</span>{)}
-                  </td>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",color:"#534AB7",fontWeight:600}}>{r.pctT.toFixed(1)+"%"}</td>
-                </tr>
-              ))}
-              <tr style={{background:"#f0f2fa",fontWeight:700}}>
-                <td style={{padding:"5px 5px"}}>TOTAL</td>
-                <td style={{padding:"5px 5px",textAlign:"right"}}>{F(totRM)}</td>
-                <td style={{padding:"5px 5px",textAlign:"right",color:totEM>=100?"#E24B4A":"#1D9E75",fontWeight:700}}>{totEM.toFixed(0)+"%"}</td>
-                <td style={{padding:"5px 5px",textAlign:"right"}}>100%</td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        );
-      })()}
-      {(()=>{
-        const areasFull = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
-        const areaRows  = areasFull.slice(0, 7).map(area => {
-          const realA  = fd.filter(r=>r[1]==="Reales"  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-          const fcastA = fd.filter(r=>r[1]==="Forecast"&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-          const ejecA  = fcastA !== 0 ? realA / fcastA * 100 : null;
-          const varA   = realA - fcastA;
-          return { area, real: Math.abs(realA), fcast: Math.abs(fcastA), ejec: ejecA, varD: varA };
-        });
-        const totRa = areaRows.reduce((s,r)=>s+r.real ,0);
-        const totFa = areaRows.reduce((s,r)=>s+r.fcast,0);
-        const totEa = totFa > 0 ? totRa/totFa*100 : 0;
-        return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",borderTop:"3px solid #7C3AED"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
-              <div style={{fontSize:10,fontWeight:800,color:totEa>=100?"#E24B4A":"#1D9E75"}}>{totEa.toFixed(1)+"%"} ejec total</div>
+              </div>
+              <div style={{marginTop:10,padding:'8px 10px',background:'#faf7ff',borderRadius:6,fontSize:9,color:'#534AB7'}}>
+                <strong>CCC = DSO + DIO − DPO</strong> · Menor CCC = mejor ciclo de conversión
+              </div>
             </div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
-              <thead><tr>
-                {["Área","Presupuesto","Real","% Ejec","Var $"].map((h,i)=>(
-                  <th key={i} style={{fontSize:8,color:"#8A90A8",fontWeight:600,padding:"3px 5px",borderBottom:"1px solid #E4E8F2",textAlign:i===0?"left":"right"}}>{h}</th>
+          );
+        })())}
+
+        {/* Inventarios por Molecula */}
+        {(() => {
+          const plI = buildPL(fd, CUR_YEAR, 1, cm, 'consolidado');
+          const cgMI = cm > 0 ? Math.abs(plI.cogs) / cm : 1;
+          const invRow = balData
+            ? balData.enriched.find(x => x.code && x.code.startsWith('115') && x.code.endsWith('-000'))
+              || balData.enriched.find(x => x.code && x.code.startsWith('115'))
+            : null;
+          const invValI = invRow ? Math.abs(invRow.cum) : 0;
+          const daysInv = cgMI > 0 ? Math.round(invValI / cgMI * 30) : 0;
+          const rotInv  = invValI > 0 ? (Math.abs(plI.cogs) * 12 / cm / invValI).toFixed(1) : 'N/A';
+          const maxMol  = areaTable.length > 0 ? Math.max(...areaTable.map(r => Math.abs(r.total))) : 1;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:8}}>
+                📦 Inventarios · OPEX por Molécula (YTD)
+              </div>
+              <div style={{display:'flex',gap:8,marginBottom:10}}>
+                {[
+                  {label:'Valor Inventario', v:F(invValI), c:'#534AB7', bg:'#faf7ff'},
+                  {label:'Días Inventario', v:daysInv+' d',   c:'#F59E0B', bg:'#fffbf0'},
+                  {label:'Rotación (12m)',  v:rotInv+'x',     c:'#1D9E75', bg:'#f0fff4'},
+                ].map((s,i) => (
+                  <div key={i} style={{flex:1,background:s.bg,borderRadius:8,padding:8,textAlign:'center'}}>
+                    <div style={{fontSize:16,fontWeight:800,color:s.c}}>{s.v}</div>
+                    <div style={{fontSize:8,color:'#8A90A8',marginTop:2}}>{s.label}</div>
+                  </div>
                 ))}
-              </tr></thead>
-              <tbody>
-              {areaRows.map((r,i)=>(
-                <tr key={i} style={{background:i%2===0?"#fff":"#fafbfe"}}>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.area}</td>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",color:"#8A90A8"}}>{F(r.fcast)}</td>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",fontWeight:600}}>{F(r.real)}</td>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right"}}>
-                    {r.ejec !== null ? (
-                      <div style={{display:"flex",alignItems:"center",gap:3,justifyContent:"flex-end"}}>
-                        <div style={{width:36,height:5,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}>
-                          <div style={{height:"100%",width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?"#E24B4A":"#1D9E75",borderRadius:3}}/>
-                        </div>
-                        <span style={{fontWeight:700,color:r.ejec>=100?"#E24B4A":"#1D9E75",fontSize:9}}>{r.ejec.toFixed(0)+"%"}</span>
-                      </div>
-                    ) : <span style={{color:"#B0B6C3"}}>N/A</span>{)}
-                  </td>
-                  <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",fontWeight:600,color:r.varD<0?"#E24B4A":"#1D9E75"}}>{F(r.varD)}</td>
-                </tr>
-              ))}
-              <tr style={{background:"#f0f2fa",fontWeight:700}}>
-                <td style={{padding:"5px 5px"}}>TOTAL</td>
-                <td style={{padding:"5px 5px",textAlign:"right"}}>{F(totFa)}</td>
-                <td style={{padding:"5px 5px",textAlign:"right"}}>{F(totRa)}</td>
-                <td style={{padding:"5px 5px",textAlign:"right",color:totEa>=100?"#E24B4A":"#1D9E75"}}>{totEa.toFixed(1)+"%"}</td>
-                <td style={{padding:"5px 5px",textAlign:"right",color:(totRa-totFa)<0?"#E24B4A":"#1D9E75"}}>{F(totRa-totFa)}</td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        );
-      })()}
+              </div>
+              <div style={{fontSize:9,fontWeight:600,color:'#8A90A8',marginBottom:4,textTransform:'uppercase'}}>Top Moléculas OPEX</div>
+              {areaTable.slice(0,6).map((r,i) => {
+                const pct = maxMol > 0 ? Math.abs(r.total) / maxMol * 100 : 0;
+                return (
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
+                    <div style={{width:88,fontSize:8,color:'#1a1a2e',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flexShrink:0}}>{r.mol}</div>
+                    <div style={{flex:1,height:12,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                      <div style={{height:'100%',width:`${pct}%`,background:'linear-gradient(90deg,#F59E0B,#FCD34D)',borderRadius:4}}/>
+                    </div>
+                    <div style={{width:58,textAlign:'right',fontSize:8,fontWeight:700,color:'#F59E0B',flexShrink:0}}>{F(r.total)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })())}
+
       </div>
-      {cashFlow &&} {(()=>{
-        const cfD = cashFlow.months.slice(0, cm).map((mo, i) => ({
-          name: MO[i],
-          op:   mo.totalOperacion     || 0,
-          inv:  mo.totalInversion     || 0,
+
+      {/* --- Row 2: Inversion en Moleculas + Ejecucion Presupuestal --- */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+
+        {/* Inversion en Moleculas */}
+        {(() => {
+          const totalReal = areaTable.reduce((s,r) => s + Math.abs(r.total), 0);
+          const fcastMap  = {};
+          fd.filter(r => r[1]==='Forecast' && OC_ALL.includes(r[0]) && ytdM.includes(r[3]))
+            .forEach(r => { const mol = mapMol(r[4]); fcastMap[mol] = (fcastMap[mol]||0) + r[9]; });
+          const molRows = areaTable.slice(0,8).map(r => {
+            const fc   = Math.abs(fcastMap[r.mol] || 0);
+            const real = Math.abs(r.total);
+            const ejec = fc > 0 ? real / fc * 100 : null;
+            const pctT = totalReal > 0 ? real / totalReal * 100 : 0;
+            return { mol:r.mol, fc, real, ejec, pctT };
+          });
+          const tFC = molRows.reduce((s,r)=>s+r.fc,  0);
+          const tR  = molRows.reduce((s,r)=>s+r.real, 0);
+          const tE  = tFC > 0 ? tR/tFC*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
+                <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(totalReal)}</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Molécula','Inversión','% Ejec','% Total'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {molRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mol}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end'}}>
+                              <div style={{width:44,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pctT.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px 5px'}}>TOTAL</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>{F(tR)}</td>
+                    <td style={{padding:'5px 5px',textAlign:'right',color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(0)}%</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })())}
+
+        {/* Ejecucion Presupuestal por Area */}
+        {(() => {
+          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
+          const aRows = areas.slice(0,7).map(area => {
+            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const ejec  = fcast !== 0 ? real/fcast*100 : null;
+            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
+          });
+          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
+          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
+          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
+                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {aRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
+                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px'}}>TOTAL</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
+                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
+                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })())}
+
+      </div>
+
+      {/* --- Row 3: Flujo de Caja --- */}
+      {cashFlow && (() => {
+        const cfD = cashFlow.months.slice(0, cm).map((mo, idx) => ({
+          name: MO[idx],
+          op:   mo.totalOperacion      || 0,
+          inv:  mo.totalInversion      || 0,
           fin:  mo.totalFinanciamiento || 0,
-          net:  (mo.totalOperacion||0) + (mo.totalInversion||0) + (mo.totalFinanciamiento||0),
+          net: (mo.totalOperacion||0) + (mo.totalInversion||0) + (mo.totalFinanciamiento||0),
         }));
         const ytdOp  = cfD.reduce((s,d)=>s+d.op,  0);
         const ytdInv = cfD.reduce((s,d)=>s+d.inv, 0);
@@ -1555,45 +1585,53 @@ export default function Dashboard() {
         const ytdNet = ytdOp + ytdInv + ytdFin;
         const maxCF  = Math.max(...cfD.flatMap(d=>[Math.abs(d.op),Math.abs(d.inv),Math.abs(d.fin)]), 1);
         const toH    = v => Math.round(Math.abs(v) / maxCF * 60);
-        const CFCOLS = {op:"#1D9E75", inv:"#E24B4A", fin:"#534AB7"};
-        const CFLBLS = {op:"Operación", inv:"Inversión", fin:"Financiamiento"};
+        const COLS   = { op:'#1D9E75', inv:'#E24B4A', fin:'#534AB7' };
+        const LBLS   = { op:'Operación', inv:'Inversión', fin:'Financiamiento' };
         return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",marginBottom:12,borderTop:"3px solid #1D9E75"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>💰 Flujo de Caja Mensual – Actividades NIF B-2</div>
-              <div style={{display:"flex",gap:10,fontSize:9}}>
-                {["op","inv","fin"].map(k=>(
-                  <span key={k}><span style={{display:"inline-block",width:8,height:8,borderRadius:2,background:CFCOLS[k],marginRight:3}}/>{CFLBLS[k]}</span>
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',marginBottom:12,borderTop:'3px solid #1D9E75'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💰 Flujo de Caja Mensual – Actividades NIF B-2</div>
+              <div style={{display:'flex',gap:10,fontSize:9}}>
+                {['op','inv','fin'].map(k => (
+                  <span key={k}>
+                    <span style={{display:'inline-block',width:8,height:8,borderRadius:2,background:COLS[k],marginRight:3}}/>
+                    {LBLS[k]}
+                  </span>
                 ))}
               </div>
             </div>
-            <div style={{display:"flex",gap:6,alignItems:"flex-end",paddingBottom:4,overflowX:"auto",minHeight:90}}>
-            {cfD.map((d,i)=>}{
-              return (
-                <div key={i} style={{flex:1,minWidth:42,display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
-                  {["op","inv","fin"].map(k=>(
-                    <div key={k}
-                      title={`${CFLBLS[k]}: ${F(d[k])}`}
-                      style={{width:"100%",height:`${toH(d[k])}px`,minHeight:d[k]!==0?3:0,background:CFCOLS[k],borderRadius:"2px 2px 0 0",opacity:0.85,cursor:"help"}}
+            <div style={{display:'flex',gap:6,alignItems:'flex-end',paddingBottom:4,overflowX:'auto',minHeight:90}}>
+              {cfD.map((d, i) => (
+                <div key={i} style={{flex:1,minWidth:42,display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+                  {['op','inv','fin'].map(k => (
+                    <div
+                      key={k}
+                      title={`${LBLS[k]}: ${F(d[k])}`}
+                      style={{width:'100%',height:toH(d[k]),minHeight:d[k]!==0?3:0,background:COLS[k],borderRadius:'2px 2px 0 0',opacity:0.85}}
                     />
                   ))}
-                  <div style={{fontSize:8,color:"#8A90A8",marginTop:3,textAlign:"center"}}>{d.name}</div>
-                  <div style={{fontSize:8,fontWeight:700,color:d.net<0?"#E24B4A":"#1D9E75"}}>{(d.net/1e6).toFixed(1)+"M"}</div>
+                  <div style={{fontSize:8,color:'#8A90A8',marginTop:3,textAlign:'center'}}>{d.name}</div>
+                  <div style={{fontSize:8,fontWeight:700,color:d.net<0?'#E24B4A':'#1D9E75'}}>{(d.net/1e6).toFixed(1)}M</div>
                 </div>
-              );
-            })}
+              ))}
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginTop:10,paddingTop:10,borderTop:"1px solid #f0f2fa"}}>
-              {[{l:"Operación YTD",v:ytdOp,c:"#1D9E75"},{l:"Inversión YTD",v:ytdInv,c:"#E24B4A"},{l:"Financiamiento YTD",v:ytdFin,c:"#534AB7"},{l:"Flujo Neto YTD",v:ytdNet,c:ytdNet<0?"#E24B4A":"#1D9E75"}].map((s,i)=>(
-                <div key={i} style={{textAlign:"center",background:"#f8f9fe",borderRadius:6,padding:"6px 4px"}}>
-                  <div style={{fontSize:8,color:"#8A90A8",marginBottom:2}}>{s.l}</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginTop:10,paddingTop:10,borderTop:'1px solid #f0f2fa'}}>
+              {[
+                {l:'Operación YTD',    v:ytdOp,  c:'#1D9E75'},
+                {l:'Inversión YTD',    v:ytdInv, c:'#E24B4A'},
+                {l:'Financiamiento YTD', v:ytdFin, c:'#534AB7'},
+                {l:'Flujo Neto YTD',     v:ytdNet, c:ytdNet<0?'#E24B4A':'#1D9E75'},
+              ].map((s,i) => (
+                <div key={i} style={{textAlign:'center',background:'#f8f9fe',borderRadius:6,padding:'6px 4px'}}>
+                  <div style={{fontSize:8,color:'#8A90A8',marginBottom:2}}>{s.l}</div>
                   <div style={{fontSize:13,fontWeight:800,color:s.c}}>{F(s.v)}</div>
                 </div>
               ))}
             </div>
           </div>
         );
-      })()}
+      })())}
+
 
       </>
       }
