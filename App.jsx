@@ -1688,7 +1688,7 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      })())}
+      })()}
 
       {/* --- Budget vs Real Mensual Trending --- */}
       {(() => {
@@ -1736,7 +1736,7 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      })())}
+      })()}
 
       {/* ===== VALORACION DE COMPANIA ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16}}>
@@ -1802,7 +1802,7 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      })())}
+      })()}
 
       {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
@@ -1910,7 +1910,7 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      })())}
+      })()}
 
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
@@ -1977,7 +1977,7 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      })())}
+      })()}
 
 
       </>
