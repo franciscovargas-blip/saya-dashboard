@@ -1210,7 +1210,7 @@ export default function Dashboard() {
                       {launches2.filter(l=>l.yr===yr).map((l,i)=>(
                         <div key={i} style={{display:"flex",alignItems:"center",gap:6,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:6,padding:"4px 8px",borderLeft:"3px solid "+(aCols2[l.area]||"#534AB7")}}>
                           <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e"}}>{l.mol}</div>
-                          <span style={{fontSize:7,color:"#8A90A8"}}>{MS2[l.mo-1]||l.mo}</span>
+                          <span style={{fontSize:7,color:"#8A90A8"}}}>{MS2[l.mo-1]||l.mo}</span>
                         </div>
                       ))}
                     </div>
@@ -1299,29 +1299,29 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "executive" && <>
       {/* EXECUTIVE HEADER */}
-      <div style= display: "flex", alignItems: "center", gap: 16, padding: "14px 20px", background: "linear-gradient(135deg,#534AB7 0%,#7C3AED 100%)", borderRadius: 12, marginBottom: 16, color: "#fff" >
-        <div style= fontSize: 32, lineHeight: 1 >🎯</div>
-        <div style= flex: 1 >
-          <div style= fontSize: 16, fontWeight: 700, letterSpacing: -0.3 >Executive Financial Dashboard</div>
-          <div style= fontSize: 11, opacity: 0.8, marginTop: 2 >Visión Ejecutiva · {MO[cm-1]} {CUR_YEAR} · {view.charAt(0).toUpperCase()+view.slice(1)}</div>
+      <div style={{  display: "flex", alignItems: "center", gap: 16, padding: "14px 20px", background: "linear-gradient(135deg,#534AB7 0%,#7C3AED 100%)", borderRadius: 12, marginBottom: 16, color: "#fff"  }}>
+        <div style={{  fontSize: 32, lineHeight: 1  }}>🎯</div>
+        <div style={{  flex: 1  }}>
+          <div style={{  fontSize: 16, fontWeight: 700, letterSpacing: -0.3  }}>Executive Financial Dashboard</div>
+          <div style={{  fontSize: 11, opacity: 0.8, marginTop: 2  }}>Visión Ejecutiva · {MO[cm-1]} {CUR_YEAR} · {view.charAt(0).toUpperCase()+view.slice(1)}</div>
         </div>
-        <div style= display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" >
-          <span style= background: "rgba(255,255,255,0.2)", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 600 >● Reales ≤ {MO[cm-1]}</span>
-          <span style= background: "rgba(255,255,255,0.1)", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 600 >○ Forecast</span>
+        <div style={{  display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end"  }}>
+          <span style={{  background: "rgba(255,255,255,0.2)", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 600  }}>● Reales ≤ {MO[cm-1]}</span>
+          <span style={{  background: "rgba(255,255,255,0.1)", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 600  }}>○ Forecast</span>
         </div>
       </div>
       {/* KPI CARDS WITH ICONS */}
-      <div style= display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, padding: "0 0 16px", marginBottom: 8 >
+      <div style={{  display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, padding: "0 0 16px", marginBottom: 8  }}>
         {(()=>{
           const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
           const kC = c => ({ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 12, padding: "16px 14px", borderTop: "3px solid "+c, boxShadow: "0 2px 8px rgba(26,26,46,0.06)", display: "flex", flexDirection: "column", gap: 3 });
           return (<React.Fragment>
             {kpis.map((k, i) => (
               <div key={i} style={kC(k.c)}>
-                <div style= fontSize: 24, marginBottom: 4, lineHeight: 1 >{ICONS[k.l]||"📌"}</div>
-                <div style= fontSize: 9, color: "#8A90A8", letterSpacing: 1.2, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 >{k.l}</div>
-                <div style= fontSize: 20, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, letterSpacing: -0.5 >{k.v}</div>
-                <div style= fontSize: 10, color: "#8A90A8", marginTop: 2 >{k.s}</div>
+                <div style={{  fontSize: 24, marginBottom: 4, lineHeight: 1  }}>{ICONS[k.l]||"📌"}</div>
+                <div style={{  fontSize: 9, color: "#8A90A8", letterSpacing: 1.2, fontWeight: 700, textTransform: "uppercase", marginBottom: 2  }}>{k.l}</div>
+                <div style={{  fontSize: 20, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, letterSpacing: -0.5  }}>{k.v}</div>
+                <div style={{  fontSize: 10, color: "#8A90A8", marginTop: 2  }}>{k.s}</div>
               </div>
             ))}
             {cashFlow && (() => {
@@ -1330,10 +1330,10 @@ export default function Dashboard() {
               const bCM  = bArr.length?bArr[bArr.length-1]:0;
               const bCol = bYTD<0?"#E24B4A":"#065F46";
               return (<div style={kC(bCol)}>
-                <div style= fontSize: 24, marginBottom: 4, lineHeight: 1 >🔥</div>
-                <div style= fontSize: 9, color: "#8A90A8", letterSpacing: 1.2, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 >BURN MEXICO YTD</div>
-                <div style= fontSize: 20, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, letterSpacing: -0.5 >{F(bYTD)}</div>
-                <div style= fontSize: 10, color: "#8A90A8", marginTop: 2 >Mes {MO[cm-1]}: {F(bCM)}</div>
+                <div style={{  fontSize: 24, marginBottom: 4, lineHeight: 1  }}>🔥</div>
+                <div style={{  fontSize: 9, color: "#8A90A8", letterSpacing: 1.2, fontWeight: 700, textTransform: "uppercase", marginBottom: 2  }}>BURN MEXICO YTD</div>
+                <div style={{  fontSize: 20, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, letterSpacing: -0.5  }}>{F(bYTD)}</div>
+                <div style={{  fontSize: 10, color: "#8A90A8", marginTop: 2  }}>Mes {MO[cm-1]}: {F(bCM)}</div>
               </div>);
             })()}
           </React.Fragment>);
