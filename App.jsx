@@ -1342,7 +1342,7 @@ export default function Dashboard() {
         <div style={{fontSize:10,color:"#8A90A8"}}>Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}</div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-      {(()=>}{
+      {(()=>{
         const plYTD = buildPL(fd, CUR_YEAR, 1, cm, "consolidado");
         const nsM   = cm > 0 ? Math.abs(plYTD.ns)   / cm : 1;
         const cgM   = cm > 0 ? Math.abs(plYTD.cogs) / cm : 1;
@@ -1384,7 +1384,7 @@ export default function Dashboard() {
           </div>
         );
       })()}
-      {(()=>}{
+      {(()=>{
         const plYTD3  = buildPL(fd, CUR_YEAR, 1, cm, "consolidado");
         const invVal3 = balData ? ({
           const r3 = balData.enriched.find(x => x.code && x.code.startsWith("115") && x.code.endsWith("-000"));
@@ -1429,7 +1429,7 @@ export default function Dashboard() {
       })()}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-      {(()=>}{
+      {(()=>{
         const totalRealMol = areaTable.reduce((s,r) => s + Math.abs(r.total), 0);
         const fcastMapMol  = {};
         fd.filter(r => r[1]==="Forecast" && OC_ALL.includes(r[0]) && ytdM.includes(r[3]))
@@ -1485,7 +1485,7 @@ export default function Dashboard() {
           </div>
         );
       })()}
-      {(()=>}{
+      {(()=>{
         const areasFull = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
         const areaRows  = areasFull.slice(0, 7).map(area => {
           const realA  = fd.filter(r=>r[1]==="Reales"  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
@@ -1541,7 +1541,7 @@ export default function Dashboard() {
         );
       })()}
       </div>
-      {cashFlow &&} {(()=>}{
+      {cashFlow &&} {(()=>{
         const cfD = cashFlow.months.slice(0, cm).map((mo, i) => ({
           name: MO[i],
           op:   mo.totalOperacion     || 0,
