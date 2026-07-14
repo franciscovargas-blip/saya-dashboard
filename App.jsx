@@ -1416,32 +1416,64 @@ export default function Dashboard() {
       })()}
 
 
-      {/* === NS Growth by Year === */}
+      {/* === Financial Growth by Year === */}
       {(() => {
-        const allYrs3=[...new Set(D.map(r=>r[2]))].sort();
-        const nsYr3=allYrs3.map(yr=>({yr,val:Math.abs(D.filter(r=>r[0]==="Net Sales"&&r[2]===yr).reduce((s,r)=>s+r[9],0))}));
-        const mx3=Math.max(...nsYr3.map(x=>x.val),1);
+        const allYrsG=[...new Set(D.map(r=>r[2]))].sort();
+        const yrDataG=allYrsG.map(yr=>{
+          const dy=D.filter(r=>r[2]===yr);
+          const ns=Math.abs(dy.filter(r=>r[0]==="Net Sales").reduce((s,r)=>s+r[9],0));
+          const cogs=Math.abs(dy.filter(r=>r[0]==="COGS"||r[0]==="Cost of Goods Sold").reduce((s,r)=>s+r[9],0));
+          const gp=ns-cogs;
+          const gmPctG=ns>0?Math.round(gp/ns*100):0;
+          const opexG=OC_ALL?Math.abs(dy.filter(r=>OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)):0;
+          const ebitdaG=gp-opexG;
+          const ebitdaPctG=ns>0?Math.round(ebitdaG/ns*100):0;
+          return {yr,ns,gp,gmPctG,ebitdaPctG,isReal:yr<CUR_YEAR};
+        });
+        const mxNS=Math.max(...yrDataG.map(d=>d.ns),1);
+        const dlGrowth=()=>{
+          const h="Anio,NetSales,GrossProfit,GrossMargin%,EBITDA%,Tipo\n";
+          const r=yrDataG.map(d=>`${d.yr},${d.ns.toFixed(0)},${d.gp.toFixed(0)},${d.gmPctG},${d.ebitdaPctG},${d.isReal?"Reales":"Forecast"}`);
+          const b=new Blob([h+r.join("\n")],{type:"text/csv"});
+          const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="crecimiento_financiero.csv"; a.click();
+        };
         return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",marginBottom:12,marginTop:4,borderTop:"3px solid #1D9E75"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>📈 Crecimiento Net Sales por Año — EV estimado (12x EBITDA, margen 15%)</div>
-              <button onClick={()=>{ const h3="Anio,NetSales,EV_Est\n"; const allY=[...new Set(D.map(r=>r[2]))].sort(); const rv=allY.map(yr=>{ const v=Math.abs(D.filter(r=>r[0]==="Net Sales"&&r[2]===yr).reduce((s,r)=>s+r[9],0)); return `${O}yr${C},${O}v.toFixed(0)${C},${O}(v*0.15*12).toFixed(0)${C}`; }); const b3=new Blob([h3+rv.join("\n")],{type:"text/csv"}); const a3=document.createElement("a"); a3.href=URL.createObjectURL(b3); a3.download="ns_ev_growth.csv"; a3.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
-              <div style={{fontSize:9,color:"#8A90A8"}}>Hover sobre cada barra para ver EV</div>
+          <div style={{background:"#fff",border:"1px}} solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:12,borderTop:"3px solid #534AB7">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>📈 Crecimiento Financiero por Año</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginTop:3}}>Net Sales (barras) · Gross Margin % (franja verde) · EBITDA % (franja naranja/roja)</div>
+              </div>
+              <button onClick={dlGrowth} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
             </div>
-            <div style={{display:"flex",gap:10,alignItems:"flex-end",height:110,marginBottom:8}}>
-              {nsYr3.map((d,i)=>(
-                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                  <div style={{fontSize:8,fontWeight:800,color:"#1D9E75"}}>{d.val>=1e6?(d.val/1e6).toFixed(1)+"M":(d.val/1e3).toFixed(0)+"K"}</div>
-                  <div title={`EV estimado: $${(d.val*0.15*12/1e6).toFixed(1)}M`} style={{width:"100%",height:Math.max(Math.round(d.val/mx3*90),2)+"px",background:d.yr<=CUR_YEAR?"linear-gradient(0deg,#534AB7,#1D9E75)":"rgba(83,74,183,0.22)",borderRadius:"4px 4px 0 0",cursor:"help"}}/>
-                  <div style={{fontSize:9,color:d.yr===CUR_YEAR?"#534AB7":"#8A90A8",fontWeight:d.yr===CUR_YEAR?800:400}}>{d.yr}</div>
-                  <div style={{fontSize:8,color:"#8A90A8"}}>{(d.val*0.15*12/1e6).toFixed(0)}M EV</div>
+            {/* Net Sales bars */}
+            <div style={{display:"flex",alignItems:"flex-end",gap:6,height:130,marginBottom:4}}>
+              {yrDataG.map((d,i)=>(
+                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                  <div style={{fontSize:7.5,fontWeight:700,color:"#1a1a2e",whiteSpace:"nowrap"}}>{d.ns>=1e6?(d.ns/1e6).toFixed(1)+"M":(d.ns/1e3).toFixed(0)+"K"}</div>
+                  <div style={{width:"100%",height:Math.max(Math.round(d.ns/mxNS*100),4)+"px",background:d.isReal?"linear-gradient(180deg,#534AB7,#818CF8)":"rgba(83,74,183,0.18)",borderRadius:"4px 4px 0 0",display:"flex",alignItems:"flex-end",justifyContent:"center",paddingBottom:2}}>
+                    <span style={{fontSize:6,color:d.isReal?"#fff":"#534AB7",fontWeight:700}}>{d.isReal?"Real":"Fcst"}</span>
+                  </div>
+                  <div style={{fontSize:8,color:d.yr===CUR_YEAR?"#534AB7":"#8A90A8",fontWeight:d.yr===CUR_YEAR?800:500}}>{d.yr}</div>
                 </div>
               ))}
             </div>
-            <div style={{display:"flex",gap:12,fontSize:8,color:"#8A90A8",flexWrap:"wrap"}}>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"linear-gradient(#534AB7,#1D9E75)",display:"inline-block"}}/>Reales / YTD</span>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"rgba(83,74,183,0.22)",display:"inline-block"}}/>Forecast</span>
-              <span>EV = Net Sales × 15% margen EBITDA × 12x múltiplo pharma</span>
+            {/* GM% and EBITDA% mini bars */}
+            <div style={{display:"flex",gap:6,alignItems:"flex-end",height:52,marginBottom:10,borderTop:"1px}} dashed #E4E8F2",paddingTop:6>
+              {yrDataG.map((d,i)=>(
+                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                  <div style={{fontSize:6.5,fontWeight:700,color:"#1D9E75"}}>{d.gmPctG}%</div>
+                  <div style={{width:"100%",height:Math.max(Math.round(Math.max(d.gmPctG,0)/100*28),1)+"px",background:"rgba(29,158,117,0.25)",borderRadius:"2px 2px 0 0",borderTop:"2px}} solid #1D9E75"/>
+                  <div style={{fontSize:6.5,fontWeight:700,color:d.ebitdaPctG<0?"#E24B4A":"#F59E0B"}}>{d.ebitdaPctG}%</div>
+                  <div style={{width:"100%",height:Math.max(Math.round(Math.abs(d.ebitdaPctG)/100*20),1)+"px",background:d.ebitdaPctG<0?"rgba(226,75,74,0.18)":"rgba(245,158,11,0.25)",borderRadius:"2px 2px 0 0",borderTop:"2px}} solid "+(d.ebitdaPctG<0?"#E24B4A":"#F59E0B")/>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap"}}>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"linear-gradient(#534AB7,#818CF8)",display:"inline-block"/}}>Net Sales Reales</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"rgba(83,74,183,0.18)",border:"1px}} solid #534AB7",display:"inline-block"/>Net Sales Forecast</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#1D9E75",display:"inline-block"/}}>Gross Margin %</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#F59E0B",display:"inline-block"/}}>EBITDA %</span>
             </div>
           </div>
         );
@@ -1874,67 +1906,36 @@ export default function Dashboard() {
       })()}
 
       {/* ===== VALORACION DE COMPANIA ===== */}
-      <div style={{margin:'28px 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🏢 Valoración de la Compañía</div>
-          <div style={{fontSize:9,color:'#8A90A8',maxWidth:280,textAlign:'right'}}>Métodos: EV/EBITDA · DCF simplificado · Pipeline value</div>
-        </div>
+      <div style={{margin:"20px 0 10px",borderTop:"2px}} solid #1D9E75",paddingTop:12>
+        <div style={{fontSize:14,fontWeight:900,color:"#1a1a2e"}}>🏢 Valoración de la Compañía</div>
       </div>
-
       {(() => {
         const plV = buildPL(fd, CUR_YEAR, 1, cm, 'consolidado');
-        const nsAnn    = Math.abs(plV.ns)    * 12 / Math.max(cm,1);
-        const ebitdaAnn= Math.abs(plV.ebitda)* 12 / Math.max(cm,1);
-        const gmPct    = plV.gmPct || 0;
-        const ebitdaPct= nsAnn > 0 ? ebitdaAnn/nsAnn*100 : 0;
-        const pipeMols = areaTable.length;
-        // Multiples pharma tipicos
-        const evLow  = ebitdaAnn * 8;
-        const evMid  = ebitdaAnn * 12;
-        const evHigh = ebitdaAnn * 18;
-        const dcfEst = nsAnn * (gmPct/100) * 0.25 * 8.5; // simplified
-        const valItems = [
-          {l:'EV/EBITDA 8x (Conservador)', v:evLow,  c:'#8A90A8', note:'Bear case'},
-          {l:'EV/EBITDA 12x (Base)',       v:evMid,  c:'#534AB7', note:'Base case'},
-          {l:'EV/EBITDA 18x (Bull)',        v:evHigh, c:'#1D9E75', note:'Bull case'},
-          {l:'DCF Simplificado',           v:dcfEst, c:'#F59E0B', note:'25% margen FCF'},
+        const nsAnn     = Math.abs(plV.ns)     * 12 / Math.max(cm,1);
+        const ebitdaAnn = Math.abs(plV.ebitda)  * 12 / Math.max(cm,1);
+        const gmPctV    = plV.gmPct || 0;
+        const ebitdaPctV= nsAnn > 0 ? ebitdaAnn/nsAnn*100 : 0;
+        const pipeMolsV = areaTable.length;
+        const evBase    = ebitdaAnn * 12;
+        const kpiItems  = [
+          {label:'Ventas Anualizadas', val:F(nsAnn),                    icon:'📈', sub:'Run-rate YTD'},
+          {label:'Gross Margin',       val:gmPctV.toFixed(1)+'%',     icon:'⚖️', sub:'Eficiencia bruta'},
+          {label:'EBITDA Anualizado',   val:F(ebitdaAnn),               icon:'💵', sub:ebitdaPctV.toFixed(1)+'% margen'},
+          {label:'EV Estimado (12x)',   val:F(evBase),                  icon:'🏦', sub:'EBITDA × 12x múltiplo'},
+          {label:'Moléculas Pipeline', val:pipeMolsV,              icon:'💊', sub:'Portfolio activo'},
         ];
-        const maxVal = Math.max(...valItems.map(x=>x.v),1);
         return (
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',borderTop:'3px solid #1D9E75'}}>
-              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>💰 Rango de Valoración EV</div>
-              {valItems.map((v,i) => (
-                <div key={i} style={{marginBottom:10}}>
-                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:3,fontSize:9}}>
-                    <span style={{color:'#1a1a2e',fontWeight:600}}>{v.l}</span>
-                    <span style={{color:v.c,fontWeight:800}}>{F(v.v)}</span>
-                  </div>
-                  <div style={{height:10,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
-                    <div style={{height:'100%',width:Math.round(v.v/maxVal*100)+'%',background:v.c,borderRadius:4}}/>
-                  </div>
-                  <div style={{fontSize:8,color:'#8A90A8',marginTop:1}}>{v.note}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:10,marginBottom:12}}>
+            {kpiItems.map((d,i) => (
+              <div key={i} style={{flex:"1 1 150px",background:"#fff",border:"1px}} solid #E4E8F2",borderRadius:10,padding:"14px 16px",display:"flex",alignItems:"center",gap:12>
+                <div style={{fontSize:22}}>{d.icon}</div>
+                <div>
+                  <div style={{fontSize:9,color:"#8A90A8",fontWeight:600}}>{d.label}</div>
+                  <div style={{fontSize:16,fontWeight:800,color:"#1a1a2e",lineHeight:1.2}}>{d.val}</div>
+                  <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>{d.sub}</div>
                 </div>
-              ))}
-            </div>
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',borderTop:'3px solid #534AB7'}}>
-              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>📊 Drivers de Valor</div>
-              {[
-                {label:'Ventas Anualizadas',  val:F(nsAnn),      icon:'📈',  sub:'Run-rate actual'},
-                {label:'EBITDA Anualizado',   val:F(ebitdaAnn),  icon:'💵',  sub:'Margen '+(ebitdaPct).toFixed(1)+'%'},
-                {label:'Gross Margin',        val:gmPct.toFixed(1)+'%', icon:'⚖️', sub:'Eficiencia productiva'},
-                {label:'Moléculas activas', val:pipeMols,   icon:'💊',  sub:'Portfolio activo'},
-              ].map((d,i) => (
-                <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'8px 0',borderBottom:'1px solid #f0f2fa'}}>
-                  <div style={{fontSize:20}}>{d.icon}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:9,color:'#8A90A8'}}>{d.label}</div>
-                    <div style={{fontSize:16,fontWeight:800,color:'#1a1a2e'}}>{d.val}</div>
-                    <div style={{fontSize:8,color:'#8A90A8'}}>{d.sub}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         );
       })()}
@@ -1942,7 +1943,7 @@ export default function Dashboard() {
 
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
-        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos {CUR_YEAR}</div>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
       </div>
 
       {(() => {
