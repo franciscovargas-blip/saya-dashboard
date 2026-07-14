@@ -666,7 +666,7 @@ export default function Dashboard() {
 {/* */}
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["executive","🎯 Executive KPIs"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"]].map(([t,lb]) => {
+        {[["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"],["executive","🎯 Executive KPIs"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -1000,7 +1000,7 @@ export default function Dashboard() {
               return (
               <div style={bs.wrap}>
                 <div style={bs.head}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><div style={bs.title}>Burn Mexico</div><button onClick={()=>{const h="Mes,Operacion,Inversion,Otras,Burn\n";const r=cashFlow.months.slice(0,cm).map((mo,i)=>[MO[i],mo.totalOperacion||0,mo.totalInversion||0,mo.otraVar||0,(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVar||0)].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="burn_mexico.csv";a.click();}} style={{fontSize:9,padding:"3px 10px",background:"#E24B4A",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>&#11015; CSV</button></div>
+                  <div style={bs.title}>Burn Mexico</div>
                   <div style={bs.sub}>Actividades de Operación + Inversión + Otras variaciones no clasificadas · Ene–{MO[cm-1]} {CUR_YEAR}</div>
                 </div>
                 <div style={bs.rowLbl}>Burn mensual</div>
@@ -1163,77 +1163,260 @@ export default function Dashboard() {
 {/* */}
 {/* */}
 {/* */}
-
-      {/* ===== TIMELINE DE LANZAMIENTOS ===== */}
-      <div style={{margin:"24px 0 10px",borderTop:"2px solid #534AB7",paddingTop:14}}>
-        <div style={{fontSize:14,fontWeight:900,color:"#1a1a2e"}}>⌛ Timeline de Lanzamientos de Moléculas</div>
+      </>
+      }
+{/* */}
+      {mainTab === "executive" && <>
+      {/* EXECUTIVE HEADER */}
+      <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 20px",background:"linear-gradient(135deg,#534AB7 0%,#7C3AED 100%)",borderRadius:12,marginBottom:16,color:"#fff"}}>
+        <div style={{fontSize:32,lineHeight:1}}>🎯</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:16,fontWeight:700,letterSpacing:-0.3}}>Executive Financial Dashboard</div>
+          <div style={{fontSize:11,opacity:0.8,marginTop:2}}>Visión Ejecutiva · {MO[cm-1]} {CUR_YEAR} · {view.charAt(0).toUpperCase()+view.slice(1)}</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+          <span style={{background:"rgba(255,255,255,0.2)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600}}>● Reales ≤ {MO[cm-1]}</span>
+          <span style={{background:"rgba(255,255,255,0.1)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600}}>○ Forecast</span>
+        </div>
       </div>
+      {/* KPI CARDS WITH ICONS */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(0,1fr))",gap:12,padding:"0 0 16px",marginBottom:8}}>
+        {(()=>{
+          const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
+          const kC = c => ({background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 14px",borderTop:"3px solid "+c,boxShadow:"0 2px 8px rgba(26,26,46,0.06)",display:"flex",flexDirection:"column",gap:3});
+          return (<React.Fragment>
+            {kpis.map((k, i) => (
+              <div key={i} style={kC(k.c)}>
+                <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{ICONS[k.l]||"📌"}</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k.l}</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{k.v}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>{k.s}</div>
+              </div>
+            ))}
+            {cashFlow && (() => {
+              const bArr = cashFlow.months.slice(0,cm).map(mo=>(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0));
+              const bYTD = bArr.reduce((s,v)=>s+v,0);
+              const bCM  = bArr.length?bArr[bArr.length-1]:0;
+              const bCol = bYTD<0?"#E24B4A":"#065F46";
+              return (<div style={kC(bCol)}>
+                <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN MEXICO YTD</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(bYTD)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Mes {MO[cm-1]}: {F(bCM)}</div>
+              </div>);
+            })()}
+          </React.Fragment>);
+        })()}
+      </div>
+      {/* BURN TABLE EXEC */}
+      {cashFlow && (() => {
+        const bMs = cashFlow.months.slice(0,cm).map(mo => ({m:mo.m, burn:(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0)}));
+        const bTot= bMs.reduce((s,x)=>s+x.burn,0);
+        const bAcc= []; let acc2=0; bMs.forEach(x=>{acc2+=x.burn; bAcc.push({m:x.m,v:acc2});});
+        const Fk3 = v => !v||v===0?"—":(v<0?"-":"")+"$"+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(1)+"M":Math.abs(v)>=1e3?(Math.abs(v)/1e3).toFixed(0)+"K":Math.round(Math.abs(v)));
+        const cVb = v => ({fontSize:11,fontWeight:700,color:v<0?"#DC2626":v>0?"#065F46":"#6B7280"});
+        const tVb = v => ({fontSize:12,fontWeight:800,color:v<0?"#DC2626":v>0?"#065F46":"#6B7280"});
+        const bgw = {display:"flex",flexWrap:"wrap",gap:4,marginTop:6};
+        const bCell={flex:"1 1 60px",minWidth:55,background:"#DBEAFE",borderRadius:6,padding:"6px 4px",textAlign:"center"};
+        const bTCell={flex:"1 1 80px",minWidth:70,background:"#BFDBFE",borderRadius:6,padding:"6px 4px",textAlign:"center"};
+        const bLbl={fontSize:9,color:"#1E40AF",fontWeight:600};
+        const bTLbl={fontSize:9,color:"#1E3A8A",fontWeight:700};
+        return (
+          <div style={{background:"#EFF6FF",borderRadius:10,padding:"14px 16px",marginBottom:14,border:"1px solid #93C5FD"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{fontSize:12,fontWeight:800,color:"#1E3A8A"}}>🔥 Burn Mexico</div>
+              <div style={{fontSize:9,color:"#1E40AF"}}>Operación+Inversión+Otras · Ene–{MO[cm-1]} {CUR_YEAR}</div>
+            </div>
+            <div style={{fontSize:9,color:"#1E40AF",fontWeight:700,marginBottom:4}}>BURN MENSUAL</div>
+            <div style={bgw}>
+              {bMs.map(x=>(
+                <div key={x.m} style={bCell}><div style={bLbl}>{MO[x.m-1]}</div><div style={cVb(x.burn)}>{Fk3(x.burn)}</div></div>
+              ))}
+              <div style={bTCell}><div style={bTLbl}>YTD TOTAL</div><div style={tVb(bTot)}>{Fk3(bTot)}</div></div>
+            </div>
+            <div style={{fontSize:9,color:"#1E40AF",fontWeight:700,marginTop:8,marginBottom:4}}>BURN ACUMULADO</div>
+            <div style={bgw}>
+              {bAcc.map(x=>(
+                <div key={x.m} style={{...bCell,background:"#BFDBFE"}}><div style={bLbl}>{MO[x.m-1]}</div><div style={cVb(x.v)}>{Fk3(x.v)}</div></div>
+              ))}
+              <div style={bTCell}><div style={bTLbl}>ACUM {MO[cm-1]}</div><div style={tVb(bAcc.length?bAcc[bAcc.length-1].v:0)}>{Fk3(bAcc.length?bAcc[bAcc.length-1].v:0)}</div></div>
+            </div>
+          </div>
+        );
+      })()}
+
+
+      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🧬 Portafolio por Área Terapéutica</div>
+      </div>
+
+      {/* Molecule Composition Summary */}
       {(() => {
-        const molLaunches2 = {};
-        D.filter(r=>r[0]==="Net Sales"&&r[1]==="Forecast"&&r[9]>0).forEach(r=>{
-          const mol=r[4]; const yr=r[2]; const mo=r[3];
-          if(!mol||mol==="--") return;
-          if(!molLaunches2[mol]||yr<molLaunches2[mol].yr||(yr===molLaunches2[mol].yr&&mo<molLaunches2[mol].mo))
-            molLaunches2[mol]={yr,mo,area:r[5]};
+        const molsByTA2 = {};
+        const allMolsD2 = [...new Set(D.filter(r=>r[4]&&r[4]!=="--"&&r[4]!=="—").map(r=>r[4]))].sort();
+        allMolsD2.forEach(mol => {
+          let ta = "Portafolio General";
+          if (/onco|cancer|tumor|carci/i.test(mol))   ta = "Oncología";
+          else if (/bio|biolog|mab|zumab/i.test(mol)) ta = "Biológicos";
+          else if (/inf|immun|anti/i.test(mol))       ta = "Inmunología";
+          else if (/card|coron|lip/i.test(mol))       ta = "Cardiología";
+          else if (/neuro|parkin|alz/i.test(mol))     ta = "Neurología";
+          if (!molsByTA2[ta]) molsByTA2[ta] = [];
+          molsByTA2[ta].push(mol);
         });
-        const launches2=Object.entries(molLaunches2).map(([mol,d])=>({mol,yr:d.yr,mo:d.mo,area:d.area})).sort((a,b)=>a.yr-b.yr||a.mo-b.mo);
-        const tlYrs2=[...new Set(launches2.map(l=>l.yr))].sort();
-        const TCOLS2=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4","#EC4899","#10B981"];
-        const aCols2={}; let ci2=0; launches2.forEach(l=>{if(!aCols2[l.area]) aCols2[l.area]=TCOLS2[ci2++%TCOLS2.length];});
-        const MS2=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-        const dlTL=()=>{
-          const h="Molecula,Año,Mes,Area\n";
-          const r=launches2.map(l=>l.mol+","+l.yr+","+(MS2[l.mo-1]||l.mo)+","+(l.area||""));
-          const b=new Blob([h+r.join("\n")],{type:"text/csv"});
-          const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="timeline_lanzamientos.csv"; a.click();
+        const taEntries2 = Object.entries(molsByTA2).sort((a,b)=>b[1].length-a[1].length);
+        const TCOLS4=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4"];
+        const dlMols2 = () => {
+          const rows2=allMolsD2.map(m => {
+            let ta2="General";
+            if(/onco|cancer|tumor|carci/i.test(m)) ta2="Oncologia";
+            else if(/bio|biolog|mab|zumab/i.test(m)) ta2="Biologicos";
+            else if(/inf|immun|anti/i.test(m)) ta2="Inmunologia";
+            else if(/card|coron|lip/i.test(m)) ta2="Cardiologia";
+            else if(/neuro|parkin|alz/i.test(m)) ta2="Neurologia";
+            return m+","+ta2;
+          });
+          const csv2="Molecula,Area Terapeutica\n"+rows2.join("\n");
+          const b2=new Blob([csv2],{type:"text/csv"});
+          const a2=document.createElement("a"); a2.href=URL.createObjectURL(b2);
+          a2.download="portafolio_moleculas.csv"; a2.click();
         };
         return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:12}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 18px",marginBottom:12,borderTop:"3px solid #534AB7"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
               <div>
-                <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>🚀 Lanzamientos de Moléculas — Primeras Ventas Forecast</div>
-                <div style={{fontSize:9,color:"#8A90A8",marginTop:3}}>{launches2.length} moléculas en pipeline · {tlYrs2.length} años</div>
+                <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>🧬 Composición del Portafolio de Moléculas</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginTop:2}}>{allMolsD2.length} moléculas · {taEntries2.length} áreas terapéuticas</div>
               </div>
-              <button onClick={dlTL} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
+              <button onClick={dlMols2} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
             </div>
-            {tlYrs2.length === 0 ? (
-              <div style={{color:"#8A90A8",fontSize:10,textAlign:"center",padding:"20px"}}>Sin datos de Forecast con ventas disponibles</div>
-            ) : (
-              <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                {tlYrs2.map(yr=>(
-                  <div key={yr} style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                    <div style={{minWidth:44,background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",borderRadius:6,padding:"4px 8px",textAlign:"center"}}>
-                      <div style={{fontSize:11,fontWeight:800,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#8A90A8"}}>{yr}</div>
-                      <div style={{fontSize:7,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700}}>{yr<CUR_YEAR?"✓ Real":yr===CUR_YEAR?"▶ Activo":"⏳ Fcst"}</div>
-                    </div>
-                    <div style={{display:"flex",flexWrap:"wrap",gap:6,flex:1}}>
-                      {launches2.filter(l=>l.yr===yr).map((l,i)=>(
-                        <div key={i} style={{display:"flex",alignItems:"center",gap:6,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:6,padding:"4px 8px",borderLeft:"3px solid "+(aCols2[l.area]||"#534AB7")}}>
-                          <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e"}}>{l.mol}</div>
-                          <span style={{fontSize:7,color:"#8A90A8"}}>{MS2[l.mo-1]||l.mo}</span>
-                        </div>
-                      ))}
-                    </div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {taEntries2.map(([ta,mols],idx2) => (
+                <div key={idx2} style={{flex:"1 1 180px",background:"#f8f9fe",borderRadius:8,padding:"10px 12px",borderLeft:"3px solid "+TCOLS4[idx2%TCOLS4.length]}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <span style={{fontSize:9,fontWeight:800,color:TCOLS4[idx2%TCOLS4.length]}}>{ta}</span>
+                    <span style={{fontSize:9,fontWeight:700,background:TCOLS4[idx2%TCOLS4.length],color:"#fff",borderRadius:10,padding:"1px 8px"}}>{mols.length}</span>
                   </div>
-                ))}
-              </div>
-            )}
-            <div style={{display:"flex",gap:10,marginTop:10,flexWrap:"wrap",paddingTop:8,borderTop:"1px solid #E4E8F2"}}>
-              {Object.entries(aCols2).map(([area,col],i)=>(
-                <span key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:8,color:"#8A90A8"}}>
-                  <span style={{width:8,height:8,borderRadius:2,background:col,display:"inline-block"}}/>
-                  {area}
-                </span>
+                  <div style={{display:"flex",flexDirection:"column",gap:2}}>
+                    {mols.slice(0,5).map((m,j2) => (
+                      <div key={j2} style={{fontSize:7.5,color:"#1a1a2e",padding:"1px 0",borderBottom:"1px solid #f0f2fa",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>• {m}</div>
+                    ))}
+                    {mols.length > 5 && <div style={{fontSize:7,color:"#8A90A8",marginTop:2}}>+{(mols.length-5)} más...</div>}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         );
-      })()}}
+      })()}
 
-      {/* ===== CRECIMIENTO FINANCIERO POR AÑO ===== */}
-      <div style={{margin:"20px 0 10px",borderTop:"2px solid #1D9E75",paddingTop:12}}>
-        <div style={{fontSize:14,fontWeight:900,color:"#1a1a2e"}}>📈 Crecimiento Financiero por Año</div>
-      </div>
+
+      {(() => {
+        // Group molecules by therapeutic area prefix
+        const taMap = {};
+        areaTable.forEach(r => {
+          const mol = r.mol || 'Otros';
+          // Heuristic TA grouping by mol name patterns
+          let ta = 'Otros';
+          if (/onco|cancer|tumor|carci/i.test(mol))    ta = 'Oncología';
+          else if (/bio|biolog|mab|zumab/i.test(mol))  ta = 'Biológicos';
+          else if (/inf|immun|anti/i.test(mol))        ta = 'Inmunología';
+          else if (/card|coron|lip/i.test(mol))        ta = 'Cardiología';
+          else if (/neuro|parkin|alz/i.test(mol))      ta = 'Neurología';
+          else if (mol.length > 0)                     ta = 'Portafolio General';
+          if (!taMap[ta]) taMap[ta] = {mols:[],total:0};
+          taMap[ta].mols.push(mol);
+          taMap[ta].total += Math.abs(r.total);
+        });
+        const taArr = Object.entries(taMap)
+          .map(([ta,d]) => ({ta, mols:d.mols, total:d.total, pct:0}))
+          .sort((a,b)=>b.total-a.total);
+        const grandTotal = taArr.reduce((s,r)=>s+r.total,0);
+        taArr.forEach(r => r.pct = grandTotal>0 ? r.pct=r.total/grandTotal*100 : 0);
+        const TACOLS = ['#534AB7','#1D9E75','#F59E0B','#E24B4A','#7C3AED','#06B6D4'];
+        // Donut segments
+        let cumPct = 0;
+        const segments = taArr.map((r,i) => {
+          const startAngle = cumPct * 3.6;
+          cumPct += r.pct;
+          const endAngle   = cumPct * 3.6;
+          const large = (endAngle-startAngle) > 180 ? 1 : 0;
+          const toXY  = deg => {
+            const rad = (deg-90)*Math.PI/180;
+            return [50+40*Math.cos(rad), 50+40*Math.sin(rad)];
+          };
+          const [x1,y1] = toXY(startAngle);
+          const [x2,y2] = toXY(endAngle);
+          return {...r, path:`M50 50 L${x1} ${y1} A40 40 0 ${large} 1 ${x2} ${y2} Z`, col:TACOLS[i%TACOLS.length]};
+        });
+        return (
+          <div style={{display:'grid',gridTemplateColumns:'200px 1fr',gap:12,marginBottom:12}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #F59E0B',display:'flex',flexDirection:'column',alignItems:'center'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10,alignSelf:'flex-start'}}>Distribución Inversión</div>
+              <svg viewBox='0 0 100 100' style={{width:140,height:140}}>
+                {segments.map((s,i) => (
+                  <path key={i} d={s.path} fill={s.col} opacity='0.85'>
+                    <title>{s.ta}: {s.pct.toFixed(1)}%</title>
+                  </path>
+                ))}
+                <circle cx='50' cy='50' r='22' fill='white'/>
+                <text x='50' y='46' textAnchor='middle' style={{fontSize:'7px',fontWeight:'bold',fill:'#1a1a2e'}}>OPEX</text>
+                <text x='50' y='56' textAnchor='middle' style={{fontSize:'6px',fill:'#8A90A8'}}>YTD</text>
+              </svg>
+              <div style={{display:'flex',flexDirection:'column',gap:4,width:'100%',marginTop:8}}>
+                {segments.map((s,i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:8}}>
+                    <span style={{display:'flex',alignItems:'center',gap:4}}>
+                      <span style={{width:8,height:8,borderRadius:2,background:s.col,display:'inline-block'}}/>
+                      {s.ta}
+                    </span>
+                    <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #1D9E75'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10}}>📋 Detalle por Área Terapéutica</div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área Terapéutica','Moléculas','Inversión YTD','% Portfolio','Estado'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'4px 6px',borderBottom:'1px solid #E4E8F2',textAlign:i<2?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {segments.map((s,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'5px 6px',fontWeight:700,color:s.col}}>
+                        <span style={{display:'inline-block',width:8,height:8,borderRadius:2,background:s.col,marginRight:6}}/>
+                        {s.ta}
+                      </td>
+                      <td style={{padding:'5px 6px',color:'#534AB7',fontSize:8}}>{s.mols.length} mol{s.mols.length>1?'s':''}</td>
+                      <td style={{padding:'5px 6px',textAlign:'right',fontWeight:700}}>{F(s.total)}</td>
+                      <td style={{padding:'5px 6px',textAlign:'right'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:6,justifyContent:'flex-end'}}>
+                          <div style={{width:50,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                            <div style={{height:'100%',width:s.pct+'%',background:s.col,borderRadius:3}}/>
+                          </div>
+                          <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                      <td style={{padding:'5px 6px',textAlign:'right'}}>
+                        <span style={{background:s.total>0?'#e6f9f1':'#fef2f2',color:s.total>0?'#1D9E75':'#E24B4A',borderRadius:10,padding:'2px 8px',fontSize:7,fontWeight:700}}>
+                          {s.total>0?'ACTIVO':'SIN MOV'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
+
+
+      {/* === Financial Growth by Year === */}
       {(() => {
         const allYrsG=[...new Set(D.map(r=>r[2]))].sort();
         const yrDataG=allYrsG.map(yr=>{
@@ -1252,14 +1435,14 @@ export default function Dashboard() {
           const h="Anio,NetSales,GrossProfit,GM%,EBITDA%,Tipo\n";
           const r=yrDataG.map(d=>[d.yr,d.ns.toFixed(0),d.gp.toFixed(0),d.gmPctG,d.ebitdaPctG,d.isReal?"Reales":"Forecast"].join(","));
           const b=new Blob([h+r.join("\n")],{type:"text/csv"});
-          const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="crecimiento_financiero.csv"; a.click();
+          const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="crecimiento.csv";a.click();
         };
         return (
           <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:12,borderTop:"3px solid #534AB7"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
               <div>
                 <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>📈 Crecimiento Financiero por Año</div>
-                <div style={{fontSize:9,color:"#8A90A8",marginTop:3}}>Barras: Net Sales · Verde: Gross Margin % · Naranja: EBITDA %</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginTop:3}}>Barras: Net Sales · Franja verde: Gross Margin % · Franja naranja: EBITDA %</div>
               </div>
               <button onClick={dlGrowth} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
             </div>
@@ -1292,61 +1475,21 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      })()}}
+      })()}
 
-      </>
-      }
-{/* */}
-      {mainTab === "executive" && <>
-      {/* EXECUTIVE HEADER */}
-      <div style={{  display: "flex", alignItems: "center", gap: 16, padding: "14px 20px", background: "linear-gradient(135deg,#534AB7 0%,#7C3AED 100%)", borderRadius: 12, marginBottom: 16, color: "#fff"  }}>
-        <div style={{  fontSize: 32, lineHeight: 1  }}>🎯</div>
-        <div style={{  flex: 1  }}>
-          <div style={{  fontSize: 16, fontWeight: 700, letterSpacing: -0.3  }}>Executive Financial Dashboard</div>
-          <div style={{  fontSize: 11, opacity: 0.8, marginTop: 2  }}>Visión Ejecutiva · {MO[cm-1]} {CUR_YEAR} · {view.charAt(0).toUpperCase()+view.slice(1)}</div>
-        </div>
-        <div style={{  display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end"  }}>
-          <span style={{  background: "rgba(255,255,255,0.2)", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 600  }}>● Reales ≤ {MO[cm-1]}</span>
-          <span style={{  background: "rgba(255,255,255,0.1)", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 600  }}>○ Forecast</span>
-        </div>
-      </div>
-      {/* KPI CARDS WITH ICONS */}
-      <div style={{  display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, padding: "0 0 16px", marginBottom: 8  }}>
-        {(()=>{
-          const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
-          const kC = c => ({ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 12, padding: "16px 14px", borderTop: "3px solid "+c, boxShadow: "0 2px 8px rgba(26,26,46,0.06)", display: "flex", flexDirection: "column", gap: 3 });
-          return (<React.Fragment>
-            {kpis.map((k, i) => (
-              <div key={i} style={kC(k.c)}>
-                <div style={{  fontSize: 24, marginBottom: 4, lineHeight: 1  }}>{ICONS[k.l]||"📌"}</div>
-                <div style={{  fontSize: 9, color: "#8A90A8", letterSpacing: 1.2, fontWeight: 700, textTransform: "uppercase", marginBottom: 2  }}>{k.l}</div>
-                <div style={{  fontSize: 20, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, letterSpacing: -0.5  }}>{k.v}</div>
-                <div style={{  fontSize: 10, color: "#8A90A8", marginTop: 2  }}>{k.s}</div>
-              </div>
-            ))}
-            {cashFlow && (() => {
-              const bArr = cashFlow.months.slice(0,cm).map(mo=>(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0));
-              const bYTD = bArr.reduce((s,v)=>s+v,0);
-              const bCM  = bArr.length?bArr[bArr.length-1]:0;
-              const bCol = bYTD<0?"#E24B4A":"#065F46";
-              return (<div style={kC(bCol)}>
-                <div style={{  fontSize: 24, marginBottom: 4, lineHeight: 1  }}>🔥</div>
-                <div style={{  fontSize: 9, color: "#8A90A8", letterSpacing: 1.2, fontWeight: 700, textTransform: "uppercase", marginBottom: 2  }}>BURN MEXICO YTD</div>
-                <div style={{  fontSize: 20, fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, letterSpacing: -0.5  }}>{F(bYTD)}</div>
-                <div style={{  fontSize: 10, color: "#8A90A8", marginTop: 2  }}>Mes {MO[cm-1]}: {F(bCM)}</div>
-              </div>);
-            })()}
-          </React.Fragment>);
-        })()}
-      </div>
+
+
       {/* P&L TABLE */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-            <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e"}}>Revenue vs OpEx Mensual</div>
-            <button onClick={()=>{const h="Mes,Sales,OpEx,EBITDA\n";const r=chartData.map(d=>[d.name,d.Sales||0,d.OpEx||0,d.EBITDA||0].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="revenue_opex.csv";a.click();}} style={{fontSize:9,padding:"3px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>&#11015; CSV</button>
+      <div style={{width:"100%",marginBottom:16}}>
+        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,width:"100%",boxSizing:"border-box"}}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+
+            <div/><button onClick={()=>{ const h="Mes,Sales,OpEx,EBITDA\n"; const r=chartData.map(d=>`${d.name},${d.Sales||0},${d.OpEx||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_opex.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
+
           </div>
-          <ResponsiveContainer width="100%" height={220}>
+
+          <ResponsiveContainer width="100%" height={300}>
             <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
               <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
               <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
@@ -1359,17 +1502,6 @@ export default function Dashboard() {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:4 }}>
-            {expandedOpexLine ? ("Clasificacion: " + expandedOpexLine + " — " + MO[cm-1]) : ("OpEx por Línea P&L — " + MO[cm-1])}
-          </div>
-          {expandedOpexLine && (
-            <div onClick={() => setExpandedOpexLine(null)} style={{ display:"flex",alignItems:"center",gap:4,cursor:"pointer",marginBottom:6,fontSize:9,color:"#534AB7",fontWeight:600 }}>
-              ← Volver a todas las líneas
-            </div>
-          )}
-          {React.createElement(OpexFunnel, {data: expandedOpexLine ? opexDetailData : opexClsData, onClickBar: function(fdName){ setExpandedOpexLine(fdName); }, expanded: !!expandedOpexLine})}
-        </div>
       </div>
 {/* */}
 {/* */}
@@ -1377,10 +1509,7 @@ export default function Dashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
           <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-              <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:4}}>{p.title}</div>
-              <button onClick={()=>{const h="Molecula,Valor\n";const r=p.data.map(d=>d.name+","+(d.value||0)).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=(p.title.replace(/ /g,"_")+".csv");a.click();}} style={{fontSize:9,padding:"3px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>&#11015; CSV</button>
-            </div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
             {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
               <div style={{ display: "flex", alignItems: "center" }}>
                 <ResponsiveContainer width="60%" height={220}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
@@ -1394,10 +1523,7 @@ export default function Dashboard() {
 {/* */}
       {/* AREA × MONTH TABLE */}
       <div style={s.card}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={s.cardTitle}>Gasto Real por Molécula — Mensual</div>
-        <button onClick={()=>{ const h=["Molécula",...ytdM.map(m=>MO[m-1]),"Total YTD"].join(",")+"\n"; const r=areaTable.map(row=>[row.mol,...ytdM.map(m=>row.monthly[m]||0),row.total].join(",")).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="gasto_mensual_molecula.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-      </div>
         <div style={s.cardSub}>Molécula → Clasificación · Clic para expandir</div>
         <table style={s.tbl}>
           <thead><tr>
@@ -1474,7 +1600,368 @@ export default function Dashboard() {
 );})}</div></div>
       </div>
 {/* */}
-      <div style={{marginTop:32}}><div style={{fontSize:12,fontWeight:700,color:"#8A90A8",letterSpacing:1,marginBottom:8}}>NEXT STEPS</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["waterfall"]:!p["waterfall"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🌊</span><span>EBITDA Bridge — Waterfall</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["waterfall"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["waterfall"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const pl=buildPL(fd,CUR_YEAR,cm,cm,"consolidado");const ytdPl={ns:0,cogs:0,gp:0,sw:0,sm:0,ta:0,pf:0,of_:0,reg:0,sh:0,mob:0,ops:0,oth:0,totOpex:0,ebitda:0};ytdM.forEach(m=>{const r=buildPL(fd,CUR_YEAR,m,cm,"consolidado");Object.keys(ytdPl).forEach(k=>{ytdPl[k]+=(r[k]||r['of_'[k]==='of_'?k:'of_'[k]]||0);});});const steps=[{l:"Net Sales",v:ytdPl.ns,color:"#185FA5",isBar:true},{l:"(-) COGS",v:-Math.abs(ytdPl.cogs),color:"#E24B4A",isBar:false},{l:"Gross Profit",v:ytdPl.gp,color:"#1D9E75",isBar:true,isSub:true},{l:"(-) S&W",v:-Math.abs(ytdPl.sw),color:"#E24B4A55",isBar:false},{l:"(-) S&M",v:-Math.abs(ytdPl.sm),color:"#E24B4A55",isBar:false},{l:"(-) Prof Fees",v:-Math.abs(ytdPl.pf),color:"#E24B4A55",isBar:false},{l:"(-) Operations",v:-Math.abs(ytdPl.ops),color:"#E24B4A55",isBar:false},{l:"(-) Otros OPEX",v:-Math.abs(ytdPl.ta+ytdPl.reg+ytdPl.sh+ytdPl.mob+ytdPl.oth),color:"#E24B4A55",isBar:false},{l:"EBITDA",v:ytdPl.ebitda,color:ytdPl.ebitda>=0?"#1D9E75":"#E24B4A",isBar:true,isSub:true}];const maxAbs=Math.max(...steps.map(s=>Math.abs(s.v)),1);const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":v<-1e3?Math.round(v/1e3)+"K":"0";return(<div><div style={{fontSize:11,color:"#8A90A8",marginBottom:12}}>YTD {MO[cm-1]} 2026 — Consolidado</div>{steps.map((s,i)=>{const barPct=Math.abs(s.v)/maxAbs*100;const isNeg=s.v<0;return(<div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}><div style={{width:130,fontSize:10,color:s.isSub?"#1E2A3A":"#555",fontWeight:s.isSub?700:400,textAlign:"right",flexShrink:0}}>{s.l}</div><div style={{flex:1,height:22,position:"relative",background:"#F0F2FA",borderRadius:4}}><div style={{position:"absolute",height:"100%",width:barPct+"%",background:s.color,borderRadius:4,[isNeg?"right":"left"]:0}}/><div style={{position:"absolute",left:0,right:0,top:0,height:22,display:"flex",alignItems:"center",justifyContent:isNeg?"flex-start":"flex-end",paddingLeft:6,paddingRight:6,fontSize:9,fontWeight:700,color:s.isSub?"#fff":"#1E2A3A"}}>{barPct>12?fmt(s.v):""}</div></div><div style={{width:70,textAlign:"right",fontSize:10,fontWeight:s.isSub?700:400,color:isNeg?"#E24B4A":"#1D9E75",flexShrink:0}}>{fmt(s.v)}</div></div>);})}</div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["bva"]:!p["bva"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🎯</span><span>Budget vs Actual — Forecast vs Real (Mes Corriente)</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["bva"] ? "▲ Ocultar" : "▼ Ver an��lisis"}</span></button>{optSec["bva"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const real=buildPL(fd,CUR_YEAR,cm,cm,"reales");const fore=buildPL(fd,CUR_YEAR,cm,cm,"forecast");const rows=[["Net Sales",fore.ns,real.ns],["Gross Profit",fore.gp,real.gp],["%  Gross Margin",fore.gmPct,real.gmPct,true],["Total OPEX",fore.totOpex,real.totOpex],["EBITDA",fore.ebitda,real.ebitda],["%  EBITDA",fore.ebitdaPct,real.ebitdaPct,true],["Net Profit",fore.netProfit,real.netProfit]];const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":v<=-1e3?Math.round(v/1e3)+"K":"0";const fmtPct=v=>(v*100).toFixed(1)+"%";return(<div><div style={{fontSize:11,color:"#8A90A8",marginBottom:10}}>Mes {MO[cm-1]} 2026</div><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}><thead><tr style={{background:"#F8F9FD"}}><th style={{padding:"8px 12px",textAlign:"left",fontWeight:600,color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Línea P&L</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#534AB7",borderBottom:"1px solid #E4E8F2"}}>Forecast</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1D9E75",borderBottom:"1px solid #E4E8F2"}}>Real</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Δ</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Δ%</th><th style={{padding:"8px 12px",textAlign:"center",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Status</th></tr></thead><tbody>{rows.map(([lbl,fv,rv,isPct],i)=>{const delta=rv-fv;const deltaPct=fv?delta/Math.abs(fv):0;const isOpex=lbl.includes("OPEX");const good=isOpex?delta<=0:delta>=0;const status=Math.abs(deltaPct)<0.03?"🟡":good?"🟢":"🔴";return(<tr key={i} style={{background:i%2===0?"#fff":"#FAFBFE",borderBottom:"1px solid #F0F2FA"}}><td style={{padding:"7px 12px",fontWeight:lbl.includes("EBITDA")||lbl.includes("Net")?700:400}}>{lbl}</td><td style={{padding:"7px 12px",textAlign:"right",color:"#534AB7"}}>{isPct?fmtPct(fv):fmt(fv)}</td><td style={{padding:"7px 12px",textAlign:"right",color:"#1D9E75"}}>{isPct?fmtPct(rv):fmt(rv)}</td><td style={{padding:"7px 12px",textAlign:"right",color:good?"#1D9E75":"#E24B4A",fontWeight:600}}>{isPct?fmtPct(delta):(delta>=0?"+":"")+fmt(delta)}</td><td style={{padding:"7px 12px",textAlign:"right",color:good?"#1D9E75":"#E24B4A"}}>{(deltaPct*100).toFixed(1)+"%"}</td><td style={{padding:"7px 12px",textAlign:"center",fontSize:14}}>{status}</td></tr>);})}</tbody></table></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["burn"]:!p["burn"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🔥</span><span>Burn Rate & Runway — ¿Cuántos meses de caja quedan?</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["burn"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["burn"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const cashRow=B.find(r=>(r[1]||r[0]).toString().toLowerCase().includes("caja")||r[0]==="110-00-000"||r[0]==="111-00-000");const cashNow=cashRow?(cashRow[4+cm]||0):0;const burnArr=ytdM.map(m=>{const pl=buildPL(fd,CUR_YEAR,m,cm,"reales");return pl.ebitda;});const avgBurn=burnArr.length?burnArr.reduce((s,v)=>s+v,0)/burnArr.length:0;const runway=avgBurn<0&&cashNow>0?Math.round(cashNow/Math.abs(avgBurn)):null;const runColor=runway===null?"#1D9E75":runway>12?"#1D9E75":runway>6?"#D97706":"#E24B4A";const runLabel=runway===null?"EBITDA positivo ✓":runway>12?runway+" meses ✅":runway>6?runway+" meses ⚠️":runway+" meses 🚨";const fmt=v=>v>=1e6?(v/1e6).toFixed(2)+"M":v>=1e3?Math.round(v/1e3)+"K":Math.round(v).toLocaleString();return(<div style={{display:"flex",gap:16,flexWrap:"wrap"}}><div style={{flex:"1 1 180px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Caja Disponible (Mes {MO[cm-1]})</div><div style={{fontSize:22,fontWeight:700,color:"#1E2A3A"}}>{fmt(cashNow)}</div></div><div style={{flex:"1 1 180px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Burn Rate Promedio YTD</div><div style={{fontSize:22,fontWeight:700,color:avgBurn<0?"#E24B4A":"#1D9E75"}}>{fmt(avgBurn)}/mes</div></div><div style={{flex:"1 1 180px",background:runColor+"11",border:"2px solid "+runColor,borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Runway estimado</div><div style={{fontSize:22,fontWeight:700,color:runColor}}>{runLabel}</div></div><div style={{flex:"1 1 100%",marginTop:8}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:6}}>EBITDA mensual YTD</div><div style={{display:"flex",alignItems:"flex-end",gap:4,height:60}}>{burnArr.map((v,i)=>{const maxV=Math.max(...burnArr.map(Math.abs),1);const h=Math.round(Math.abs(v)/maxV*50);return(<div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1}}><div style={{width:"100%",height:h+"px",background:v>=0?"#1D9E75":"#E24B4A",borderRadius:"3px 3px 0 0"}}/><div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>{MO[i]}</div></div>);})}</div></div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["gmtrend"]:!p["gmtrend"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>📈</span><span>Tendencia Gross Margin & EBITDA % — Mensual</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["gmtrend"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["gmtrend"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const months=Array.from({length:cm},(_, i)=>i+1);const gmData=months.map(m=>{const pl=buildPL(fd,CUR_YEAR,m,cm,"consolidado");return{m:MO[m-1],gm:pl.gmPct*100,ebitda:pl.ebitdaPct*100,ns:pl.ns};});const maxNS=Math.max(...gmData.map(d=>d.ns),1);return(<div><div style={{display:"flex",gap:16,marginBottom:8}}><span style={{fontSize:10,color:"#1D9E75",fontWeight:600}}>— Gross Margin %</span><span style={{fontSize:10,color:"#534AB7",fontWeight:600}}>— EBITDA %</span><span style={{fontSize:10,color:"#185FA5",fontWeight:600}}>■ Net Sales</span></div><div style={{display:"flex",alignItems:"flex-end",gap:6,height:120,paddingBottom:20,position:"relative"}}>{[0,25,50,75,100].map(v=>(<div key={v} style={{position:"absolute",left:0,right:0,bottom:v/100*100+"px",borderTop:"1px dashed #E4E8F2",fontSize:8,color:"#ccc"}}>{v}%</div>))}{gmData.map((d,i)=>{const barH=Math.round(d.ns/maxNS*80);return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}><div style={{position:"absolute",bottom:20,width:"70%",height:barH+"px",background:"#185FA522",borderRadius:"3px 3px 0 0"}}/><div style={{position:"absolute",bottom:20+Math.round(d.gm/100*80)+"px",width:8,height:8,background:"#1D9E75",borderRadius:"50%",transform:"translateX(-50%)",left:"50%"}}/><div style={{position:"absolute",bottom:20+Math.round(Math.max(d.ebitda,-30)/100*80)+"px",width:8,height:8,background:"#534AB7",borderRadius:"50%",transform:"translateX(-50%)",left:"50%"}}/><div style={{position:"absolute",bottom:0,fontSize:8,color:"#8A90A8"}}>{d.m}</div></div>);})}</div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["concentration"]:!p["concentration"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>⚠️</span><span>Concentración de Riesgo — Top Partners YTD</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["concentration"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["concentration"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const total=pareto.reduce((s,p)=>s+Math.abs(p.total),0);const top3=pareto.slice(0,3).reduce((s,p)=>s+Math.abs(p.total),0);const top1=pareto[0]?Math.abs(pareto[0].total):0;const concPct=total?top3/total:0;const concColor=concPct>0.7?"#E24B4A":concPct>0.5?"#D97706":"#1D9E75";const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":"0";return(<div><div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:16}}><div style={{flex:"1 1 160px",background:concColor+"11",border:"2px solid "+concColor,borderRadius:10,padding:"14px 18px"}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:4}}>Top 3 Partners = % del gasto total</div><div style={{fontSize:24,fontWeight:700,color:concColor}}>{(concPct*100).toFixed(1)+"%"}</div><div style={{fontSize:9,color:concColor,marginTop:4}}>{concPct>0.7?"⚠ Alta concentración":concPct>0.5?"Concentración moderada":"✓ Diversificado"}</div></div><div style={{flex:"1 1 160px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 18px"}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:4}}>Mayor partner individual</div><div style={{fontSize:14,fontWeight:700,color:"#1E2A3A",marginBottom:4}}>{pareto[0]?pareto[0].partner:"—"}</div><div style={{fontSize:12,color:"#534AB7",fontWeight:600}}>{fmt(top1)} ({total?(top1/total*100).toFixed(1)+"%":"—"})</div></div></div><div style={{fontSize:10,color:"#8A90A8",marginBottom:6}}>Distribución acumulada (Curva de Pareto YTD)</div><div style={{display:"flex",alignItems:"flex-end",gap:3}}>{pareto.slice(0,10).map((p,i)=>{const h=total?Math.round(Math.abs(p.total)/total*120):0;const cumH=Math.round(p.cumPct*100);return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}><div style={{width:"80%",height:h+"px",background:"#534AB7",borderRadius:"3px 3px 0 0",marginBottom:2}}/><div style={{fontSize:7,color:"#8A90A8",textAlign:"center",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",width:"100%"}}>{p.partner.split(" ")[0]}</div><div style={{fontSize:7,color:"#534AB7",fontWeight:600}}>{cumH+"%"}</div></div>);})}</div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["breakeven"]:!p["breakeven"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🎯</span><span>Break-even Tracker — ¿Cuándo cruza el EBITDA a positivo?</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["breakeven"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["breakeven"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const years=pnlYears;const ebitdaByYear=years.map(yr=>({yr,v:allM.reduce((s,m)=>s+buildPL(fd,yr,m,cm,"forecast").ebitda,0)}));const bkIdx=ebitdaByYear.findIndex(d=>d.v>=0);const bkYear=bkIdx>=0?ebitdaByYear[bkIdx].yr:null;const maxAbs=Math.max(...ebitdaByYear.map(d=>Math.abs(d.v)),1);const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":Math.round(v)+"";return(<div>{bkYear&&<div style={{background:"#ECFDF5",border:"1px solid #10B981",borderRadius:8,padding:"10px 16px",marginBottom:14,fontSize:12,fontWeight:600,color:"#065F46"}}>🎯 Break-even proyectado: <strong>{bkYear}</strong> — EBITDA: {fmt(ebitdaByYear[bkIdx].v)}</div>}{!bkYear&&<div style={{background:"#FFF0F0",border:"1px solid #E24B4A",borderRadius:8,padding:"10px 16px",marginBottom:14,fontSize:12,color:"#C0392B"}}>⚠ No se proyecta break-even en el período de forecast</div>}<div style={{display:"flex",alignItems:"flex-end",gap:6,height:100}}>{ebitdaByYear.map((d,i)=>{const h=Math.round(Math.abs(d.v)/maxAbs*80);const isPos=d.v>=0;const isBK=d.yr===bkYear;return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>{isBK&&<div style={{fontSize:9,color:"#1D9E75",fontWeight:700,marginBottom:2}}>BE✓</div>}<div style={{width:"85%",height:h+"px",background:isPos?"#1D9E75":"#E24B4A",borderRadius:"3px 3px 0 0",boxShadow:isBK?"0 0 8px #1D9E75":"none"}}/><div style={{fontSize:8,color:"#8A90A8",marginTop:3}}>{d.yr}</div><div style={{fontSize:8,fontWeight:600,color:isPos?"#1D9E75":"#E24B4A"}}>{fmt(d.v)}</div></div>);})}</div><div style={{display:"flex",gap:12,marginTop:8}}><span style={{fontSize:9,color:"#E24B4A"}}>■ EBITDA negativo (inversión)</span><span style={{fontSize:9,color:"#1D9E75"}}>■ EBITDA positivo</span></div></div>);})()}</div>)}</div></div>
+
+      {/* ===== PHARMA EXECUTIVE ANALYSIS ===== */}
+
+      <div style={{margin:'28px 0 8px',borderTop:'2px dashed #E4E8F2',paddingTop:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:-0.3}}>
+          📊 Análisis Ejecutivo Pharma
+        </div>
+        <div style={{fontSize:10,color:'#8A90A8'}}>
+          Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}
+        </div>
+      </div>
+
+
+      {/* --- Row 2: Inversion en Moleculas + Ejecucion Presupuestal --- */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+
+        {/* Inversion en Moleculas */}
+        {(() => {
+          const totalReal = areaTable.reduce((s,r) => s + Math.abs(r.total), 0);
+          const fcastMap  = {};
+          fd.filter(r => r[1]==='Forecast' && OC_ALL.includes(r[0]) && ytdM.includes(r[3]))
+            .forEach(r => { const mol = mapMol(r[4]); fcastMap[mol] = (fcastMap[mol]||0) + r[9]; });
+          const molRows = areaTable.slice(0,8).map(r => {
+            const fc   = Math.abs(fcastMap[r.mol] || 0);
+            const real = Math.abs(r.total);
+            const ejec = fc > 0 ? real / fc * 100 : null;
+            const pctT = totalReal > 0 ? real / totalReal * 100 : 0;
+            return { mol:r.mol, fc, real, ejec, pctT };
+          });
+          const tFC = molRows.reduce((s,r)=>s+r.fc,  0);
+          const tR  = molRows.reduce((s,r)=>s+r.real, 0);
+          const tE  = tFC > 0 ? tR/tFC*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
+                <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(totalReal)}</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Molécula','Inversión','% Ejec','% Total'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {molRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mol}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end'}}>
+                              <div style={{width:44,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pctT.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px 5px'}}>TOTAL</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>{F(tR)}</td>
+                    <td style={{padding:'5px 5px',textAlign:'right',color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(0)}%</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
+
+        {/* Ejecucion Presupuestal por Area */}
+        {(() => {
+          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
+          const aRows = areas.slice(0,7).map(area => {
+            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const ejec  = fcast !== 0 ? real/fcast*100 : null;
+            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
+          });
+          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
+          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
+          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
+                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {aRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
+                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px'}}>TOTAL</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
+                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
+                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
+
+      </div>
+
+        );
+      })()}
+
+
+      {/* ===== TIMELINE EJECUTIVO ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
+      </div>
+
+      {(() => {
+        const molLaunches = {};
+        D.filter(r=>r[0]==="Net Sales"&&r[1]==="Forecast"&&r[9]>0).forEach(r=>{
+          const mol=r[4]; const yr=r[2]; const mo=r[3];
+          if(!molLaunches[mol]||yr<molLaunches[mol].yr||(yr===molLaunches[mol].yr&&mo<molLaunches[mol].mo))
+            molLaunches[mol]={yr,mo,area:r[5]};
+        });
+        const launches=Object.entries(molLaunches).map(([mol,d])=>({mol,yr:d.yr,mo:d.mo,area:d.area})).sort((a,b)=>a.yr!==b.yr?a.yr-b.yr:a.mo-b.mo);
+        const tlYrs=[...new Set(launches.map(l=>l.yr))].sort();
+        const TCOLS=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4","#EC4899","#10B981"];
+        const aCols={}; let ci=0; launches.forEach(l=>{ if(!aCols[l.area]) aCols[l.area]=TCOLS[ci++%TCOLS.length]; });
+        const MS=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+        return (
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:16,borderTop:"3px solid #E24B4A"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>🚀 Lanzamientos de Moléculas — Primeras Ventas Forecast</div>
+              <div style={{fontSize:9,color:"#8A90A8"}}>{launches.length} moléculas en pipeline</div>
+            </div>
+            {tlYrs.map(yr=>(
+              <div key={yr} style={{marginBottom:14}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <div style={{fontSize:12,fontWeight:800,color:yr===CUR_YEAR?"#534AB7":yr<CUR_YEAR?"#1D9E75":"#8A90A8",minWidth:44}}>{yr}</div>
+                  <div style={{flex:1,height:1,background:"#E4E8F2"}}/> 
+                  <span style={{fontSize:8,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700,background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",borderRadius:6,padding:"2px 8px"}}>{yr<CUR_YEAR?"✓ Completado":yr===CUR_YEAR?"▶ En curso":"⏳ Proyectado"}</span>
+                </div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                  {launches.filter(l=>l.yr===yr).map((l,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+(aCols[l.area]||"#534AB7")}}>
+                      <div>
+                        <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.mol}</div>
+                        <div style={{fontSize:7,color:aCols[l.area]||"#534AB7",fontWeight:600,marginTop:1}}>{(l.area||"--")} · {MS[l.mo-1]} {l.yr}</div>
+                      </div>
+                      <span style={{background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#7C3AED",borderRadius:6,padding:"2px 6px",fontSize:7,fontWeight:700,whiteSpace:"nowrap"}}>{yr<CUR_YEAR?"✓ Lanzado":yr===CUR_YEAR?"▶ Activo":"⏳ Futuro"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap",paddingTop:10,borderTop:"1px solid #f0f2fa",fontSize:8}}>
+              {Object.entries(aCols).map(([area,col],i)=>(
+                <span key={i} style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:2,background:col,display:"inline-block"}}/>{area}</span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
+      {/* --- Row 3: Flujo de Caja --- */}
+      {cashFlow && (() => {
+        const cfD = cashFlow.months.slice(0, cm).map((mo, idx) => ({
+          name: MO[idx],
+          op:   mo.totalOperacion      || 0,
+          inv:  mo.totalInversion      || 0,
+          fin:  mo.totalFinanciamiento || 0,
+          net: (mo.totalOperacion||0) + (mo.totalInversion||0) + (mo.totalFinanciamiento||0),
+        }));
+        const ytdOp  = cfD.reduce((s,d)=>s+d.op,  0);
+        const ytdInv = cfD.reduce((s,d)=>s+d.inv, 0);
+        const ytdFin = cfD.reduce((s,d)=>s+d.fin, 0);
+        const ytdNet = ytdOp + ytdInv + ytdFin;
+        const maxCF  = Math.max(...cfD.flatMap(d=>[Math.abs(d.op),Math.abs(d.inv),Math.abs(d.fin)]), 1);
+        const toH    = v => Math.round(Math.abs(v) / maxCF * 60);
+        const COLS   = { op:'#1D9E75', inv:'#E24B4A', fin:'#534AB7' };
+        const LBLS   = { op:'Operación', inv:'Inversión', fin:'Financiamiento' };
+        return (
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',marginBottom:12,borderTop:'3px solid #1D9E75'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💰 Flujo de Caja Mensual – Actividades NIF B-2</div>
+              <div style={{display:'flex',gap:10,fontSize:9}}>
+                {['op','inv','fin'].map(k => (
+                  <span key={k}>
+                    <span style={{display:'inline-block',width:8,height:8,borderRadius:2,background:COLS[k],marginRight:3}}/>
+                    {LBLS[k]}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div style={{display:'flex',gap:6,alignItems:'flex-end',paddingBottom:4,overflowX:'auto',minHeight:90}}>
+              {cfD.map((d, i) => (
+                <div key={i} style={{flex:1,minWidth:42,display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+                  {['op','inv','fin'].map(k => (
+                    <div
+                      key={k}
+                      title={`${LBLS[k]}: ${F(d[k])}`}
+                      style={{width:'100%',height:toH(d[k]),minHeight:d[k]!==0?3:0,background:COLS[k],borderRadius:'2px 2px 0 0',opacity:0.85}}
+                    />
+                  ))}
+                  <div style={{fontSize:8,color:'#8A90A8',marginTop:3,textAlign:'center'}}>{d.name}</div>
+                  <div style={{fontSize:8,fontWeight:700,color:d.net<0?'#E24B4A':'#1D9E75'}}>{(d.net/1e6).toFixed(1)}M</div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginTop:10,paddingTop:10,borderTop:'1px solid #f0f2fa'}}>
+              {[
+                {l:'Operación YTD',    v:ytdOp,  c:'#1D9E75'},
+                {l:'Inversión YTD',    v:ytdInv, c:'#E24B4A'},
+                {l:'Financiamiento YTD', v:ytdFin, c:'#534AB7'},
+                {l:'Flujo Neto YTD',     v:ytdNet, c:ytdNet<0?'#E24B4A':'#1D9E75'},
+              ].map((s,i) => (
+                <div key={i} style={{textAlign:'center',background:'#f8f9fe',borderRadius:6,padding:'6px 4px'}}>
+                  <div style={{fontSize:8,color:'#8A90A8',marginBottom:2}}>{s.l}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:s.c}}>{F(s.v)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
+
+      {/* ===== DIRECTOR EJECUTIVO: ANALISIS AVANZADO ===== */}
+
+      <div style={{margin:'32px 0 10px',borderTop:'2px solid #534AB7',paddingTop:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e',letterSpacing:-0.5}}>
+            🏦 Comparativo Presupuesto vs Real
+          </div>
+          <div style={{fontSize:10,color:'#8A90A8'}}>YTD Ene–{MO[cm-1]} {CUR_YEAR}</div>
+        </div>
+      </div>
+
+      {/* --- Budget Waterfall por Area --- */}
+      {(() => {
+        const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))]
+          .sort().slice(0,8);
+        const rows = areas.map(area => {
+          const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+          const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+          const ejec  = fcast !== 0 ? real/fcast*100 : null;
+          const varPct = fcast !== 0 ? (real-fcast)/Math.abs(fcast)*100 : 0;
+          return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varPct };
+        });
+        const maxV = Math.max(...rows.flatMap(r=>[r.real,r.fcast]),1);
+        const toW  = v => Math.round(v/maxV*100);
+        return (
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',marginBottom:12,borderTop:'3px solid #534AB7'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              {rows.map((r,i) => (
+                <div key={i}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:3,fontSize:9}}>
+                    <span style={{fontWeight:700,color:'#1a1a2e',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</span>
+                    <span style={{color:r.varPct>0?'#E24B4A':'#1D9E75',fontWeight:700}}>
+                      {r.ejec!==null?r.ejec.toFixed(1)+'% ejec':'N/A'}
+                      {r.varPct!==0?' ('+(r.varPct>0?'+':'')+r.varPct.toFixed(1)+'%)':''}
+                    </span>
+                  </div>
+                  <div style={{position:'relative',height:14,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                    <div style={{position:'absolute',left:0,top:0,height:'100%',width:toW(r.fcast)+'%',background:'rgba(83,74,183,0.25)',borderRadius:4}}/>
+                    <div style={{position:'absolute',left:0,top:2,height:10,width:toW(r.real)+'%',background:r.varPct>8?'#E24B4A':r.varPct<-5?'#1D9E75':'#534AB7',borderRadius:3}}/>
+                  </div>
+                  <div style={{display:'flex',gap:16,marginTop:2,fontSize:8,color:'#8A90A8'}}>
+                    <span>■ Presup: {F(r.fcast)}</span>
+                    <span>■ Real: {F(r.real)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:16,marginTop:12,paddingTop:10,borderTop:'1px solid #f0f2fa',fontSize:9}}>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'rgba(83,74,183,0.25)',borderRadius:2}}/> Presupuesto</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#534AB7',borderRadius:2}}/> Real</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#E24B4A',borderRadius:2}}/> Sobreejecutado</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#1D9E75',borderRadius:2}}/> Subejecutado</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* --- Budget vs Real Mensual Trending --- */}
+      {(() => {
+        const months = Array.from({length:cm},(_,i)=>i+1);
+        const realByM  = months.map(m => Math.abs(fd.filter(r=>r[1]==='Reales'  &&r[3]===m&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)));
+        const fcastByM = months.map(m => Math.abs(fd.filter(r=>r[1]==='Forecast'&&r[3]===m&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)));
+        const maxM = Math.max(...realByM,...fcastByM,1);
+        const toH  = v => Math.round(v/maxM*80);
+        const cumR = realByM.reduce((a,v,i) => {a.push((a[i-1]||0)+v); return a;},[]);
+        const cumF = fcastByM.reduce((a,v,i) => {a.push((a[i-1]||0)+v); return a;},[]);
+        return (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>📊 OPEX Mensual: Presup vs Real</div>
+              <div style={{display:'flex',gap:4,alignItems:'flex-end',height:90}}>
+                {months.map((m,i) => (
+                  <div key={m} style={{flex:1,display:'flex',gap:2,alignItems:'flex-end'}}>
+                    <div style={{flex:1,height:toH(fcastByM[i]),background:'rgba(124,58,237,0.2)',borderRadius:'2px 2px 0 0',minHeight:2}}
+                      title={`Presup ${MO[i]}: ${F(fcastByM[i])}`}/>
+                    <div style={{flex:1,height:toH(realByM[i]),background:realByM[i]>fcastByM[i]?'#E24B4A':'#7C3AED',borderRadius:'2px 2px 0 0',minHeight:2}}
+                      title={`Real ${MO[i]}: ${F(realByM[i])}`}/>
+                  </div>
+                ))}
+              </div>
+              <div style={{display:'flex',justifyContent:'space-around',marginTop:6,fontSize:7,color:'#8A90A8'}}>
+                {months.map((m,i) => <span key={m}>{MO[i].slice(0,3)}</span>)}
+              </div>
+            </div>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:8}}>📈 OPEX Acumulado YTD</div>
+              <div style={{position:'relative',height:90}}>
+                <svg width='100%' height='90' viewBox={`0 0 ${Math.max(months.length*30,1)} 90`} preserveAspectRatio='none'>
+                  <polyline
+                    points={cumF.map((v,i)=>`${i*30+15},${90-Math.round(v/Math.max(...cumF,1)*80)}`).join(' ')}
+                    fill='none' stroke='rgba(245,158,11,0.4)' strokeWidth='2' strokeDasharray='5,3'/>
+                  <polyline
+                    points={cumR.map((v,i)=>`${i*30+15},${90-Math.round(v/Math.max(...cumF,1)*80)}`).join(' ')}
+                    fill='none' stroke='#F59E0B' strokeWidth='2.5'/>
+                </svg>
+              </div>
+              <div style={{display:'flex',gap:10,fontSize:8,marginTop:4}}>
+                <span style={{color:'rgba(245,158,11,0.6)'}}>- - Presup YTD: {F(cumF[cm-1]||0)}</span>
+                <span style={{color:'#F59E0B',fontWeight:700}}>— Real YTD: {F(cumR[cm-1]||0)}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+
+
       </>
       }
 {/* */}
