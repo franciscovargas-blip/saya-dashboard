@@ -1214,41 +1214,253 @@ export default function Dashboard() {
         const bTot= bMs.reduce((s,x)=>s+x.burn,0);
         const bAcc= []; let acc2=0; bMs.forEach(x=>{acc2+=x.burn; bAcc.push({m:x.m,v:acc2});});
         const Fk3 = v => !v||v===0?"—":(v<0?"-":"")+"$"+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(1)+"M":Math.abs(v)>=1e3?(Math.abs(v)/1e3).toFixed(0)+"K":Math.round(Math.abs(v)));
-        const cVb = v => ({fontSize:11,fontWeight:700,color:v<0?"#E24B4A":v>0?"#065F46":"#9CA3AF"});
-        const tVb = v => ({fontSize:12,fontWeight:800,color:v<0?"#FCA5A5":v>0?"#86EFAC":"#fff"});
+        const cVb = v => ({fontSize:11,fontWeight:700,color:v<0?"#DC2626":v>0?"#065F46":"#6B7280"});
+        const tVb = v => ({fontSize:12,fontWeight:800,color:v<0?"#DC2626":v>0?"#065F46":"#6B7280"});
         const bgw = {display:"flex",flexWrap:"wrap",gap:4,marginTop:6};
-        const bCell={flex:"1 1 60px",minWidth:55,background:"#1E3A5F",borderRadius:6,padding:"6px 4px",textAlign:"center"};
-        const bTCell={flex:"1 1 80px",minWidth:70,background:"#172554",borderRadius:6,padding:"6px 4px",textAlign:"center"};
-        const bLbl={fontSize:9,color:"#93C5FD",fontWeight:600};
-        const bTLbl={fontSize:9,color:"#DBEAFE",fontWeight:700};
+        const bCell={flex:"1 1 60px",minWidth:55,background:"#DBEAFE",borderRadius:6,padding:"6px 4px",textAlign:"center"};
+        const bTCell={flex:"1 1 80px",minWidth:70,background:"#BFDBFE",borderRadius:6,padding:"6px 4px",textAlign:"center"};
+        const bLbl={fontSize:9,color:"#1E40AF",fontWeight:600};
+        const bTLbl={fontSize:9,color:"#1E3A8A",fontWeight:700};
         return (
-          <div style={{background:"linear-gradient(135deg,#0F172A,#1E3A5F)",borderRadius:10,padding:"14px 16px",marginBottom:14,border:"1px solid #1E40AF"}}>
+          <div style={{background:"#EFF6FF",borderRadius:10,padding:"14px 16px",marginBottom:14,border:"1px solid #93C5FD"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-              <div style={{fontSize:12,fontWeight:800,color:"#fff"}}>🔥 Burn Mexico</div>
-              <div style={{fontSize:9,color:"#93C5FD"}}>Operación+Inversión+Otras · Ene–{MO[cm-1]} {CUR_YEAR}</div>
+              <div style={{fontSize:12,fontWeight:800,color:"#1E3A8A"}}>🔥 Burn Mexico</div>
+              <div style={{fontSize:9,color:"#1E40AF"}}>Operación+Inversión+Otras · Ene–{MO[cm-1]} {CUR_YEAR}</div>
             </div>
-            <div style={{fontSize:9,color:"#93C5FD",fontWeight:700,marginBottom:4}}>BURN MENSUAL</div>
+            <div style={{fontSize:9,color:"#1E40AF",fontWeight:700,marginBottom:4}}>BURN MENSUAL</div>
             <div style={bgw}>
               {bMs.map(x=>(
                 <div key={x.m} style={bCell}><div style={bLbl}>{MO[x.m-1]}</div><div style={cVb(x.burn)}>{Fk3(x.burn)}</div></div>
-              ))}}
+              ))}
               <div style={bTCell}><div style={bTLbl}>YTD TOTAL</div><div style={tVb(bTot)}>{Fk3(bTot)}</div></div>
             </div>
-            <div style={{fontSize:9,color:"#93C5FD",fontWeight:700,marginTop:8,marginBottom:4}}>BURN ACUMULADO</div>
+            <div style={{fontSize:9,color:"#1E40AF",fontWeight:700,marginTop:8,marginBottom:4}}>BURN ACUMULADO</div>
             <div style={bgw}>
               {bAcc.map(x=>(
-                <div key={x.m} style={{...bCell,background:"#172554"}}><div style={bLbl}>{MO[x.m-1]}</div><div style={cVb(x.v)}>{Fk3(x.v)}</div></div>
-              ))}}
+                <div key={x.m} style={{...bCell,background:"#BFDBFE"}}><div style={bLbl}>{MO[x.m-1]}</div><div style={cVb(x.v)}>{Fk3(x.v)}</div></div>
+              ))}
               <div style={bTCell}><div style={bTLbl}>ACUM {MO[cm-1]}</div><div style={tVb(bAcc.length?bAcc[bAcc.length-1].v:0)}>{Fk3(bAcc.length?bAcc[bAcc.length-1].v:0)}</div></div>
+            </div>
+          </div>
+        );
+      })()}
+
+
+      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🧬 Portafolio por Área Terapéutica</div>
+      </div>
+
+      {/* Molecule Composition Summary */}
+      {(() => {
+        const molsByTA = {};
+        const allMolsD = [...new Set(D.filter(r=>r[4]&&r[4]!="--"&&r[4]!=="—").map(r=>r[4]))].sort();
+        allMolsD.forEach(mol => {
+          let ta = "Portafolio General";
+          if (/onco|cancer|tumor|carci/i.test(mol))   ta = "Oncología";
+          else if (/bio|biolog|mab|zumab/i.test(mol)) ta = "Biológicos";
+          else if (/inf|immun|anti/i.test(mol))       ta = "Inmunología";
+          else if (/card|coron|lip/i.test(mol))       ta = "Cardiología";
+          else if (/neuro|parkin|alz/i.test(mol))     ta = "Neurología";
+          if (!molsByTA[ta]) molsByTA[ta] = [];
+          molsByTA[ta].push(mol);
+        });
+        const taEntries = Object.entries(molsByTA).sort((a,b)=>b[1].length-a[1].length);
+        const TCOLS3=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4"];
+        const csvMols = "Molecula,Area Terapeutica\n" + allMolsD.map(m => {
+          let ta2="General";
+          if(/onco|cancer|tumor|carci/i.test(m)) ta2="Oncologia";
+          else if(/bio|biolog|mab|zumab/i.test(m)) ta2="Biologicos";
+          else if(/inf|immun|anti/i.test(m)) ta2="Inmunologia";
+          else if(/card|coron|lip/i.test(m)) ta2="Cardiologia";
+          else if(/neuro|parkin|alz/i.test(m)) ta2="Neurologia";
+          return `${O}m${C},${O}ta2${C}`;
+        }).join("\n");
+        const dlMols = () => {
+          const b=new Blob([csvMols],{type:"text/csv"});
+          const a=document.createElement("a");
+          a.href=URL.createObjectURL(b);
+          a.download="portafolio_moleculas.csv";
+          a.click();
+        };
+        return (
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 18px",marginBottom:12,borderTop:"3px solid #534AB7"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>🧬 Composición del Portafolio de Moléculas</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginTop:2}}>{allMolsD.length} moléculas en pipeline · {taEntries.length} áreas terapéuticas</div>
+              </div>
+              <button onClick={dlMols} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>⬇ CSV</button>
+            </div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {taEntries.map(([ta,mols],i) => (
+                <div key={i} style={{flex:"1 1 200px",background:"#f8f9fe",borderRadius:8,padding:"10px 12px",borderLeft:"3px solid "+(TCOLS3[i%TCOLS3.length])}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <span style={{fontSize:9,fontWeight:800,color:TCOLS3[i%TCOLS3.length]}}>{ta}</span>
+                    <span style={{fontSize:9,fontWeight:700,background:TCOLS3[i%TCOLS3.length],color:"#fff",borderRadius:10,padding:"1px 8px"}}>{mols.length}</span>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:2}}>
+                    {mols.slice(0,5).map((m,j) => (
+                      <div key={j} style={{fontSize:7.5,color:"#1a1a2e",padding:"1px 0",borderBottom:"1px solid #f0f2fa",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>• {m}</div>
+                    ))
+                    {mols.length>5 && <div style={{fontSize:7,color:"#8A90A8",marginTop:2}}>+{(mols.length-5)} más...</div>
+                  }
+                </div>
+              ))
+            }}
             </div>
           </div>
         );
       })()}}
 
+
+      {(() => {
+        // Group molecules by therapeutic area prefix
+        const taMap = {};
+        areaTable.forEach(r => {
+          const mol = r.mol || 'Otros';
+          // Heuristic TA grouping by mol name patterns
+          let ta = 'Otros';
+          if (/onco|cancer|tumor|carci/i.test(mol))    ta = 'Oncología';
+          else if (/bio|biolog|mab|zumab/i.test(mol))  ta = 'Biológicos';
+          else if (/inf|immun|anti/i.test(mol))        ta = 'Inmunología';
+          else if (/card|coron|lip/i.test(mol))        ta = 'Cardiología';
+          else if (/neuro|parkin|alz/i.test(mol))      ta = 'Neurología';
+          else if (mol.length > 0)                     ta = 'Portafolio General';
+          if (!taMap[ta]) taMap[ta] = {mols:[],total:0};
+          taMap[ta].mols.push(mol);
+          taMap[ta].total += Math.abs(r.total);
+        });
+        const taArr = Object.entries(taMap)
+          .map(([ta,d]) => ({ta, mols:d.mols, total:d.total, pct:0}))
+          .sort((a,b)=>b.total-a.total);
+        const grandTotal = taArr.reduce((s,r)=>s+r.total,0);
+        taArr.forEach(r => r.pct = grandTotal>0 ? r.pct=r.total/grandTotal*100 : 0);
+        const TACOLS = ['#534AB7','#1D9E75','#F59E0B','#E24B4A','#7C3AED','#06B6D4'];
+        // Donut segments
+        let cumPct = 0;
+        const segments = taArr.map((r,i) => {
+          const startAngle = cumPct * 3.6;
+          cumPct += r.pct;
+          const endAngle   = cumPct * 3.6;
+          const large = (endAngle-startAngle) > 180 ? 1 : 0;
+          const toXY  = deg => {
+            const rad = (deg-90)*Math.PI/180;
+            return [50+40*Math.cos(rad), 50+40*Math.sin(rad)];
+          };
+          const [x1,y1] = toXY(startAngle);
+          const [x2,y2] = toXY(endAngle);
+          return {...r, path:`M50 50 L${x1} ${y1} A40 40 0 ${large} 1 ${x2} ${y2} Z`, col:TACOLS[i%TACOLS.length]};
+        });
+        return (
+          <div style={{display:'grid',gridTemplateColumns:'200px 1fr',gap:12,marginBottom:12}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #F59E0B',display:'flex',flexDirection:'column',alignItems:'center'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10,alignSelf:'flex-start'}}>Distribución Inversión</div>
+              <svg viewBox='0 0 100 100' style={{width:140,height:140}}>
+                {segments.map((s,i) => (
+                  <path key={i} d={s.path} fill={s.col} opacity='0.85'>
+                    <title>{s.ta}: {s.pct.toFixed(1)}%</title>
+                  </path>
+                ))}
+                <circle cx='50' cy='50' r='22' fill='white'/>
+                <text x='50' y='46' textAnchor='middle' style={{fontSize:'7px',fontWeight:'bold',fill:'#1a1a2e'}}>OPEX</text>
+                <text x='50' y='56' textAnchor='middle' style={{fontSize:'6px',fill:'#8A90A8'}}>YTD</text>
+              </svg>
+              <div style={{display:'flex',flexDirection:'column',gap:4,width:'100%',marginTop:8}}>
+                {segments.map((s,i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:8}}>
+                    <span style={{display:'flex',alignItems:'center',gap:4}}>
+                      <span style={{width:8,height:8,borderRadius:2,background:s.col,display:'inline-block'}}/>
+                      {s.ta}
+                    </span>
+                    <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #1D9E75'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10}}>📋 Detalle por Área Terapéutica</div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área Terapéutica','Moléculas','Inversión YTD','% Portfolio','Estado'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'4px 6px',borderBottom:'1px solid #E4E8F2',textAlign:i<2?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {segments.map((s,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'5px 6px',fontWeight:700,color:s.col}}>
+                        <span style={{display:'inline-block',width:8,height:8,borderRadius:2,background:s.col,marginRight:6}}/>
+                        {s.ta}
+                      </td>
+                      <td style={{padding:'5px 6px',color:'#534AB7',fontSize:8}}>{s.mols.length} mol{s.mols.length>1?'s':''}</td>
+                      <td style={{padding:'5px 6px',textAlign:'right',fontWeight:700}}>{F(s.total)}</td>
+                      <td style={{padding:'5px 6px',textAlign:'right'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:6,justifyContent:'flex-end'}}>
+                          <div style={{width:50,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                            <div style={{height:'100%',width:s.pct+'%',background:s.col,borderRadius:3}}/>
+                          </div>
+                          <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                      <td style={{padding:'5px 6px',textAlign:'right'}}>
+                        <span style={{background:s.total>0?'#e6f9f1':'#fef2f2',color:s.total>0?'#1D9E75':'#E24B4A',borderRadius:10,padding:'2px 8px',fontSize:7,fontWeight:700}}>
+                          {s.total>0?'ACTIVO':'SIN MOV'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
+
+
+      {/* === NS Growth by Year === */}
+      {(() => {
+        const allYrs3=[...new Set(D.map(r=>r[2]))].sort();
+        const nsYr3=allYrs3.map(yr=>({yr,val:Math.abs(D.filter(r=>r[0]==="Net Sales"&&r[2]===yr).reduce((s,r)=>s+r[9],0))}));
+        const mx3=Math.max(...nsYr3.map(x=>x.val),1);
+        return (
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",marginBottom:12,marginTop:4,borderTop:"3px solid #1D9E75"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>📈 Crecimiento Net Sales por Año — EV estimado (12x EBITDA, margen 15%)</div>
+              <button onClick={()=>{ const h3="Anio,NetSales,EV_Est\n"; const allY=[...new Set(D.map(r=>r[2]))].sort(); const rv=allY.map(yr=>{ const v=Math.abs(D.filter(r=>r[0]==="Net Sales"&&r[2]===yr).reduce((s,r)=>s+r[9],0)); return `${O}yr${C},${O}v.toFixed(0)${C},${O}(v*0.15*12).toFixed(0)${C}`; }); const b3=new Blob([h3+rv.join("\n")],{type:"text/csv"}); const a3=document.createElement("a"); a3.href=URL.createObjectURL(b3); a3.download="ns_ev_growth.csv"; a3.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
+              <div style={{fontSize:9,color:"#8A90A8"}}>Hover sobre cada barra para ver EV</div>
+            </div>
+            <div style={{display:"flex",gap:10,alignItems:"flex-end",height:110,marginBottom:8}}>
+              {nsYr3.map((d,i)=>(
+                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                  <div style={{fontSize:8,fontWeight:800,color:"#1D9E75"}}>{d.val>=1e6?(d.val/1e6).toFixed(1)+"M":(d.val/1e3).toFixed(0)+"K"}</div>
+                  <div title={`EV estimado: $${(d.val*0.15*12/1e6).toFixed(1)}M`} style={{width:"100%",height:Math.max(Math.round(d.val/mx3*90),2)+"px",background:d.yr<=CUR_YEAR?"linear-gradient(0deg,#534AB7,#1D9E75)":"rgba(83,74,183,0.22)",borderRadius:"4px 4px 0 0",cursor:"help"}}/>
+                  <div style={{fontSize:9,color:d.yr===CUR_YEAR?"#534AB7":"#8A90A8",fontWeight:d.yr===CUR_YEAR?800:400}}>{d.yr}</div>
+                  <div style={{fontSize:8,color:"#8A90A8"}}>{(d.val*0.15*12/1e6).toFixed(0)}M EV</div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:12,fontSize:8,color:"#8A90A8",flexWrap:"wrap"}}>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"linear-gradient(#534AB7,#1D9E75)",display:"inline-block"}}/>Reales / YTD</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"rgba(83,74,183,0.22)",display:"inline-block"}}/>Forecast</span>
+              <span>EV = Net Sales × 15% margen EBITDA × 12x múltiplo pharma</span>
+            </div>
+          </div>
+        );
+      })()}
+
+
+
       {/* P&L TABLE */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+      <div style={{width:"100%",marginBottom:16}}>
+        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,width:"100%",boxSizing:"border-box"}}>
           <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+
+            <div/><button onClick={()=>{ const h="Mes,Sales,OpEx,EBITDA\n"; const r=chartData.map(d=>`${d.name},${d.Sales||0},${d.OpEx||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_opex.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
+
+          </div>
+
           <ResponsiveContainer width="100%" height={300}>
             <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
               <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
@@ -1729,143 +1941,6 @@ export default function Dashboard() {
         );
       })()}
 
-      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
-      <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
-        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🧬 Portafolio por Área Terapéutica</div>
-      </div>
-
-      {(() => {
-        // Group molecules by therapeutic area prefix
-        const taMap = {};
-        areaTable.forEach(r => {
-          const mol = r.mol || 'Otros';
-          // Heuristic TA grouping by mol name patterns
-          let ta = 'Otros';
-          if (/onco|cancer|tumor|carci/i.test(mol))    ta = 'Oncología';
-          else if (/bio|biolog|mab|zumab/i.test(mol))  ta = 'Biológicos';
-          else if (/inf|immun|anti/i.test(mol))        ta = 'Inmunología';
-          else if (/card|coron|lip/i.test(mol))        ta = 'Cardiología';
-          else if (/neuro|parkin|alz/i.test(mol))      ta = 'Neurología';
-          else if (mol.length > 0)                     ta = 'Portafolio General';
-          if (!taMap[ta]) taMap[ta] = {mols:[],total:0};
-          taMap[ta].mols.push(mol);
-          taMap[ta].total += Math.abs(r.total);
-        });
-        const taArr = Object.entries(taMap)
-          .map(([ta,d]) => ({ta, mols:d.mols, total:d.total, pct:0}))
-          .sort((a,b)=>b.total-a.total);
-        const grandTotal = taArr.reduce((s,r)=>s+r.total,0);
-        taArr.forEach(r => r.pct = grandTotal>0 ? r.pct=r.total/grandTotal*100 : 0);
-        const TACOLS = ['#534AB7','#1D9E75','#F59E0B','#E24B4A','#7C3AED','#06B6D4'];
-        // Donut segments
-        let cumPct = 0;
-        const segments = taArr.map((r,i) => {
-          const startAngle = cumPct * 3.6;
-          cumPct += r.pct;
-          const endAngle   = cumPct * 3.6;
-          const large = (endAngle-startAngle) > 180 ? 1 : 0;
-          const toXY  = deg => {
-            const rad = (deg-90)*Math.PI/180;
-            return [50+40*Math.cos(rad), 50+40*Math.sin(rad)];
-          };
-          const [x1,y1] = toXY(startAngle);
-          const [x2,y2] = toXY(endAngle);
-          return {...r, path:`M50 50 L${x1} ${y1} A40 40 0 ${large} 1 ${x2} ${y2} Z`, col:TACOLS[i%TACOLS.length]};
-        });
-        return (
-          <div style={{display:'grid',gridTemplateColumns:'200px 1fr',gap:12,marginBottom:12}}>
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #F59E0B',display:'flex',flexDirection:'column',alignItems:'center'}}>
-              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10,alignSelf:'flex-start'}}>Distribución Inversión</div>
-              <svg viewBox='0 0 100 100' style={{width:140,height:140}}>
-                {segments.map((s,i) => (
-                  <path key={i} d={s.path} fill={s.col} opacity='0.85'>
-                    <title>{s.ta}: {s.pct.toFixed(1)}%</title>
-                  </path>
-                ))}
-                <circle cx='50' cy='50' r='22' fill='white'/>
-                <text x='50' y='46' textAnchor='middle' style={{fontSize:'7px',fontWeight:'bold',fill:'#1a1a2e'}}>OPEX</text>
-                <text x='50' y='56' textAnchor='middle' style={{fontSize:'6px',fill:'#8A90A8'}}>YTD</text>
-              </svg>
-              <div style={{display:'flex',flexDirection:'column',gap:4,width:'100%',marginTop:8}}>
-                {segments.map((s,i) => (
-                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:8}}>
-                    <span style={{display:'flex',alignItems:'center',gap:4}}>
-                      <span style={{width:8,height:8,borderRadius:2,background:s.col,display:'inline-block'}}/>
-                      {s.ta}
-                    </span>
-                    <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #1D9E75'}}>
-              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10}}>📋 Detalle por Área Terapéutica</div>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-                <thead><tr>
-                  {['Área Terapéutica','Moléculas','Inversión YTD','% Portfolio','Estado'].map((h,i) => (
-                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'4px 6px',borderBottom:'1px solid #E4E8F2',textAlign:i<2?'left':'right'}}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {segments.map((s,i) => (
-                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'5px 6px',fontWeight:700,color:s.col}}>
-                        <span style={{display:'inline-block',width:8,height:8,borderRadius:2,background:s.col,marginRight:6}}/>
-                        {s.ta}
-                      </td>
-                      <td style={{padding:'5px 6px',color:'#534AB7',fontSize:8}}>{s.mols.length} mol{s.mols.length>1?'s':''}</td>
-                      <td style={{padding:'5px 6px',textAlign:'right',fontWeight:700}}>{F(s.total)}</td>
-                      <td style={{padding:'5px 6px',textAlign:'right'}}>
-                        <div style={{display:'flex',alignItems:'center',gap:6,justifyContent:'flex-end'}}>
-                          <div style={{width:50,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                            <div style={{height:'100%',width:s.pct+'%',background:s.col,borderRadius:3}}/>
-                          </div>
-                          <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
-                        </div>
-                      </td>
-                      <td style={{padding:'5px 6px',textAlign:'right'}}>
-                        <span style={{background:s.total>0?'#e6f9f1':'#fef2f2',color:s.total>0?'#1D9E75':'#E24B4A',borderRadius:10,padding:'2px 8px',fontSize:7,fontWeight:700}}>
-                          {s.total>0?'ACTIVO':'SIN MOV'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* === NS Growth by Year === */}
-      {(() => {
-        const allYrs3=[...new Set(D.map(r=>r[2]))].sort();
-        const nsYr3=allYrs3.map(yr=>({yr,val:Math.abs(D.filter(r=>r[0]==="Net Sales"&&r[2]===yr).reduce((s,r)=>s+r[9],0))}));
-        const mx3=Math.max(...nsYr3.map(x=>x.val),1);
-        return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",marginBottom:12,marginTop:4,borderTop:"3px solid #1D9E75"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>📈 Crecimiento Net Sales por Año — EV estimado (12x EBITDA, margen 15%)</div>
-              <div style={{fontSize:9,color:"#8A90A8"}}>Hover sobre cada barra para ver EV</div>
-            </div>
-            <div style={{display:"flex",gap:10,alignItems:"flex-end",height:110,marginBottom:8}}>
-              {nsYr3.map((d,i)=>(
-                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                  <div style={{fontSize:8,fontWeight:800,color:"#1D9E75"}}>{d.val>=1e6?(d.val/1e6).toFixed(1)+"M":(d.val/1e3).toFixed(0)+"K"}</div>
-                  <div title={`EV estimado: $${(d.val*0.15*12/1e6).toFixed(1)}M`} style={{width:"100%",height:Math.max(Math.round(d.val/mx3*90),2)+"px",background:d.yr<=CUR_YEAR?"linear-gradient(0deg,#534AB7,#1D9E75)":"rgba(83,74,183,0.22)",borderRadius:"4px 4px 0 0",cursor:"help"}}/>
-                  <div style={{fontSize:9,color:d.yr===CUR_YEAR?"#534AB7":"#8A90A8",fontWeight:d.yr===CUR_YEAR?800:400}}>{d.yr}</div>
-                  <div style={{fontSize:8,color:"#8A90A8"}}>{(d.val*0.15*12/1e6).toFixed(0)}M EV</div>
-                </div>
-              ))}}
-            </div>
-            <div style={{display:"flex",gap:12,fontSize:8,color:"#8A90A8",flexWrap:"wrap"}}>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"linear-gradient(#534AB7,#1D9E75)",display:"inline-block"}}/>Reales / YTD</span>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"rgba(83,74,183,0.22)",display:"inline-block"}}/>Forecast</span>
-              <span>EV = Net Sales × 15% margen EBITDA × 12x múltiplo pharma</span>
-            </div>
-          </div>
-        );
-      })()}}
 
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
@@ -1906,18 +1981,18 @@ export default function Dashboard() {
                       </div>
                       <span style={{background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#7C3AED",borderRadius:6,padding:"2px 6px",fontSize:7,fontWeight:700,whiteSpace:"nowrap"}}>{yr<CUR_YEAR?"✓ Lanzado":yr===CUR_YEAR?"▶ Activo":"⏳ Futuro"}</span>
                     </div>
-                  ))}}
+                  ))}
                 </div>
               </div>
-            ))}}
+            ))}
             <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap",paddingTop:10,borderTop:"1px solid #f0f2fa",fontSize:8}}>
               {Object.entries(aCols).map(([area,col],i)=>(
                 <span key={i} style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:2,background:col,display:"inline-block"}}/>{area}</span>
-              ))}}
+              ))}
             </div>
           </div>
         );
-      })()}}
+      })()}
 
 
       </>
