@@ -1343,7 +1343,7 @@ export default function Dashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-            <div style={{124}}>Revenue vs OpEx Mensual</div>
+            <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e"}}>Revenue vs OpEx Mensual</div>
             <button onClick={()=>{const h="Mes,Sales,OpEx,EBITDA\n";const r=chartData.map(d=>[d.name,d.Sales||0,d.OpEx||0,d.EBITDA||0].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="revenue_opex.csv";a.click();}} style={{fontSize:9,padding:"3px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>&#11015; CSV</button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
@@ -1378,7 +1378,7 @@ export default function Dashboard() {
         {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
           <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-              <div style={{173}}>{p.title}</div>
+              <div style={{fontSize:11,fontWeight:500,color:"#1a1a2e",marginBottom:4}}>{p.title}</div>
               <button onClick={()=>{const h="Molecula,Valor\n";const r=p.data.map(d=>d.name+","+(d.value||0)).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=(p.title.replace(/ /g,"_")+".csv");a.click();}} style={{fontSize:9,padding:"3px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>&#11015; CSV</button>
             </div>
             {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
