@@ -1180,7 +1180,7 @@ export default function Dashboard() {
         </div>
       </div>
       {/* KPI CARDS WITH ICONS */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:12,padding:"0 0 16px",marginBottom:8}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(0,1fr))",gap:12,padding:"0 0 16px",marginBottom:8}}>
         {(()=>{
           const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
           const kC = c => ({background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 14px",borderTop:"3px solid "+c,boxShadow:"0 2px 8px rgba(26,26,46,0.06)",display:"flex",flexDirection:"column",gap:3});
@@ -1734,6 +1734,63 @@ export default function Dashboard() {
 
       </div>
 
+        );
+      })()}
+
+
+      {/* ===== TIMELINE EJECUTIVO ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
+      </div>
+
+      {(() => {
+        const molLaunches = {};
+        D.filter(r=>r[0]==="Net Sales"&&r[1]==="Forecast"&&r[9]>0).forEach(r=>{
+          const mol=r[4]; const yr=r[2]; const mo=r[3];
+          if(!molLaunches[mol]||yr<molLaunches[mol].yr||(yr===molLaunches[mol].yr&&mo<molLaunches[mol].mo))
+            molLaunches[mol]={yr,mo,area:r[5]};
+        });
+        const launches=Object.entries(molLaunches).map(([mol,d])=>({mol,yr:d.yr,mo:d.mo,area:d.area})).sort((a,b)=>a.yr!==b.yr?a.yr-b.yr:a.mo-b.mo);
+        const tlYrs=[...new Set(launches.map(l=>l.yr))].sort();
+        const TCOLS=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4","#EC4899","#10B981"];
+        const aCols={}; let ci=0; launches.forEach(l=>{ if(!aCols[l.area]) aCols[l.area]=TCOLS[ci++%TCOLS.length]; });
+        const MS=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+        return (
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:16,borderTop:"3px solid #E24B4A"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>🚀 Lanzamientos de Moléculas — Primeras Ventas Forecast</div>
+              <div style={{fontSize:9,color:"#8A90A8"}}>{launches.length} moléculas en pipeline</div>
+            </div>
+            {tlYrs.map(yr=>(
+              <div key={yr} style={{marginBottom:14}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <div style={{fontSize:12,fontWeight:800,color:yr===CUR_YEAR?"#534AB7":yr<CUR_YEAR?"#1D9E75":"#8A90A8",minWidth:44}}>{yr}</div>
+                  <div style={{flex:1,height:1,background:"#E4E8F2"}}/> 
+                  <span style={{fontSize:8,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700,background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",borderRadius:6,padding:"2px 8px"}}>{yr<CUR_YEAR?"✓ Completado":yr===CUR_YEAR?"▶ En curso":"⏳ Proyectado"}</span>
+                </div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                  {launches.filter(l=>l.yr===yr).map((l,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+(aCols[l.area]||"#534AB7")}}>
+                      <div>
+                        <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.mol}</div>
+                        <div style={{fontSize:7,color:aCols[l.area]||"#534AB7",fontWeight:600,marginTop:1}}>{(l.area||"--")} · {MS[l.mo-1]} {l.yr}</div>
+                      </div>
+                      <span style={{background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#7C3AED",borderRadius:6,padding:"2px 6px",fontSize:7,fontWeight:700,whiteSpace:"nowrap"}}>{yr<CUR_YEAR?"✓ Lanzado":yr===CUR_YEAR?"▶ Activo":"⏳ Futuro"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap",paddingTop:10,borderTop:"1px solid #f0f2fa",fontSize:8}}>
+              {Object.entries(aCols).map(([area,col],i)=>(
+                <span key={i} style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:2,background:col,display:"inline-block"}}/>{area}</span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
       {/* --- Row 3: Flujo de Caja --- */}
       {cashFlow && (() => {
         const cfD = cashFlow.months.slice(0, cm).map((mo, idx) => ({
@@ -1903,93 +1960,6 @@ export default function Dashboard() {
         );
       })()}
 
-      {/* ===== VALORACION DE COMPANIA ===== */}
-      <div style={{margin:"20px 0 10px",borderTop:"2px solid #1D9E75",paddingTop:12}}>
-        <div style={{fontSize:14,fontWeight:900,color:"#1a1a2e"}}>🏢 Valoración de la Compañía</div>
-      </div>
-      {(() => {
-        const plV = buildPL(fd, CUR_YEAR, 1, cm, 'consolidado');
-        const nsAnn     = Math.abs(plV.ns)     * 12 / Math.max(cm,1);
-        const ebitdaAnn = Math.abs(plV.ebitda)  * 12 / Math.max(cm,1);
-        const gmPctV    = plV.gmPct || 0;
-        const ebitdaPctV= nsAnn > 0 ? ebitdaAnn/nsAnn*100 : 0;
-        const pipeMolsV = areaTable.length;
-        const evBase    = ebitdaAnn * 12;
-        const kpiItems  = [
-          {label:'Ventas Anualizadas', val:F(nsAnn),                    icon:'📈', sub:'Run-rate YTD'},
-          {label:'Gross Margin',       val:gmPctV.toFixed(1)+'%',     icon:'⚖️', sub:'Eficiencia bruta'},
-          {label:'EBITDA Anualizado',   val:F(ebitdaAnn),               icon:'💵', sub:ebitdaPctV.toFixed(1)+'% margen'},
-          {label:'EV Estimado (12x)',   val:F(evBase),                  icon:'🏦', sub:'EBITDA × 12x múltiplo'},
-          {label:'Moléculas Pipeline', val:pipeMolsV,              icon:'💊', sub:'Portfolio activo'},
-        ];
-        return (
-          <div style={{display:"flex",flexWrap:"wrap",gap:10,marginBottom:12}}>
-            {kpiItems.map((d,i) => (
-              <div key={i} style={{flex:"1 1 160px",background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-                <div style={{fontSize:22}}>{d.icon}</div>
-                <div>
-                  <div style={{fontSize:9,color:"#8A90A8",fontWeight:600}}>{d.label}</div>
-                  <div style={{fontSize:16,fontWeight:800,color:"#1a1a2e",lineHeight:1.2}}>{d.val}</div>
-                  <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>{d.sub}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      })()}
-
-
-      {/* ===== TIMELINE EJECUTIVO ===== */}
-      <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
-        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
-      </div>
-
-      {(() => {
-        const molLaunches = {};
-        D.filter(r=>r[0]==="Net Sales"&&r[1]==="Forecast"&&r[9]>0).forEach(r=>{
-          const mol=r[4]; const yr=r[2]; const mo=r[3];
-          if(!molLaunches[mol]||yr<molLaunches[mol].yr||(yr===molLaunches[mol].yr&&mo<molLaunches[mol].mo))
-            molLaunches[mol]={yr,mo,area:r[5]};
-        });
-        const launches=Object.entries(molLaunches).map(([mol,d])=>({mol,yr:d.yr,mo:d.mo,area:d.area})).sort((a,b)=>a.yr!==b.yr?a.yr-b.yr:a.mo-b.mo);
-        const tlYrs=[...new Set(launches.map(l=>l.yr))].sort();
-        const TCOLS=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4","#EC4899","#10B981"];
-        const aCols={}; let ci=0; launches.forEach(l=>{ if(!aCols[l.area]) aCols[l.area]=TCOLS[ci++%TCOLS.length]; });
-        const MS=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-        return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:16,borderTop:"3px solid #E24B4A"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>🚀 Lanzamientos de Moléculas — Primeras Ventas Forecast</div>
-              <div style={{fontSize:9,color:"#8A90A8"}}>{launches.length} moléculas en pipeline</div>
-            </div>
-            {tlYrs.map(yr=>(
-              <div key={yr} style={{marginBottom:14}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <div style={{fontSize:12,fontWeight:800,color:yr===CUR_YEAR?"#534AB7":yr<CUR_YEAR?"#1D9E75":"#8A90A8",minWidth:44}}>{yr}</div>
-                  <div style={{flex:1,height:1,background:"#E4E8F2"}}/> 
-                  <span style={{fontSize:8,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700,background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",borderRadius:6,padding:"2px 8px"}}>{yr<CUR_YEAR?"✓ Completado":yr===CUR_YEAR?"▶ En curso":"⏳ Proyectado"}</span>
-                </div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {launches.filter(l=>l.yr===yr).map((l,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+(aCols[l.area]||"#534AB7")}}>
-                      <div>
-                        <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.mol}</div>
-                        <div style={{fontSize:7,color:aCols[l.area]||"#534AB7",fontWeight:600,marginTop:1}}>{(l.area||"--")} · {MS[l.mo-1]} {l.yr}</div>
-                      </div>
-                      <span style={{background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#7C3AED",borderRadius:6,padding:"2px 6px",fontSize:7,fontWeight:700,whiteSpace:"nowrap"}}>{yr<CUR_YEAR?"✓ Lanzado":yr===CUR_YEAR?"▶ Activo":"⏳ Futuro"}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap",paddingTop:10,borderTop:"1px solid #f0f2fa",fontSize:8}}>
-              {Object.entries(aCols).map(([area,col],i)=>(
-                <span key={i} style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:2,background:col,display:"inline-block"}}/>{area}</span>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
 
 
       </>
