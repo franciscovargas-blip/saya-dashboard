@@ -673,73 +673,7 @@ export default function Dashboard() {
         })}
       </div>
 {/* */}
-      {mainTab === "dashboard" && <>
-      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>P&L Anual — {view === "forecast" ? "Forecast" : view === "reales" ? "Reales" : "Consolidado"} 2026</span>
-        </div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead><tr>
-            <th style={{ ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 180 }}>Línea P&L</th>
-            {MO.map((m, i) => <th key={i} style={{ ...th, textAlign: "right", minWidth: 64, color: i + 1 <= cm ? "#085041" : "#185FA5", background: i + 1 <= cm ? "#f0faf6" : "#f5f8fc" }}>{m}</th>)}
-            <th style={{ ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" }}>Total</th>
-          </tr></thead>
-          <tbody>
-            {(() => {
-              const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
-              const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
-              const tableRows = [];
-  const SEP_STYLE = {padding:"6px 6px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500};
-{/* */}
-              PL_KEYS.forEach((k) => {
-                const isPct = PCT_KEYS.has(k);
-                const isBold = BOLD_KEYS.has(k);
-                const isOpex = OPEX_KEY_SET.has(k);
-                const code = OPEX_CODE_MAP[k];
-                if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={SEP_STYLE}>Operating Expenses</td></tr>);
-                /* fin-sep removed */
-                tableRows.push(
-                  <tr key={"row-"+k} style={k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
-                    <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
-                      {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
-                      {PL_LABELS[k]}
-                    </td>
-                    {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct)}</td>)}
-                    <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct)}</td>
-                  </tr>
-                );
-                // Drill-down for OpEx rows
-                if (isOpex && expOpex[k] && code) {
-                  const codeData = fd.filter(r => r[0] === code);
-                  // Group by Clasificacion — Reales ≤ cm, Forecast > cm
-                  const clsMap = {};
-                  codeData.forEach(r => {
-                    const m = r[3], origen = r[1];
-                    if (m <= cm && origen !== "Reales") return;
-                    if (m > cm && origen !== "Forecast") return;
-                    const cls = r[6] || "—";
-                    if (!clsMap[cls]) clsMap[cls] = { items: {}, m: Array(12).fill(0) };
-                    clsMap[cls].m[m - 1] += r[9];
-                    const com = r[7] || "—";
-                    if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { m: Array(12).fill(0), p: r[8] };
-                    clsMap[cls].items[com].m[m - 1] += r[9];
-                  });
-                  Object.entries(clsMap).filter(([c]) => c !== "—").forEach(([cls, data]) => {
-                    const clsKey = k + "|" + cls;
-                    const clsExp = expOpex[clsKey];
-                    const clsTotal = data.m.reduce((s, v) => s + v, 0);
-                    tableRows.push(
-                      <tr key={"cls-" + clsKey} style={{ background: "#fafcff", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); toggleOx(clsKey); }}>
-                        <td style={{ ...td, paddingLeft: 32, fontSize: 9, color: "#185FA5", position: "sticky", left: 0, background: "#fafcff" }}>
-                          <span style={{ fontSize: 7, marginRight: 3 }}>{clsExp ? "▼" : "▶"}</span>{cls}
-                        </td>
-                        {data.m.map((v, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontSize: 9, color: v < 0 ? "#E24B4A" : v === 0 ? "#ddd" : "#666" }}>{v === 0 ? "" : F(v)}</td>)}
-                        <td style={{ ...td, textAlign: "right", fontSize: 9, fontWeight: 500, borderLeft: "2px solid #E4E8F2" }}>{F(clsTotal)}</td>
-                      </tr>
-                    );
-                    if (clsExp) {
-                      Object.entries(data.items).forEach(([com, cd]) => {
-                        const comTotal = cd.m.reduce((s, v) => s + v, 0);
+      {mainTab === "dashboard" && <>}
                         tableRows.push(
                           <tr key={"com-" + clsKey + "|" + com} style={{ background: "#f8f9fe" }}>
                             <td style={{ ...td, paddingLeft: 48, fontSize: 8, color: "#8A90A8", position: "sticky", left: 0, background: "#f8f9fe" }} title={"Partner: " + cd.p}>
@@ -940,101 +874,6 @@ export default function Dashboard() {
             </React.Fragment>
           );
         };
-        const totRow = (key, label, isBal) => {
-          const vals  = rows.map(mo => mo[key] || 0);
-          const total = vals.reduce((s, v) => s + v, 0);
-          return isBal ? (
-            <tr key={key} style={S.trBal}>
-              <td style={S.tdBal}>{label}</td>
-              {vals.map((v,i) => <td key={i} style={numB(v)}>{Fk(v)}</td>)}
-            </tr>
-          ) : (
-            <tr key={key} style={S.trTot}>
-              <td style={S.tdTot}>{label}</td>
-              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
-            </tr>
-          );
-        };
-        const balRow = (key, label) => {
-          const vals = rows.map(mo => mo[key] || 0);
-          return (
-            <tr key={key} style={S.trTot}>
-              <td style={S.tdTot}>{label}</td>
-              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
-            </tr>
-          );
-        };
-        const secH = (label, st) => (
-          <tr key={'h_'+label}><td colSpan={cm+1} style={st}>{label}</td></tr>
-        );
-        return (
-          <div style={S.wrap}>
-            {(()=>{
-              // Burn Mexico = Actividades de Operación + Actividades de Inversión + Otras variaciones no clasificadas
-              const burnMonths = rows.map(mo => ({ m: mo.m, burn: (mo.totalOperacion || 0) + (mo.totalInversion || 0) + (mo.otraVariacion || 0) }));
-              const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
-              const BURN_ACUM_ENE = -86708794;
-              let burnAcumRun = BURN_ACUM_ENE;
-              const burnAccumMonths = burnMonths.map((x, i) => {
-                if (i === 0) return { m: x.m, accum: BURN_ACUM_ENE };
-                burnAcumRun += x.burn;
-                return { m: x.m, accum: burnAcumRun };
-              });
-              const burnAccumTotal = burnAccumMonths.length ? burnAccumMonths[burnAccumMonths.length-1].accum : BURN_ACUM_ENE;
-              const bs = {
-                wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
-                head:{marginBottom:12},
-                title:{fontSize:17,fontWeight:800,color:"#1E3A8A"},
-                sub:{fontSize:11,color:"#1E40AF",marginTop:2},
-                grid:{display:"flex",gap:6,flexWrap:"wrap"},
-                rowLbl:{fontSize:10,color:"#1E3A8A",fontWeight:800,letterSpacing:0.5,margin:"10px 0 6px",textTransform:"uppercase"},
-                cell:{flex:"1 1 70px",minWidth:65,background:"#fff",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
-                totalCell:{flex:"1 1 80px",minWidth:75,background:"#1E40AF",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
-                accumCell:{flex:"1 1 70px",minWidth:65,background:"#F8FAFC",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
-                accumTotalCell:{flex:"1 1 80px",minWidth:75,background:"#172554",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
-                cellLbl:{fontSize:10,color:"#1E40AF",fontWeight:600},
-                totalLbl:{fontSize:10,color:"#DBEAFE",fontWeight:700,letterSpacing:0.5}
-              };
-              const cellVal = v => ({fontSize:12,fontWeight:700,color:v<0?"#B91C1C":v>0?"#065F46":"#9CA3AF"});
-              const totalVal = v => ({fontSize:13,fontWeight:800,color:v<0?"#FCA5A5":v>0?"#86EFAC":"#FFFFFF"});
-              return (
-              <div style={bs.wrap}>
-                <div style={bs.head}>
-                  <div style={bs.title}>Burn Mexico</div>
-                  <div style={bs.sub}>Actividades de Operación + Inversión + Otras variaciones no clasificadas · Ene–{MO[cm-1]} {CUR_YEAR}</div>
-                </div>
-                <div style={bs.rowLbl}>Burn mensual</div>
-                <div style={bs.grid}>
-                  {burnMonths.map(x => (
-                    <div key={x.m} style={bs.cell}>
-                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
-                      <div style={cellVal(x.burn)}>{Fk(x.burn)}</div>
-                    </div>
-                  ))}
-                  <div style={bs.totalCell}>
-                    <div style={bs.totalLbl}>YTD TOTAL</div>
-                    <div style={totalVal(burnTotal)}>{Fk(burnTotal)}</div>
-                  </div>
-                </div>
-                <div style={bs.rowLbl}>Burn acumulado</div>
-                <div style={bs.grid}>
-                  {burnAccumMonths.map(x => (
-                    <div key={x.m} style={bs.accumCell}>
-                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
-                      <div style={cellVal(x.accum)}>{Fk(x.accum)}</div>
-                    </div>
-                  ))}
-                  <div style={bs.accumTotalCell}>
-                    <div style={bs.totalLbl}>ACUM. {MO[cm-1]}</div>
-                    <div style={totalVal(burnAccumTotal)}>{Fk(burnAccumTotal)}</div>
-                  </div>
-                </div>
-              </div>);
-            })()}
-            <div style={S.hdr}>
-              <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
-              <div>
-                <div style={S.hTitle}>Cash Flow</div>
                 <div style={S.hSub}>Método Indirecto — NIF B-2 · Enero–{MO[cm-1]} {CUR_YEAR}</div>
               </div>
             </div>
@@ -1168,29 +1007,29 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "executive" && <>
       {/* EXECUTIVE HEADER */}
-      <div style=display:"flex",alignItems:"center",gap:16,padding:"14px 20px",background:"linear-gradient(135deg,#534AB7 0%,#7C3AED 100%)",borderRadius:12,marginBottom:16,color:"#fff">
-        <div style=fontSize:32,lineHeight:1>🎯</div>
-        <div style=flex:1>
-          <div style=fontSize:16,fontWeight:700,letterSpacing:-0.3>Executive Financial Dashboard</div>
-          <div style=fontSize:11,opacity:0.8,marginTop:2>Visión Ejecutiva · {MO[cm-1]} {CUR_YEAR} · {view.charAt(0).toUpperCase()+view.slice(1)}</div>
+      <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 20px",background:"linear-gradient(135deg,#534AB7 0%,#7C3AED 100%)",borderRadius:12,marginBottom:16,color:"#fff"}}>
+        <div style={{fontSize:32,lineHeight:1}}>🎯</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:16,fontWeight:700,letterSpacing:-0.3}}>Executive Financial Dashboard</div>
+          <div style={{fontSize:11,opacity:0.8,marginTop:2}}>Visión Ejecutiva · {MO[cm-1]} {CUR_YEAR} · {view.charAt(0).toUpperCase()+view.slice(1)}</div>
         </div>
-        <div style=display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end">
-          <span style=background:"rgba(255,255,255,0.2)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600>● Reales ≤ {MO[cm-1]}</span>
-          <span style=background:"rgba(255,255,255,0.1)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600>○ Forecast</span>
+        <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+          <span style={{background:"rgba(255,255,255,0.2)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600}}>● Reales ≤ {MO[cm-1]}</span>
+          <span style={{background:"rgba(255,255,255,0.1)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600}}>○ Forecast</span>
         </div>
       </div>
       {/* KPI CARDS WITH ICONS */}
-      <div style=display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:12,padding:"0 0 16px",marginBottom:8>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:12,padding:"0 0 16px",marginBottom:8}}>
         {(()=>{
           const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
           const kC = c => ({background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 14px",borderTop:"3px solid "+c,boxShadow:"0 2px 8px rgba(26,26,46,0.06)",display:"flex",flexDirection:"column",gap:3});
           return (<React.Fragment>
             {kpis.map((k, i) => (
               <div key={i} style={kC(k.c)}>
-                <div style=fontSize:24,marginBottom:4,lineHeight:1>{ICONS[k.l]||"📌"}</div>
-                <div style=fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2>{k.l}</div>
-                <div style=fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5>{k.v}</div>
-                <div style=fontSize:10,color:"#8A90A8",marginTop:2>{k.s}</div>
+                <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{ICONS[k.l]||"📌"}</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k.l}</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{k.v}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>{k.s}</div>
               </div>
             ))}
             {cashFlow && (() => {
@@ -1199,10 +1038,10 @@ export default function Dashboard() {
               const bCM  = bArr.length?bArr[bArr.length-1]:0;
               const bCol = bYTD<0?"#E24B4A":"#065F46";
               return (<div style={kC(bCol)}>
-                <div style=fontSize:24,marginBottom:4,lineHeight:1>🔥</div>
-                <div style=fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2>BURN MEXICO YTD</div>
-                <div style=fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5>{F(bYTD)}</div>
-                <div style=fontSize:10,color:"#8A90A8",marginTop:2>Mes {MO[cm-1]}: {F(bCM)}</div>
+                <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN MEXICO YTD</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(bYTD)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Mes {MO[cm-1]}: {F(bCM)}</div>
               </div>);
             })()}
           </React.Fragment>);
@@ -1324,10 +1163,177 @@ export default function Dashboard() {
 <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
 <div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
 <div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
-<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
+      </>
+      }
 {/* */}
-</div>
-{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+      {mainTab === "executive" && <>}
+      {/* EXECUTIVE HEADER */}
+      <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 20px",background:"linear-gradient(135deg,#534AB7 0%,#7C3AED 100%)",borderRadius:12,marginBottom:16,color:"#fff"}}>
+        <div style={{fontSize:32,lineHeight:1}}>🎯</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:16,fontWeight:700,letterSpacing:-0.3}}>Executive Financial Dashboard</div>
+          <div style={{fontSize:11,opacity:0.8,marginTop:2}}>Visión Ejecutiva · {MO[cm-1]} {CUR_YEAR}</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+          <span style={{background:"rgba(255,255,255,0.2)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600}}>● Reales ≤ {MO[cm-1]}</span>
+          <span style={{background:"rgba(255,255,255,0.1)",borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:600}}>○ Forecast</span>
+        </div>
+      </div>
+      {/* KPI CARDS WITH ICONS */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(152px,1fr))",gap:12,padding:"0 0 16px",marginBottom:8}}>
+        {(()=>}{
+          const ICONS={"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
+          const kC=c=>({background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 14px",borderTop:"3px solid "+c,boxShadow:"0 2px 8px rgba(26,26,46,.06)",display:"flex",flexDirection:"column",gap:3});
+          return(<React.Fragment>
+            {kpis.map((k,i)=>(<div key={i} style={kC(k.c)}>}
+              <div style={{fontSize:26,marginBottom:4,lineHeight:1}}>{ICONS[k.l]||"📌"}</div>
+              <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k.l}</div>
+              <div style={{fontSize:20,fontWeight:800,color:k.c,lineHeight:1.1}}>{k.v}</div>
+              <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>{k.s}</div>
+            </div>))}
+            {cashFlow&&(()=>}{
+              const bA=cashFlow.months.slice(0,cm).map(mo=>(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0));
+              const bY=bA.reduce((s,v)=>s+v,0),bM=bA.length?bA[bA.length-1]:0,bC=bY<0?"#E24B4A":"#065F46";
+              return(<div style={kC(bC)}>
+                <div style={{fontSize:26,marginBottom:4,lineHeight:1}}>🔥</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN MEXICO YTD</div>
+                <div style={{fontSize:20,fontWeight:800,color:bC,lineHeight:1.1}}>{F(bY)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Mes {MO[cm-1]}: {F(bM)}</div>
+              </div>);
+            })()}
+          </React.Fragment>);
+        })()}
+      </div>
+                if (isOpex && expOpex[k] && code) {
+                  const codeData = fd.filter(r => r[0] === code);
+                  // Group by Clasificacion — Reales ≤ cm, Forecast > cm
+                  const clsMap = {};
+                  codeData.forEach(r => {
+                    const m = r[3], origen = r[1];
+                    if (m <= cm && origen !== "Reales") return;
+                    if (m > cm && origen !== "Forecast") return;
+                    const cls = r[6] || "—";
+                    if (!clsMap[cls]) clsMap[cls] = { items: {}, m: Array(12).fill(0) };
+                    clsMap[cls].m[m - 1] += r[9];
+                    const com = r[7] || "—";
+                    if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { m: Array(12).fill(0), p: r[8] };
+                    clsMap[cls].items[com].m[m - 1] += r[9];
+                  });
+                  Object.entries(clsMap).filter(([c]) => c !== "—").forEach(([cls, data]) => {
+                    const clsKey = k + "|" + cls;
+                    const clsExp = expOpex[clsKey];
+                    const clsTotal = data.m.reduce((s, v) => s + v, 0);
+                    tableRows.push(
+                      <tr key={"cls-" + clsKey} style={{ background: "#fafcff", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); toggleOx(clsKey); }}>
+                        <td style={{ ...td, paddingLeft: 32, fontSize: 9, color: "#185FA5", position: "sticky", left: 0, background: "#fafcff" }}>
+                          <span style={{ fontSize: 7, marginRight: 3 }}>{clsExp ? "▼" : "▶"}</span>{cls}
+                        </td>
+                        {data.m.map((v, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontSize: 9, color: v < 0 ? "#E24B4A" : v === 0 ? "#ddd" : "#666" }}>{v === 0 ? "" : F(v)}</td>)}
+                        <td style={{ ...td, textAlign: "right", fontSize: 9, fontWeight: 500, borderLeft: "2px solid #E4E8F2" }}>{F(clsTotal)}</td>
+                      </tr>
+                    );
+                    if (clsExp) {
+                      Object.entries(data.items).forEach(([com, cd]) => {
+                        const comTotal = cd.m.reduce((s, v) => s + v, 0);
+        const totRow = (key, label, isBal) => {
+          const vals  = rows.map(mo => mo[key] || 0);
+          const total = vals.reduce((s, v) => s + v, 0);
+          return isBal ? (
+            <tr key={key} style={S.trBal}>
+              <td style={S.tdBal}>{label}</td>
+              {vals.map((v,i) => <td key={i} style={numB(v)}>{Fk(v)}</td>)}
+            </tr>
+          ) : (
+            <tr key={key} style={S.trTot}>
+              <td style={S.tdTot}>{label}</td>
+              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
+            </tr>
+          );
+        };
+        const balRow = (key, label) => {
+          const vals = rows.map(mo => mo[key] || 0);
+          return (
+            <tr key={key} style={S.trTot}>
+              <td style={S.tdTot}>{label}</td>
+              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
+            </tr>
+          );
+        };
+        const secH = (label, st) => (
+          <tr key={'h_'+label}><td colSpan={cm+1} style={st}>{label}</td></tr>
+        );
+        return (
+          <div style={S.wrap}>
+            {(()=>{
+              // Burn Mexico = Actividades de Operación + Actividades de Inversión + Otras variaciones no clasificadas
+              const burnMonths = rows.map(mo => ({ m: mo.m, burn: (mo.totalOperacion || 0) + (mo.totalInversion || 0) + (mo.otraVariacion || 0) }));
+              const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
+              const BURN_ACUM_ENE = -86708794;
+              let burnAcumRun = BURN_ACUM_ENE;
+              const burnAccumMonths = burnMonths.map((x, i) => {
+                if (i === 0) return { m: x.m, accum: BURN_ACUM_ENE };
+                burnAcumRun += x.burn;
+                return { m: x.m, accum: burnAcumRun };
+              });
+              const burnAccumTotal = burnAccumMonths.length ? burnAccumMonths[burnAccumMonths.length-1].accum : BURN_ACUM_ENE;
+              const bs = {
+                wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
+                head:{marginBottom:12},
+                title:{fontSize:17,fontWeight:800,color:"#1E3A8A"},
+                sub:{fontSize:11,color:"#1E40AF",marginTop:2},
+                grid:{display:"flex",gap:6,flexWrap:"wrap"},
+                rowLbl:{fontSize:10,color:"#1E3A8A",fontWeight:800,letterSpacing:0.5,margin:"10px 0 6px",textTransform:"uppercase"},
+                cell:{flex:"1 1 70px",minWidth:65,background:"#fff",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
+                totalCell:{flex:"1 1 80px",minWidth:75,background:"#1E40AF",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
+                accumCell:{flex:"1 1 70px",minWidth:65,background:"#F8FAFC",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
+                accumTotalCell:{flex:"1 1 80px",minWidth:75,background:"#172554",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
+                cellLbl:{fontSize:10,color:"#1E40AF",fontWeight:600},
+                totalLbl:{fontSize:10,color:"#DBEAFE",fontWeight:700,letterSpacing:0.5}
+              };
+              const cellVal = v => ({fontSize:12,fontWeight:700,color:v<0?"#B91C1C":v>0?"#065F46":"#9CA3AF"});
+              const totalVal = v => ({fontSize:13,fontWeight:800,color:v<0?"#FCA5A5":v>0?"#86EFAC":"#FFFFFF"});
+              return (
+              <div style={bs.wrap}>
+                <div style={bs.head}>
+                  <div style={bs.title}>Burn Mexico</div>
+                  <div style={bs.sub}>Actividades de Operación + Inversión + Otras variaciones no clasificadas · Ene–{MO[cm-1]} {CUR_YEAR}</div>
+                </div>
+                <div style={bs.rowLbl}>Burn mensual</div>
+                <div style={bs.grid}>
+                  {burnMonths.map(x => (
+                    <div key={x.m} style={bs.cell}>
+                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
+                      <div style={cellVal(x.burn)}>{Fk(x.burn)}</div>
+                    </div>
+                  ))}
+                  <div style={bs.totalCell}>
+                    <div style={bs.totalLbl}>YTD TOTAL</div>
+                    <div style={totalVal(burnTotal)}>{Fk(burnTotal)}</div>
+                  </div>
+                </div>
+                <div style={bs.rowLbl}>Burn acumulado</div>
+                <div style={bs.grid}>
+                  {burnAccumMonths.map(x => (
+                    <div key={x.m} style={bs.accumCell}>
+                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
+                      <div style={cellVal(x.accum)}>{Fk(x.accum)}</div>
+                    </div>
+                  ))}
+                  <div style={bs.accumTotalCell}>
+                    <div style={bs.totalLbl}>ACUM. {MO[cm-1]}</div>
+                    <div style={totalVal(burnAccumTotal)}>{Fk(burnAccumTotal)}</div>
+                  </div>
+                </div>
+              </div>);
+            })()}
+            <div style={S.hdr}>
+              <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
+              <div>
+                <div style={S.hTitle}>Cash Flow</div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
+      </>
+      }
+{/* */}
 <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:6}}>{F(val)}</span></div>
 ))}</div>}
 </div>
