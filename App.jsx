@@ -1904,7 +1904,7 @@ export default function Dashboard() {
       })()}
 
       {/* ===== VALORACION DE COMPANIA ===== */}
-      <div style={{margin:"20px 0 10px",borderTop:"2px}} solid #1D9E75",paddingTop:12>
+      <div style={{margin:"20px 0 10px",borderTop:"2px solid #1D9E75",paddingTop:12}}>
         <div style={{fontSize:14,fontWeight:900,color:"#1a1a2e"}}>🏢 Valoración de la Compañía</div>
       </div>
       {(() => {
@@ -1925,7 +1925,7 @@ export default function Dashboard() {
         return (
           <div style={{display:"flex",flexWrap:"wrap",gap:10,marginBottom:12}}>
             {kpiItems.map((d,i) => (
-              <div key={i} style={{flex:"1 1 150px",background:"#fff",border:"1px}} solid #E4E8F2",borderRadius:10,padding:"14px 16px",display:"flex",alignItems:"center",gap:12>
+              <div key={i} style={{flex:"1 1 160px",background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{fontSize:22}}>{d.icon}</div>
                 <div>
                   <div style={{fontSize:9,color:"#8A90A8",fontWeight:600}}>{d.label}</div>
