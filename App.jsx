@@ -1204,7 +1204,7 @@ export default function Dashboard() {
                   <div key={yr} style={{display:"flex",alignItems:"flex-start",gap:12}}>
                     <div style={{minWidth:44,background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",borderRadius:6,padding:"4px 8px",textAlign:"center"}}>
                       <div style={{fontSize:11,fontWeight:800,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#8A90A8"}}>{yr}</div>
-                      <div style={{fontSize:7,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700}}}>{yr<CUR_YEAR?"✓ Real":yr===CUR_YEAR?"▶ Activo":"⏳ Fcst"}</div>
+                      <div style={{fontSize:7,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700}}>{yr<CUR_YEAR?"✓ Real":yr===CUR_YEAR?"▶ Activo":"⏳ Fcst"}</div>
                     </div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6,flex:1}}>
                       {launches2.filter(l=>l.yr===yr).map((l,i)=>(
