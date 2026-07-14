@@ -1432,21 +1432,20 @@ export default function Dashboard() {
         });
         const mxNS=Math.max(...yrDataG.map(d=>d.ns),1);
         const dlGrowth=()=>{
-          const h="Anio,NetSales,GrossProfit,GrossMargin%,EBITDA%,Tipo\n";
-          const r=yrDataG.map(d=>`${d.yr},${d.ns.toFixed(0)},${d.gp.toFixed(0)},${d.gmPctG},${d.ebitdaPctG},${d.isReal?"Reales":"Forecast"}`);
+          const h="Anio,NetSales,GrossProfit,GM%,EBITDA%,Tipo\n";
+          const r=yrDataG.map(d=>[d.yr,d.ns.toFixed(0),d.gp.toFixed(0),d.gmPctG,d.ebitdaPctG,d.isReal?"Reales":"Forecast"].join(","));
           const b=new Blob([h+r.join("\n")],{type:"text/csv"});
-          const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="crecimiento_financiero.csv"; a.click();
+          const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="crecimiento.csv";a.click();
         };
         return (
-          <div style={{background:"#fff",border:"1px}} solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:12,borderTop:"3px solid #534AB7">
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:12,borderTop:"3px solid #534AB7"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
               <div>
                 <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>📈 Crecimiento Financiero por Año</div>
-                <div style={{fontSize:9,color:"#8A90A8",marginTop:3}}>Net Sales (barras) · Gross Margin % (franja verde) · EBITDA % (franja naranja/roja)</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginTop:3}}>Barras: Net Sales · Franja verde: Gross Margin % · Franja naranja: EBITDA %</div>
               </div>
               <button onClick={dlGrowth} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
             </div>
-            {/* Net Sales bars */}
             <div style={{display:"flex",alignItems:"flex-end",gap:6,height:130,marginBottom:4}}>
               {yrDataG.map((d,i)=>(
                 <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
@@ -1458,22 +1457,21 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            {/* GM% and EBITDA% mini bars */}
-            <div style={{display:"flex",gap:6,alignItems:"flex-end",height:52,marginBottom:10,borderTop:"1px}} dashed #E4E8F2",paddingTop:6>
+            <div style={{display:"flex",gap:6,alignItems:"flex-end",height:52,marginBottom:10,borderTop:"1px dashed #E4E8F2",paddingTop:6}}>
               {yrDataG.map((d,i)=>(
                 <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
                   <div style={{fontSize:6.5,fontWeight:700,color:"#1D9E75"}}>{d.gmPctG}%</div>
-                  <div style={{width:"100%",height:Math.max(Math.round(Math.max(d.gmPctG,0)/100*28),1)+"px",background:"rgba(29,158,117,0.25)",borderRadius:"2px 2px 0 0",borderTop:"2px}} solid #1D9E75"/>
+                  <div style={{width:"100%",height:Math.max(Math.round(Math.max(d.gmPctG,0)/100*28),1)+"px",background:"rgba(29,158,117,0.2)",borderRadius:"2px 2px 0 0",borderTop:"2px solid #1D9E75"}}/>
                   <div style={{fontSize:6.5,fontWeight:700,color:d.ebitdaPctG<0?"#E24B4A":"#F59E0B"}}>{d.ebitdaPctG}%</div>
-                  <div style={{width:"100%",height:Math.max(Math.round(Math.abs(d.ebitdaPctG)/100*20),1)+"px",background:d.ebitdaPctG<0?"rgba(226,75,74,0.18)":"rgba(245,158,11,0.25)",borderRadius:"2px 2px 0 0",borderTop:"2px}} solid "+(d.ebitdaPctG<0?"#E24B4A":"#F59E0B")/>
+                  <div style={{width:"100%",height:Math.max(Math.round(Math.abs(d.ebitdaPctG)/100*20),1)+"px",background:d.ebitdaPctG<0?"rgba(226,75,74,0.15)":"rgba(245,158,11,0.2)",borderRadius:"2px 2px 0 0",borderTop:"2px solid "+(d.ebitdaPctG<0?"#E24B4A":"#F59E0B")}}/>
                 </div>
               ))}
             </div>
             <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap"}}>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"linear-gradient(#534AB7,#818CF8)",display:"inline-block"/}}>Net Sales Reales</span>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"rgba(83,74,183,0.18)",border:"1px}} solid #534AB7",display:"inline-block"/>Net Sales Forecast</span>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#1D9E75",display:"inline-block"/}}>Gross Margin %</span>
-              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#F59E0B",display:"inline-block"/}}>EBITDA %</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"linear-gradient(#534AB7,#818CF8)",display:"inline-block"}}/>Net Sales Reales</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"rgba(83,74,183,0.18)",border:"1px solid #534AB7",display:"inline-block"}}/>Net Sales Forecast</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#1D9E75",display:"inline-block"}}/>Gross Margin %</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#F59E0B",display:"inline-block"}}/>EBITDA %</span>
             </div>
           </div>
         );
