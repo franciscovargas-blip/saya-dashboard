@@ -1394,9 +1394,9 @@ export default function Dashboard() {
 {/* */}
       {/* AREA × MONTH TABLE */}
       <div style={s.card}>
-        <div style={' + O + O + 'display:"flex",justifyContent:"space-between",alignItems:"center"' + C + C + '}>
+        <div style={{{display:"flex",justifyContent:"space-between",alignItems:"center"}}}>
         <div style={s.cardTitle}>Gasto Real por Molécula — Mensual</div>
-        <button onClick={()=>{ const h=["Molécula",...ytdM.map(m=>MO[m-1]),"Total YTD"].join(",")+"\n"; const r=areaTable.map(row=>[row.mol,...ytdM.map(m=>row.monthly[m]||0),row.total].join(",")).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="gasto_mensual_molecula.csv"; a.click(); }} style={' + O + O + 'fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"' + C + C + '}>⬇ CSV</button>
+        <button onClick={()=>{ const h=["Molécula",...ytdM.map(m=>MO[m-1]),"Total YTD"].join(",")+"\n"; const r=areaTable.map(row=>[row.mol,...ytdM.map(m=>row.monthly[m]||0),row.total].join(",")).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="gasto_mensual_molecula.csv"; a.click(); }} style={{{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}}>⬇ CSV</button>
       </div>
         <div style={s.cardSub}>Molécula → Clasificación · Clic para expandir</div>
         <table style={s.tbl}>
