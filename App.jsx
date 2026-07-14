@@ -1210,7 +1210,7 @@ export default function Dashboard() {
                       {launches2.filter(l=>l.yr===yr).map((l,i)=>(
                         <div key={i} style={{display:"flex",alignItems:"center",gap:6,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:6,padding:"4px 8px",borderLeft:"3px solid "+(aCols2[l.area]||"#534AB7")}}>
                           <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e"}}>{l.mol}</div>
-                          <span style={{fontSize:7,color:"#8A90A8"}}}>{MS2[l.mo-1]||l.mo}</span>
+                          <span style={{fontSize:7,color:"#8A90A8"}}>{MS2[l.mo-1]||l.mo}</span>
                         </div>
                       ))}
                     </div>
