@@ -1369,7 +1369,7 @@ export default function Dashboard() {
           <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",borderTop:"3px solid #534AB7"}}>
             <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e",marginBottom:10}}>⚙️ Capital de Trabajo</div>
             <div style={{display:"flex",gap:8,justifyContent:"space-between"}}>
-            {wm.map((m,i)=>(}
+            {wm.map((m,i)=>(
               <div key={i} style={{flex:1,background:m.hi?"linear-gradient(135deg,#534AB7,#7C3AED)":"#f8f9fe",borderRadius:8,padding:"12px 6px",textAlign:"center",border:"1px solid #E4E8F2",borderTop:"3px solid "+m.c}}>
                 <div style={{fontSize:22,fontWeight:800,color:m.hi?"#fff":m.c,lineHeight:1}}>{m.v}</div>
                 <div style={{fontSize:8,color:m.hi?"rgba(255,255,255,0.7)":"#8A90A8",marginTop:2}}>días</div>
@@ -1452,17 +1452,17 @@ export default function Dashboard() {
             </div>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
               <thead><tr>
-                {["Molécula","Inversión","% Ejec vs Presup","% Total"].map((h,i)=>(}
+                {["Molécula","Inversión","% Ejec vs Presup","% Total"].map((h,i)=>(
                   <th key={i} style={{fontSize:8,color:"#8A90A8",fontWeight:600,padding:"3px 5px",borderBottom:"1px solid #E4E8F2",textAlign:i===0?"left":"right",whiteSpace:"nowrap"}}>{h}</th>
                 ))}
               </tr></thead>
               <tbody>
-              {molRows.map((r,i)=>(}
+              {molRows.map((r,i)=>(
                 <tr key={i} style={{background:i%2===0?"#fff":"#fafbfe"}}>
                   <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",maxWidth:90,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.mol}</td>
                   <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",fontWeight:600}}>{F(r.real)}</td>
                   <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right"}}>
-                    {r.ejec !== null ? (}
+                    {r.ejec !== null ? (
                       <div style={{display:"flex",alignItems:"center",gap:4,justifyContent:"flex-end"}}>
                         <div style={{width:44,height:6,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}>
                           <div style={{height:"100%",width:`${Math.min(r.ejec,100)}%`,background:r.ejec>=100?"#E24B4A":"#1D9E75",borderRadius:3}}/>
@@ -1505,18 +1505,18 @@ export default function Dashboard() {
             </div>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
               <thead><tr>
-                {["Área","Presupuesto","Real","% Ejec","Var $"].map((h,i)=>(}
+                {["Área","Presupuesto","Real","% Ejec","Var $"].map((h,i)=>(
                   <th key={i} style={{fontSize:8,color:"#8A90A8",fontWeight:600,padding:"3px 5px",borderBottom:"1px solid #E4E8F2",textAlign:i===0?"left":"right"}}>{h}</th>
                 ))}
               </tr></thead>
               <tbody>
-              {areaRows.map((r,i)=>(}
+              {areaRows.map((r,i)=>(
                 <tr key={i} style={{background:i%2===0?"#fff":"#fafbfe"}}>
                   <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.area}</td>
                   <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",color:"#8A90A8"}}>{F(r.fcast)}</td>
                   <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right",fontWeight:600}}>{F(r.real)}</td>
                   <td style={{padding:"4px 5px",borderBottom:"1px solid #f0f2fa",textAlign:"right"}}>
-                    {r.ejec !== null ? (}
+                    {r.ejec !== null ? (
                       <div style={{display:"flex",alignItems:"center",gap:3,justifyContent:"flex-end"}}>
                         <div style={{width:36,height:5,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}>
                           <div style={{height:"100%",width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?"#E24B4A":"#1D9E75",borderRadius:3}}/>
@@ -1562,7 +1562,7 @@ export default function Dashboard() {
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
               <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>💰 Flujo de Caja Mensual – Actividades NIF B-2</div>
               <div style={{display:"flex",gap:10,fontSize:9}}>
-                {["op","inv","fin"].map(k=>(}
+                {["op","inv","fin"].map(k=>(
                   <span key={k}><span style={{display:"inline-block",width:8,height:8,borderRadius:2,background:CFCOLS[k],marginRight:3}}/>{CFLBLS[k]}</span>
                 ))}
               </div>
@@ -1571,7 +1571,7 @@ export default function Dashboard() {
             {cfD.map((d,i)=>}{
               return (
                 <div key={i} style={{flex:1,minWidth:42,display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
-                  {["op","inv","fin"].map(k=>(}
+                  {["op","inv","fin"].map(k=>(
                     <div key={k}
                       title={`${CFLBLS[k]}: ${F(d[k])}`}
                       style={{width:"100%",height:`${toH(d[k])}px`,minHeight:d[k]!==0?3:0,background:CFCOLS[k],borderRadius:"2px 2px 0 0",opacity:0.85,cursor:"help"}}
@@ -1584,7 +1584,7 @@ export default function Dashboard() {
             })}
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginTop:10,paddingTop:10,borderTop:"1px solid #f0f2fa"}}>
-              {[{l:"Operación YTD",v:ytdOp,c:"#1D9E75"},{l:"Inversión YTD",v:ytdInv,c:"#E24B4A"},{l:"Financiamiento YTD",v:ytdFin,c:"#534AB7"},{l:"Flujo Neto YTD",v:ytdNet,c:ytdNet<0?"#E24B4A":"#1D9E75"}].map((s,i)=>(}
+              {[{l:"Operación YTD",v:ytdOp,c:"#1D9E75"},{l:"Inversión YTD",v:ytdInv,c:"#E24B4A"},{l:"Financiamiento YTD",v:ytdFin,c:"#534AB7"},{l:"Flujo Neto YTD",v:ytdNet,c:ytdNet<0?"#E24B4A":"#1D9E75"}].map((s,i)=>(
                 <div key={i} style={{textAlign:"center",background:"#f8f9fe",borderRadius:6,padding:"6px 4px"}}>
                   <div style={{fontSize:8,color:"#8A90A8",marginBottom:2}}>{s.l}</div>
                   <div style={{fontSize:13,fontWeight:800,color:s.c}}>{F(s.v)}</div>
