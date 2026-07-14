@@ -1399,7 +1399,7 @@ export default function Dashboard() {
               </div>
             </div>
           );
-        })())}
+        })()}
 
         {/* Inventarios por Molecula */}
         {(() => {
@@ -1445,7 +1445,7 @@ export default function Dashboard() {
               })}
             </div>
           );
-        })())}
+        })()}
 
       </div>
 
@@ -1509,7 +1509,7 @@ export default function Dashboard() {
               </table>
             </div>
           );
-        })())}
+        })()}
 
         {/* Ejecucion Presupuestal por Area */}
         {(() => {
@@ -1566,7 +1566,7 @@ export default function Dashboard() {
               </table>
             </div>
           );
-        })())}
+        })()}
 
       </div>
 
@@ -1630,7 +1630,7 @@ export default function Dashboard() {
             </div>
           </div>
         );
-      })())}
+      })()}
 
 
       </>
