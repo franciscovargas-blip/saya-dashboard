@@ -1339,14 +1339,6 @@ export default function Dashboard() {
           </React.Fragment>);
         })()}
       </div>
-            })()}
-          </React.Fragment>);
-        })()}
-      </div>
-            })()}
-          </React.Fragment>);
-        })()}
-      </div>
       {/* P&L TABLE */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
