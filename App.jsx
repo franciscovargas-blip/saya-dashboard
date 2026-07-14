@@ -1253,65 +1253,63 @@ export default function Dashboard() {
 
       {/* Molecule Composition Summary */}
       {(() => {
-        const molsByTA = {};
-        const allMolsD = [...new Set(D.filter(r=>r[4]&&r[4]!="--"&&r[4]!=="—").map(r=>r[4]))].sort();
-        allMolsD.forEach(mol => {
+        const molsByTA2 = {};
+        const allMolsD2 = [...new Set(D.filter(r=>r[4]&&r[4]!=="--"&&r[4]!=="—").map(r=>r[4]))].sort();
+        allMolsD2.forEach(mol => {
           let ta = "Portafolio General";
           if (/onco|cancer|tumor|carci/i.test(mol))   ta = "Oncología";
           else if (/bio|biolog|mab|zumab/i.test(mol)) ta = "Biológicos";
           else if (/inf|immun|anti/i.test(mol))       ta = "Inmunología";
           else if (/card|coron|lip/i.test(mol))       ta = "Cardiología";
           else if (/neuro|parkin|alz/i.test(mol))     ta = "Neurología";
-          if (!molsByTA[ta]) molsByTA[ta] = [];
-          molsByTA[ta].push(mol);
+          if (!molsByTA2[ta]) molsByTA2[ta] = [];
+          molsByTA2[ta].push(mol);
         });
-        const taEntries = Object.entries(molsByTA).sort((a,b)=>b[1].length-a[1].length);
-        const TCOLS3=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4"];
-        const csvMols = "Molecula,Area Terapeutica\n" + allMolsD.map(m => {
-          let ta2="General";
-          if(/onco|cancer|tumor|carci/i.test(m)) ta2="Oncologia";
-          else if(/bio|biolog|mab|zumab/i.test(m)) ta2="Biologicos";
-          else if(/inf|immun|anti/i.test(m)) ta2="Inmunologia";
-          else if(/card|coron|lip/i.test(m)) ta2="Cardiologia";
-          else if(/neuro|parkin|alz/i.test(m)) ta2="Neurologia";
-          return `${O}m${C},${O}ta2${C}`;
-        }).join("\n");
-        const dlMols = () => {
-          const b=new Blob([csvMols],{type:"text/csv"});
-          const a=document.createElement("a");
-          a.href=URL.createObjectURL(b);
-          a.download="portafolio_moleculas.csv";
-          a.click();
+        const taEntries2 = Object.entries(molsByTA2).sort((a,b)=>b[1].length-a[1].length);
+        const TCOLS4=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4"];
+        const dlMols2 = () => {
+          const rows2=allMolsD2.map(m => {
+            let ta2="General";
+            if(/onco|cancer|tumor|carci/i.test(m)) ta2="Oncologia";
+            else if(/bio|biolog|mab|zumab/i.test(m)) ta2="Biologicos";
+            else if(/inf|immun|anti/i.test(m)) ta2="Inmunologia";
+            else if(/card|coron|lip/i.test(m)) ta2="Cardiologia";
+            else if(/neuro|parkin|alz/i.test(m)) ta2="Neurologia";
+            return m+","+ta2;
+          });
+          const csv2="Molecula,Area Terapeutica\n"+rows2.join("\n");
+          const b2=new Blob([csv2],{type:"text/csv"});
+          const a2=document.createElement("a"); a2.href=URL.createObjectURL(b2);
+          a2.download="portafolio_moleculas.csv"; a2.click();
         };
         return (
           <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 18px",marginBottom:12,borderTop:"3px solid #534AB7"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
               <div>
                 <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>🧬 Composición del Portafolio de Moléculas</div>
-                <div style={{fontSize:9,color:"#8A90A8",marginTop:2}}>{allMolsD.length} moléculas en pipeline · {taEntries.length} áreas terapéuticas</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginTop:2}}>{allMolsD2.length} moléculas · {taEntries2.length} áreas terapéuticas</div>
               </div>
-              <button onClick={dlMols} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>⬇ CSV</button>
+              <button onClick={dlMols2} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
             </div>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-              {taEntries.map(([ta,mols],i) => (
-                <div key={i} style={{flex:"1 1 200px",background:"#f8f9fe",borderRadius:8,padding:"10px 12px",borderLeft:"3px solid "+(TCOLS3[i%TCOLS3.length])}}>
+              {taEntries2.map(([ta,mols],idx2) => (
+                <div key={idx2} style={{flex:"1 1 180px",background:"#f8f9fe",borderRadius:8,padding:"10px 12px",borderLeft:"3px solid "+TCOLS4[idx2%TCOLS4.length]}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <span style={{fontSize:9,fontWeight:800,color:TCOLS3[i%TCOLS3.length]}}>{ta}</span>
-                    <span style={{fontSize:9,fontWeight:700,background:TCOLS3[i%TCOLS3.length],color:"#fff",borderRadius:10,padding:"1px 8px"}}>{mols.length}</span>
+                    <span style={{fontSize:9,fontWeight:800,color:TCOLS4[idx2%TCOLS4.length]}}>{ta}</span>
+                    <span style={{fontSize:9,fontWeight:700,background:TCOLS4[idx2%TCOLS4.length],color:"#fff",borderRadius:10,padding:"1px 8px"}}>{mols.length}</span>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                    {mols.slice(0,5).map((m,j) => (
-                      <div key={j} style={{fontSize:7.5,color:"#1a1a2e",padding:"1px 0",borderBottom:"1px solid #f0f2fa",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>• {m}</div>
-                    ))
-                    {mols.length>5 && <div style={{fontSize:7,color:"#8A90A8",marginTop:2}}>+{(mols.length-5)} más...</div>
-                  }
+                    {mols.slice(0,5).map((m,j2) => (
+                      <div key={j2} style={{fontSize:7.5,color:"#1a1a2e",padding:"1px 0",borderBottom:"1px solid #f0f2fa",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>• {m}</div>
+                    ))}
+                    {mols.length > 5 && <div style={{fontSize:7,color:"#8A90A8",marginTop:2}}>+{(mols.length-5)} más...</div>}
+                  </div>
                 </div>
-              ))
-            }}
+              ))}
             </div>
           </div>
         );
-      })()}}
+      })()}
 
 
       {(() => {
