@@ -182,7 +182,7 @@ export default function Dashboard() {
   const [expPL, setExpPL] = useState({});
   const [expCF, setExpCF] = useState({});
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
-  const [mainTab, setMainTab] = useState("dashboard");
+  const [mainTab, setMainTab] = useState("executive");
   const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
   const fd = useMemo(() => {
@@ -1334,7 +1334,6 @@ export default function Dashboard() {
 );})}</div></div>
       </div>
 {/* */}
-      <div style={{marginTop:32}}><div style={{fontSize:12,fontWeight:700,color:"#8A90A8",letterSpacing:1,marginBottom:8}}>NEXT STEPS</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["waterfall"]:!p["waterfall"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🌊</span><span>EBITDA Bridge — Waterfall</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["waterfall"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["waterfall"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const pl=buildPL(fd,CUR_YEAR,cm,cm,"consolidado");const ytdPl={ns:0,cogs:0,gp:0,sw:0,sm:0,ta:0,pf:0,of_:0,reg:0,sh:0,mob:0,ops:0,oth:0,totOpex:0,ebitda:0};ytdM.forEach(m=>{const r=buildPL(fd,CUR_YEAR,m,cm,"consolidado");Object.keys(ytdPl).forEach(k=>{ytdPl[k]+=(r[k]||r['of_'[k]==='of_'?k:'of_'[k]]||0);});});const steps=[{l:"Net Sales",v:ytdPl.ns,color:"#185FA5",isBar:true},{l:"(-) COGS",v:-Math.abs(ytdPl.cogs),color:"#E24B4A",isBar:false},{l:"Gross Profit",v:ytdPl.gp,color:"#1D9E75",isBar:true,isSub:true},{l:"(-) S&W",v:-Math.abs(ytdPl.sw),color:"#E24B4A55",isBar:false},{l:"(-) S&M",v:-Math.abs(ytdPl.sm),color:"#E24B4A55",isBar:false},{l:"(-) Prof Fees",v:-Math.abs(ytdPl.pf),color:"#E24B4A55",isBar:false},{l:"(-) Operations",v:-Math.abs(ytdPl.ops),color:"#E24B4A55",isBar:false},{l:"(-) Otros OPEX",v:-Math.abs(ytdPl.ta+ytdPl.reg+ytdPl.sh+ytdPl.mob+ytdPl.oth),color:"#E24B4A55",isBar:false},{l:"EBITDA",v:ytdPl.ebitda,color:ytdPl.ebitda>=0?"#1D9E75":"#E24B4A",isBar:true,isSub:true}];const maxAbs=Math.max(...steps.map(s=>Math.abs(s.v)),1);const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":v<-1e3?Math.round(v/1e3)+"K":"0";return(<div><div style={{fontSize:11,color:"#8A90A8",marginBottom:12}}>YTD {MO[cm-1]} 2026 — Consolidado</div>{steps.map((s,i)=>{const barPct=Math.abs(s.v)/maxAbs*100;const isNeg=s.v<0;return(<div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}><div style={{width:130,fontSize:10,color:s.isSub?"#1E2A3A":"#555",fontWeight:s.isSub?700:400,textAlign:"right",flexShrink:0}}>{s.l}</div><div style={{flex:1,height:22,position:"relative",background:"#F0F2FA",borderRadius:4}}><div style={{position:"absolute",height:"100%",width:barPct+"%",background:s.color,borderRadius:4,[isNeg?"right":"left"]:0}}/><div style={{position:"absolute",left:0,right:0,top:0,height:22,display:"flex",alignItems:"center",justifyContent:isNeg?"flex-start":"flex-end",paddingLeft:6,paddingRight:6,fontSize:9,fontWeight:700,color:s.isSub?"#fff":"#1E2A3A"}}>{barPct>12?fmt(s.v):""}</div></div><div style={{width:70,textAlign:"right",fontSize:10,fontWeight:s.isSub?700:400,color:isNeg?"#E24B4A":"#1D9E75",flexShrink:0}}>{fmt(s.v)}</div></div>);})}</div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["bva"]:!p["bva"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🎯</span><span>Budget vs Actual — Forecast vs Real (Mes Corriente)</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["bva"] ? "▲ Ocultar" : "▼ Ver an��lisis"}</span></button>{optSec["bva"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const real=buildPL(fd,CUR_YEAR,cm,cm,"reales");const fore=buildPL(fd,CUR_YEAR,cm,cm,"forecast");const rows=[["Net Sales",fore.ns,real.ns],["Gross Profit",fore.gp,real.gp],["%  Gross Margin",fore.gmPct,real.gmPct,true],["Total OPEX",fore.totOpex,real.totOpex],["EBITDA",fore.ebitda,real.ebitda],["%  EBITDA",fore.ebitdaPct,real.ebitdaPct,true],["Net Profit",fore.netProfit,real.netProfit]];const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":v<=-1e3?Math.round(v/1e3)+"K":"0";const fmtPct=v=>(v*100).toFixed(1)+"%";return(<div><div style={{fontSize:11,color:"#8A90A8",marginBottom:10}}>Mes {MO[cm-1]} 2026</div><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}><thead><tr style={{background:"#F8F9FD"}}><th style={{padding:"8px 12px",textAlign:"left",fontWeight:600,color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Línea P&L</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#534AB7",borderBottom:"1px solid #E4E8F2"}}>Forecast</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1D9E75",borderBottom:"1px solid #E4E8F2"}}>Real</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Δ</th><th style={{padding:"8px 12px",textAlign:"right",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Δ%</th><th style={{padding:"8px 12px",textAlign:"center",fontWeight:600,color:"#1E2A3A",borderBottom:"1px solid #E4E8F2"}}>Status</th></tr></thead><tbody>{rows.map(([lbl,fv,rv,isPct],i)=>{const delta=rv-fv;const deltaPct=fv?delta/Math.abs(fv):0;const isOpex=lbl.includes("OPEX");const good=isOpex?delta<=0:delta>=0;const status=Math.abs(deltaPct)<0.03?"🟡":good?"🟢":"🔴";return(<tr key={i} style={{background:i%2===0?"#fff":"#FAFBFE",borderBottom:"1px solid #F0F2FA"}}><td style={{padding:"7px 12px",fontWeight:lbl.includes("EBITDA")||lbl.includes("Net")?700:400}}>{lbl}</td><td style={{padding:"7px 12px",textAlign:"right",color:"#534AB7"}}>{isPct?fmtPct(fv):fmt(fv)}</td><td style={{padding:"7px 12px",textAlign:"right",color:"#1D9E75"}}>{isPct?fmtPct(rv):fmt(rv)}</td><td style={{padding:"7px 12px",textAlign:"right",color:good?"#1D9E75":"#E24B4A",fontWeight:600}}>{isPct?fmtPct(delta):(delta>=0?"+":"")+fmt(delta)}</td><td style={{padding:"7px 12px",textAlign:"right",color:good?"#1D9E75":"#E24B4A"}}>{(deltaPct*100).toFixed(1)+"%"}</td><td style={{padding:"7px 12px",textAlign:"center",fontSize:14}}>{status}</td></tr>);})}</tbody></table></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["burn"]:!p["burn"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🔥</span><span>Burn Rate & Runway — ¿Cuántos meses de caja quedan?</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["burn"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["burn"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const cashRow=B.find(r=>(r[1]||r[0]).toString().toLowerCase().includes("caja")||r[0]==="110-00-000"||r[0]==="111-00-000");const cashNow=cashRow?(cashRow[4+cm]||0):0;const burnArr=ytdM.map(m=>{const pl=buildPL(fd,CUR_YEAR,m,cm,"reales");return pl.ebitda;});const avgBurn=burnArr.length?burnArr.reduce((s,v)=>s+v,0)/burnArr.length:0;const runway=avgBurn<0&&cashNow>0?Math.round(cashNow/Math.abs(avgBurn)):null;const runColor=runway===null?"#1D9E75":runway>12?"#1D9E75":runway>6?"#D97706":"#E24B4A";const runLabel=runway===null?"EBITDA positivo ✓":runway>12?runway+" meses ✅":runway>6?runway+" meses ⚠️":runway+" meses 🚨";const fmt=v=>v>=1e6?(v/1e6).toFixed(2)+"M":v>=1e3?Math.round(v/1e3)+"K":Math.round(v).toLocaleString();return(<div style={{display:"flex",gap:16,flexWrap:"wrap"}}><div style={{flex:"1 1 180px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Caja Disponible (Mes {MO[cm-1]})</div><div style={{fontSize:22,fontWeight:700,color:"#1E2A3A"}}>{fmt(cashNow)}</div></div><div style={{flex:"1 1 180px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Burn Rate Promedio YTD</div><div style={{fontSize:22,fontWeight:700,color:avgBurn<0?"#E24B4A":"#1D9E75"}}>{fmt(avgBurn)}/mes</div></div><div style={{flex:"1 1 180px",background:runColor+"11",border:"2px solid "+runColor,borderRadius:10,padding:"16px 20px"}}><div style={{fontSize:11,color:"#8A90A8",marginBottom:6}}>Runway estimado</div><div style={{fontSize:22,fontWeight:700,color:runColor}}>{runLabel}</div></div><div style={{flex:"1 1 100%",marginTop:8}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:6}}>EBITDA mensual YTD</div><div style={{display:"flex",alignItems:"flex-end",gap:4,height:60}}>{burnArr.map((v,i)=>{const maxV=Math.max(...burnArr.map(Math.abs),1);const h=Math.round(Math.abs(v)/maxV*50);return(<div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1}}><div style={{width:"100%",height:h+"px",background:v>=0?"#1D9E75":"#E24B4A",borderRadius:"3px 3px 0 0"}}/><div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>{MO[i]}</div></div>);})}</div></div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["gmtrend"]:!p["gmtrend"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>📈</span><span>Tendencia Gross Margin & EBITDA % — Mensual</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["gmtrend"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["gmtrend"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const months=Array.from({length:cm},(_, i)=>i+1);const gmData=months.map(m=>{const pl=buildPL(fd,CUR_YEAR,m,cm,"consolidado");return{m:MO[m-1],gm:pl.gmPct*100,ebitda:pl.ebitdaPct*100,ns:pl.ns};});const maxNS=Math.max(...gmData.map(d=>d.ns),1);return(<div><div style={{display:"flex",gap:16,marginBottom:8}}><span style={{fontSize:10,color:"#1D9E75",fontWeight:600}}>— Gross Margin %</span><span style={{fontSize:10,color:"#534AB7",fontWeight:600}}>— EBITDA %</span><span style={{fontSize:10,color:"#185FA5",fontWeight:600}}>■ Net Sales</span></div><div style={{display:"flex",alignItems:"flex-end",gap:6,height:120,paddingBottom:20,position:"relative"}}>{[0,25,50,75,100].map(v=>(<div key={v} style={{position:"absolute",left:0,right:0,bottom:v/100*100+"px",borderTop:"1px dashed #E4E8F2",fontSize:8,color:"#ccc"}}>{v}%</div>))}{gmData.map((d,i)=>{const barH=Math.round(d.ns/maxNS*80);return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}><div style={{position:"absolute",bottom:20,width:"70%",height:barH+"px",background:"#185FA522",borderRadius:"3px 3px 0 0"}}/><div style={{position:"absolute",bottom:20+Math.round(d.gm/100*80)+"px",width:8,height:8,background:"#1D9E75",borderRadius:"50%",transform:"translateX(-50%)",left:"50%"}}/><div style={{position:"absolute",bottom:20+Math.round(Math.max(d.ebitda,-30)/100*80)+"px",width:8,height:8,background:"#534AB7",borderRadius:"50%",transform:"translateX(-50%)",left:"50%"}}/><div style={{position:"absolute",bottom:0,fontSize:8,color:"#8A90A8"}}>{d.m}</div></div>);})}</div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["concentration"]:!p["concentration"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>⚠️</span><span>Concentración de Riesgo — Top Partners YTD</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["concentration"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["concentration"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const total=pareto.reduce((s,p)=>s+Math.abs(p.total),0);const top3=pareto.slice(0,3).reduce((s,p)=>s+Math.abs(p.total),0);const top1=pareto[0]?Math.abs(pareto[0].total):0;const concPct=total?top3/total:0;const concColor=concPct>0.7?"#E24B4A":concPct>0.5?"#D97706":"#1D9E75";const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":"0";return(<div><div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:16}}><div style={{flex:"1 1 160px",background:concColor+"11",border:"2px solid "+concColor,borderRadius:10,padding:"14px 18px"}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:4}}>Top 3 Partners = % del gasto total</div><div style={{fontSize:24,fontWeight:700,color:concColor}}>{(concPct*100).toFixed(1)+"%"}</div><div style={{fontSize:9,color:concColor,marginTop:4}}>{concPct>0.7?"⚠ Alta concentración":concPct>0.5?"Concentración moderada":"✓ Diversificado"}</div></div><div style={{flex:"1 1 160px",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 18px"}}><div style={{fontSize:10,color:"#8A90A8",marginBottom:4}}>Mayor partner individual</div><div style={{fontSize:14,fontWeight:700,color:"#1E2A3A",marginBottom:4}}>{pareto[0]?pareto[0].partner:"—"}</div><div style={{fontSize:12,color:"#534AB7",fontWeight:600}}>{fmt(top1)} ({total?(top1/total*100).toFixed(1)+"%":"—"})</div></div></div><div style={{fontSize:10,color:"#8A90A8",marginBottom:6}}>Distribución acumulada (Curva de Pareto YTD)</div><div style={{display:"flex",alignItems:"flex-end",gap:3}}>{pareto.slice(0,10).map((p,i)=>{const h=total?Math.round(Math.abs(p.total)/total*120):0;const cumH=Math.round(p.cumPct*100);return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}><div style={{width:"80%",height:h+"px",background:"#534AB7",borderRadius:"3px 3px 0 0",marginBottom:2}}/><div style={{fontSize:7,color:"#8A90A8",textAlign:"center",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",width:"100%"}}>{p.partner.split(" ")[0]}</div><div style={{fontSize:7,color:"#534AB7",fontWeight:600}}>{cumH+"%"}</div></div>);})}</div></div>);})()}</div>)}</div><div style={{marginTop:24,marginBottom:0}}><button onClick={()=>setOptSec(p=>({...p,["breakeven"]:!p["breakeven"]}))} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"#F8F9FD",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 18px",cursor:"pointer",fontWeight:700,fontSize:13,color:"#1E2A3A"}}><span style={{fontSize:16}}>🎯</span><span>Break-even Tracker — ¿Cuándo cruza el EBITDA a positivo?</span><span style={{marginLeft:"auto",fontSize:11,color:"#8A90A8"}}>{optSec["breakeven"] ? "▲ Ocultar" : "▼ Ver análisis"}</span></button>{optSec["breakeven"] && (<div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:"0 0 10px 10px",borderTop:"none",padding:16}}>{(()=>{const years=pnlYears;const ebitdaByYear=years.map(yr=>({yr,v:allM.reduce((s,m)=>s+buildPL(fd,yr,m,cm,"forecast").ebitda,0)}));const bkIdx=ebitdaByYear.findIndex(d=>d.v>=0);const bkYear=bkIdx>=0?ebitdaByYear[bkIdx].yr:null;const maxAbs=Math.max(...ebitdaByYear.map(d=>Math.abs(d.v)),1);const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":Math.round(v)+"";return(<div>{bkYear&&<div style={{background:"#ECFDF5",border:"1px solid #10B981",borderRadius:8,padding:"10px 16px",marginBottom:14,fontSize:12,fontWeight:600,color:"#065F46"}}>🎯 Break-even proyectado: <strong>{bkYear}</strong> — EBITDA: {fmt(ebitdaByYear[bkIdx].v)}</div>}{!bkYear&&<div style={{background:"#FFF0F0",border:"1px solid #E24B4A",borderRadius:8,padding:"10px 16px",marginBottom:14,fontSize:12,color:"#C0392B"}}>⚠ No se proyecta break-even en el período de forecast</div>}<div style={{display:"flex",alignItems:"flex-end",gap:6,height:100}}>{ebitdaByYear.map((d,i)=>{const h=Math.round(Math.abs(d.v)/maxAbs*80);const isPos=d.v>=0;const isBK=d.yr===bkYear;return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>{isBK&&<div style={{fontSize:9,color:"#1D9E75",fontWeight:700,marginBottom:2}}>BE✓</div>}<div style={{width:"85%",height:h+"px",background:isPos?"#1D9E75":"#E24B4A",borderRadius:"3px 3px 0 0",boxShadow:isBK?"0 0 8px #1D9E75":"none"}}/><div style={{fontSize:8,color:"#8A90A8",marginTop:3}}>{d.yr}</div><div style={{fontSize:8,fontWeight:600,color:isPos?"#1D9E75":"#E24B4A"}}>{fmt(d.v)}</div></div>);})}</div><div style={{display:"flex",gap:12,marginTop:8}}><span style={{fontSize:9,color:"#E24B4A"}}>■ EBITDA negativo (inversión)</span><span style={{fontSize:9,color:"#1D9E75"}}>■ EBITDA positivo</span></div></div>);})()}</div>)}</div></div>
 
       {/* ===== PHARMA EXECUTIVE ANALYSIS ===== */}
 
@@ -1631,6 +1630,354 @@ export default function Dashboard() {
           </div>
         );
       })()}
+
+
+
+      {/* ===== DIRECTOR EJECUTIVO: ANALISIS AVANZADO ===== */}
+
+      <div style={{margin:'32px 0 10px',borderTop:'2px solid #534AB7',paddingTop:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e',letterSpacing:-0.5}}>
+            🏦 Comparativo Presupuesto vs Real
+          </div>
+          <div style={{fontSize:10,color:'#8A90A8'}}>YTD Ene–{MO[cm-1]} {CUR_YEAR}</div>
+        </div>
+      </div>
+
+      {/* --- Budget Waterfall por Area --- */}
+      {(() => {
+        const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))]
+          .sort().slice(0,8);
+        const rows = areas.map(area => {
+          const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+          const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+          const ejec  = fcast !== 0 ? real/fcast*100 : null;
+          const varPct = fcast !== 0 ? (real-fcast)/Math.abs(fcast)*100 : 0;
+          return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varPct };
+        });
+        const maxV = Math.max(...rows.flatMap(r=>[r.real,r.fcast]),1);
+        const toW  = v => Math.round(v/maxV*100);
+        return (
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',marginBottom:12,borderTop:'3px solid #534AB7'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              {rows.map((r,i) => (
+                <div key={i}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:3,fontSize:9}}>
+                    <span style={{fontWeight:700,color:'#1a1a2e',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</span>
+                    <span style={{color:r.varPct>0?'#E24B4A':'#1D9E75',fontWeight:700}}>
+                      {r.ejec!==null?r.ejec.toFixed(1)+'% ejec':'N/A'}
+                      {r.varPct!==0?' ('+(r.varPct>0?'+':'')+r.varPct.toFixed(1)+'%)':''}
+                    </span>
+                  </div>
+                  <div style={{position:'relative',height:14,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                    <div style={{position:'absolute',left:0,top:0,height:'100%',width:toW(r.fcast)+'%',background:'rgba(83,74,183,0.25)',borderRadius:4}}/>
+                    <div style={{position:'absolute',left:0,top:2,height:10,width:toW(r.real)+'%',background:r.varPct>8?'#E24B4A':r.varPct<-5?'#1D9E75':'#534AB7',borderRadius:3}}/>
+                  </div>
+                  <div style={{display:'flex',gap:16,marginTop:2,fontSize:8,color:'#8A90A8'}}>
+                    <span>■ Presup: {F(r.fcast)}</span>
+                    <span>■ Real: {F(r.real)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:16,marginTop:12,paddingTop:10,borderTop:'1px solid #f0f2fa',fontSize:9}}>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'rgba(83,74,183,0.25)',borderRadius:2}}/> Presupuesto</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#534AB7',borderRadius:2}}/> Real</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#E24B4A',borderRadius:2}}/> Sobreejecutado</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#1D9E75',borderRadius:2}}/> Subejecutado</span>
+            </div>
+          </div>
+        );
+      })())}
+
+      {/* --- Budget vs Real Mensual Trending --- */}
+      {(() => {
+        const months = Array.from({length:cm},(_,i)=>i+1);
+        const realByM  = months.map(m => Math.abs(fd.filter(r=>r[1]==='Reales'  &&r[3]===m&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)));
+        const fcastByM = months.map(m => Math.abs(fd.filter(r=>r[1]==='Forecast'&&r[3]===m&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)));
+        const maxM = Math.max(...realByM,...fcastByM,1);
+        const toH  = v => Math.round(v/maxM*80);
+        const cumR = realByM.reduce((a,v,i) => {a.push((a[i-1]||0)+v); return a;},[]);
+        const cumF = fcastByM.reduce((a,v,i) => {a.push((a[i-1]||0)+v); return a;},[]);
+        return (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>📊 OPEX Mensual: Presup vs Real</div>
+              <div style={{display:'flex',gap:4,alignItems:'flex-end',height:90}}>
+                {months.map((m,i) => (
+                  <div key={m} style={{flex:1,display:'flex',gap:2,alignItems:'flex-end'}}>
+                    <div style={{flex:1,height:toH(fcastByM[i]),background:'rgba(124,58,237,0.2)',borderRadius:'2px 2px 0 0',minHeight:2}}
+                      title={`Presup ${MO[i]}: ${F(fcastByM[i])}`}/>
+                    <div style={{flex:1,height:toH(realByM[i]),background:realByM[i]>fcastByM[i]?'#E24B4A':'#7C3AED',borderRadius:'2px 2px 0 0',minHeight:2}}
+                      title={`Real ${MO[i]}: ${F(realByM[i])}`}/>
+                  </div>
+                ))}
+              </div>
+              <div style={{display:'flex',justifyContent:'space-around',marginTop:6,fontSize:7,color:'#8A90A8'}}>
+                {months.map((m,i) => <span key={m}>{MO[i].slice(0,3)}</span>)}
+              </div>
+            </div>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:8}}>📈 OPEX Acumulado YTD</div>
+              <div style={{position:'relative',height:90}}>
+                <svg width='100%' height='90' viewBox={`0 0 ${Math.max(months.length*30,1)} 90`} preserveAspectRatio='none'>
+                  <polyline
+                    points={cumF.map((v,i)=>`${i*30+15},${90-Math.round(v/Math.max(...cumF,1)*80)}`).join(' ')}
+                    fill='none' stroke='rgba(245,158,11,0.4)' strokeWidth='2' strokeDasharray='5,3'/>
+                  <polyline
+                    points={cumR.map((v,i)=>`${i*30+15},${90-Math.round(v/Math.max(...cumF,1)*80)}`).join(' ')}
+                    fill='none' stroke='#F59E0B' strokeWidth='2.5'/>
+                </svg>
+              </div>
+              <div style={{display:'flex',gap:10,fontSize:8,marginTop:4}}>
+                <span style={{color:'rgba(245,158,11,0.6)'}}>- - Presup YTD: {F(cumF[cm-1]||0)}</span>
+                <span style={{color:'#F59E0B',fontWeight:700}}>— Real YTD: {F(cumR[cm-1]||0)}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })())}
+
+      {/* ===== VALORACION DE COMPANIA ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🏢 Valoración de la Compañía</div>
+          <div style={{fontSize:9,color:'#8A90A8',maxWidth:280,textAlign:'right'}}>Métodos: EV/EBITDA · DCF simplificado · Pipeline value</div>
+        </div>
+      </div>
+
+      {(() => {
+        const plV = buildPL(fd, CUR_YEAR, 1, cm, 'consolidado');
+        const nsAnn    = Math.abs(plV.ns)    * 12 / Math.max(cm,1);
+        const ebitdaAnn= Math.abs(plV.ebitda)* 12 / Math.max(cm,1);
+        const gmPct    = plV.gmPct || 0;
+        const ebitdaPct= nsAnn > 0 ? ebitdaAnn/nsAnn*100 : 0;
+        const pipeMols = areaTable.length;
+        // Multiples pharma tipicos
+        const evLow  = ebitdaAnn * 8;
+        const evMid  = ebitdaAnn * 12;
+        const evHigh = ebitdaAnn * 18;
+        const dcfEst = nsAnn * (gmPct/100) * 0.25 * 8.5; // simplified
+        const valItems = [
+          {l:'EV/EBITDA 8x (Conservador)', v:evLow,  c:'#8A90A8', note:'Bear case'},
+          {l:'EV/EBITDA 12x (Base)',       v:evMid,  c:'#534AB7', note:'Base case'},
+          {l:'EV/EBITDA 18x (Bull)',        v:evHigh, c:'#1D9E75', note:'Bull case'},
+          {l:'DCF Simplificado',           v:dcfEst, c:'#F59E0B', note:'25% margen FCF'},
+        ];
+        const maxVal = Math.max(...valItems.map(x=>x.v),1);
+        return (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',borderTop:'3px solid #1D9E75'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>💰 Rango de Valoración EV</div>
+              {valItems.map((v,i) => (
+                <div key={i} style={{marginBottom:10}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:3,fontSize:9}}>
+                    <span style={{color:'#1a1a2e',fontWeight:600}}>{v.l}</span>
+                    <span style={{color:v.c,fontWeight:800}}>{F(v.v)}</span>
+                  </div>
+                  <div style={{height:10,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                    <div style={{height:'100%',width:Math.round(v.v/maxVal*100)+'%',background:v.c,borderRadius:4}}/>
+                  </div>
+                  <div style={{fontSize:8,color:'#8A90A8',marginTop:1}}>{v.note}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',borderTop:'3px solid #534AB7'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>📊 Drivers de Valor</div>
+              {[
+                {label:'Ventas Anualizadas',  val:F(nsAnn),      icon:'📈',  sub:'Run-rate actual'},
+                {label:'EBITDA Anualizado',   val:F(ebitdaAnn),  icon:'💵',  sub:'Margen '+(ebitdaPct).toFixed(1)+'%'},
+                {label:'Gross Margin',        val:gmPct.toFixed(1)+'%', icon:'⚖️', sub:'Eficiencia productiva'},
+                {label:'Moléculas activas', val:pipeMols,   icon:'💊',  sub:'Portfolio activo'},
+              ].map((d,i) => (
+                <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'8px 0',borderBottom:'1px solid #f0f2fa'}}>
+                  <div style={{fontSize:20}}>{d.icon}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:9,color:'#8A90A8'}}>{d.label}</div>
+                    <div style={{fontSize:16,fontWeight:800,color:'#1a1a2e'}}>{d.val}</div>
+                    <div style={{fontSize:8,color:'#8A90A8'}}>{d.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })())}
+
+      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🧬 Portafolio por Área Terapéutica</div>
+      </div>
+
+      {(() => {
+        // Group molecules by therapeutic area prefix
+        const taMap = {};
+        areaTable.forEach(r => {
+          const mol = r.mol || 'Otros';
+          // Heuristic TA grouping by mol name patterns
+          let ta = 'Otros';
+          if (/onco|cancer|tumor|carci/i.test(mol))    ta = 'Oncología';
+          else if (/bio|biolog|mab|zumab/i.test(mol))  ta = 'Biológicos';
+          else if (/inf|immun|anti/i.test(mol))        ta = 'Inmunología';
+          else if (/card|coron|lip/i.test(mol))        ta = 'Cardiología';
+          else if (/neuro|parkin|alz/i.test(mol))      ta = 'Neurología';
+          else if (mol.length > 0)                     ta = 'Portafolio General';
+          if (!taMap[ta]) taMap[ta] = {mols:[],total:0};
+          taMap[ta].mols.push(mol);
+          taMap[ta].total += Math.abs(r.total);
+        });
+        const taArr = Object.entries(taMap)
+          .map(([ta,d]) => ({ta, mols:d.mols, total:d.total, pct:0}))
+          .sort((a,b)=>b.total-a.total);
+        const grandTotal = taArr.reduce((s,r)=>s+r.total,0);
+        taArr.forEach(r => r.pct = grandTotal>0 ? r.pct=r.total/grandTotal*100 : 0);
+        const TACOLS = ['#534AB7','#1D9E75','#F59E0B','#E24B4A','#7C3AED','#06B6D4'];
+        // Donut segments
+        let cumPct = 0;
+        const segments = taArr.map((r,i) => {
+          const startAngle = cumPct * 3.6;
+          cumPct += r.pct;
+          const endAngle   = cumPct * 3.6;
+          const large = (endAngle-startAngle) > 180 ? 1 : 0;
+          const toXY  = deg => {
+            const rad = (deg-90)*Math.PI/180;
+            return [50+40*Math.cos(rad), 50+40*Math.sin(rad)];
+          };
+          const [x1,y1] = toXY(startAngle);
+          const [x2,y2] = toXY(endAngle);
+          return {...r, path:`M50 50 L${x1} ${y1} A40 40 0 ${large} 1 ${x2} ${y2} Z`, col:TACOLS[i%TACOLS.length]};
+        });
+        return (
+          <div style={{display:'grid',gridTemplateColumns:'200px 1fr',gap:12,marginBottom:12}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #F59E0B',display:'flex',flexDirection:'column',alignItems:'center'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10,alignSelf:'flex-start'}}>Distribución Inversión</div>
+              <svg viewBox='0 0 100 100' style={{width:140,height:140}}>
+                {segments.map((s,i) => (
+                  <path key={i} d={s.path} fill={s.col} opacity='0.85'>
+                    <title>{s.ta}: {s.pct.toFixed(1)}%</title>
+                  </path>
+                ))}
+                <circle cx='50' cy='50' r='22' fill='white'/>
+                <text x='50' y='46' textAnchor='middle' style={{fontSize:'7px',fontWeight:'bold',fill:'#1a1a2e'}}>OPEX</text>
+                <text x='50' y='56' textAnchor='middle' style={{fontSize:'6px',fill:'#8A90A8'}}>YTD</text>
+              </svg>
+              <div style={{display:'flex',flexDirection:'column',gap:4,width:'100%',marginTop:8}}>
+                {segments.map((s,i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:8}}>
+                    <span style={{display:'flex',alignItems:'center',gap:4}}>
+                      <span style={{width:8,height:8,borderRadius:2,background:s.col,display:'inline-block'}}/>
+                      {s.ta}
+                    </span>
+                    <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',borderTop:'3px solid #1D9E75'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:10}}>📋 Detalle por Área Terapéutica</div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área Terapéutica','Moléculas','Inversión YTD','% Portfolio','Estado'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'4px 6px',borderBottom:'1px solid #E4E8F2',textAlign:i<2?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {segments.map((s,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'5px 6px',fontWeight:700,color:s.col}}>
+                        <span style={{display:'inline-block',width:8,height:8,borderRadius:2,background:s.col,marginRight:6}}/>
+                        {s.ta}
+                      </td>
+                      <td style={{padding:'5px 6px',color:'#534AB7',fontSize:8}}>{s.mols.length} mol{s.mols.length>1?'s':''}</td>
+                      <td style={{padding:'5px 6px',textAlign:'right',fontWeight:700}}>{F(s.total)}</td>
+                      <td style={{padding:'5px 6px',textAlign:'right'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:6,justifyContent:'flex-end'}}>
+                          <div style={{width:50,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                            <div style={{height:'100%',width:s.pct+'%',background:s.col,borderRadius:3}}/>
+                          </div>
+                          <span style={{fontWeight:700,color:s.col}}>{s.pct.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                      <td style={{padding:'5px 6px',textAlign:'right'}}>
+                        <span style={{background:s.total>0?'#e6f9f1':'#fef2f2',color:s.total>0?'#1D9E75':'#E24B4A',borderRadius:10,padding:'2px 8px',fontSize:7,fontWeight:700}}>
+                          {s.total>0?'ACTIVO':'SIN MOV'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })())}
+
+      {/* ===== TIMELINE EJECUTIVO ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline Financiero {CUR_YEAR}</div>
+      </div>
+
+      {(() => {
+        const plTL = buildPL(fd, CUR_YEAR, 1, cm, 'consolidado');
+        const nsAnnTL    = Math.abs(plTL.ns)    * 12 / Math.max(cm,1);
+        const ebitdaAnnTL= Math.abs(plTL.ebitda)* 12 / Math.max(cm,1);
+        // Monthly performance timeline
+        const tlMonths = Array.from({length:12},(_,i)=>i+1);
+        const tlData   = tlMonths.map(m => {
+          const r = Math.abs(fd.filter(x=>x[1]==='Reales'  &&x[3]===m&&!OC_ALL.includes(x[0])).reduce((s,x)=>s+x[9],0));
+          const f = Math.abs(fd.filter(x=>x[1]==='Forecast'&&x[3]===m&&!OC_ALL.includes(x[0])).reduce((s,x)=>s+x[9],0));
+          const done = m <= cm;
+          const exc  = done && f>0 && r>f*1.05;
+          const und  = done && f>0 && r<f*0.95;
+          return {m, r, f, done, exc, und};
+        });
+        const milestones = [
+          {m:3,  label:'Q1 Close',    icon:'📋', done:cm>=3},
+          {m:6,  label:'Q2 / H1',     icon:'⚙️', done:cm>=6},
+          {m:9,  label:'Q3 Budget Rev',icon:'📊', done:cm>=9},
+          {m:12, label:'Year Close',   icon:'🏆', done:cm>=12},
+        ];
+        return (
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',marginBottom:16,borderTop:'3px solid #E24B4A'}}>
+            {/* Milestone bar */}
+            <div style={{position:'relative',marginBottom:20}}>
+              <div style={{position:'absolute',top:14,left:'4%',right:'4%',height:2,background:'#E4E8F2'}}/>
+              <div style={{position:'absolute',top:14,left:'4%',width:(cm/12*92)+'%',height:2,background:'linear-gradient(90deg,#534AB7,#1D9E75)'}}/>
+              <div style={{display:'flex',justifyContent:'space-between',position:'relative'}}>
+                {milestones.map((ms,i) => (
+                  <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',width:90}}>
+                    <div style={{width:28,height:28,borderRadius:'50%',background:ms.done?'linear-gradient(135deg,#534AB7,#1D9E75)':'#f0f2fa',border:'2px solid '+(ms.done?'#1D9E75':'#E4E8F2'),display:'flex',alignItems:'center',justifyContent:'center',fontSize:13}}>
+                      {ms.icon}
+                    </div>
+                    <div style={{fontSize:8,fontWeight:700,color:ms.done?'#534AB7':'#B0B6C3',marginTop:4,textAlign:'center'}}>{ms.label}</div>
+                    <div style={{fontSize:7,color:'#8A90A8'}}>Q{Math.ceil(ms.m/3)} {CUR_YEAR}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Monthly dots */}
+            <div style={{display:'flex',gap:4,alignItems:'flex-end',marginTop:8}}>
+              {tlData.map((d,i) => (
+                <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+                  <div style={{width:'100%',height:50,background:'#f8f9fe',borderRadius:4,display:'flex',alignItems:'flex-end',overflow:'hidden',position:'relative'}}>
+                    {d.f > 0 && <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(d.f/Math.max(...tlData.map(x=>x.f),1)*46)+'px',background:'rgba(83,74,183,0.12)',borderRadius:4}}/>}
+                    {d.done && <div style={{position:'absolute',bottom:0,left:2,right:2,height:Math.round(d.r/Math.max(...tlData.map(x=>Math.max(x.r,x.f)),1)*46)+'px',background:d.exc?'#E24B4A':d.und?'#1D9E75':'#534AB7',borderRadius:'3px 3px 0 0',opacity:0.85}}/>}
+                    {!d.done && <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,color:'#C0C5D8'}}>···</div>}
+                  </div>
+                  <div style={{fontSize:7,color:d.m===cm?'#534AB7':'#8A90A8',fontWeight:d.m===cm?700:400}}>{MO[i].slice(0,3)}</div>
+                  {d.m===cm && <div style={{fontSize:6,background:'#534AB7',color:'#fff',borderRadius:3,padding:'1px 3px'}}>HOY</div>}
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:16,marginTop:10,fontSize:8,justifyContent:'center'}}>
+              <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#534AB7',display:'inline-block'}}/>En objetivo</span>
+              <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#E24B4A',display:'inline-block'}}/>Sobreejecutado</span>
+              <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#1D9E75',display:'inline-block'}}/>Subejecutado</span>
+              <span style={{display:'flex',alignItems:'center',gap:4}}><span style={{width:10,height:10,borderRadius:2,background:'#f0f2fa',display:'inline-block'}}/>Forecast</span>
+            </div>
+          </div>
+        );
+      })())}
 
 
       </>
