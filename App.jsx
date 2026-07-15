@@ -1226,9 +1226,8 @@ export default function Dashboard() {
               const bancosRow=B.find(r=>r[0]==="102-00-000"&&r[4]===1);
               const invRow=B.find(r=>r[0]==="103-00-000"&&r[4]===1);
               const bsM=(row,m)=>row?row.slice(5,5+m).reduce((s,v)=>s+(v||0),0):0;
-              // Saldo al mes cm = B_OPEN + movimientos acumulados Jan-cm
-              const bsBalance=(bopen,row,m)=>row?(bopen||0)+row.slice(5,5+m).reduce((s,v)=>s+(v||0),0):(bopen||0);
-              const flujoCaja=bsBalance(B_OPEN["102-00-000"],bancosRow,cm)+bsBalance(B_OPEN["103-00-000"],invRow,cm);
+              // Saldo al mes cm = suma de columnas Jan-cm del array B (col[5]=balance Jan, col[6..]=movimientos Feb-N)
+              const flujoCaja=bsM(bancosRow,cm)+bsM(invRow,cm);
               return (
                 <div style={kC("#1a1a2e")}>
                   <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>💧</div>
