@@ -1222,12 +1222,112 @@ export default function Dashboard() {
                 <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>{k.s}</div>
               </div>
             ))}
+            {(()=>{
+              const bancosRow=B.find(r=>r[0]==="102-00-000"&&r[4]===1);
+              const invRow=B.find(r=>r[0]==="103-00-000"&&r[4]===1);
+              const bsM=(row,m)=>row?row.slice(5,5+m).reduce((s,v)=>s+(v||0),0):0;
+              const flujoCaja=(B_OPEN["102-00-000"]||0)+bsM(bancosRow,cm)+(B_OPEN["103-00-000"]||0)+bsM(invRow,cm);
+              return (
+                <div style={kC("#06B6D4")}>
+                  <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>💧</div>
+                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>FLUJO DE CAJA DISPONIBLE</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"#06B6D4",lineHeight:1.1,letterSpacing:-0.5}}>{F(flujoCaja)}</div>
+                  <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Bancos + Inversiones · {MO[cm-1]}</div>
+                </div>
+              );
+            })()}
           </React.Fragment>);
         })()}
       </div>
 
+      {/* VENTAS NETAS CHART */}
+      <div style={{width:"100%",marginBottom:16}}>
+        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",width:"100%",boxSizing:"border-box"}}>
+          {(()=>{
+            const revData=MO.map((mo,i)=>{
+              const m=i+1;
+              const r=buildPL(fd,CUR_YEAR,m,cm,"reales");
+              const f=buildPL(fd,CUR_YEAR,m,cm,"forecast");
+              const showReal=(view==="reales"||view==="consolidado")&&m<=cm&&r.ns>0;
+              const showFcst=view==="forecast"||(view==="consolidado"&&m>=cm);
+              return {name:mo,Real:showReal?Math.round(r.ns):null,Forecast:showFcst?Math.round(f.ns):null,GmPct:showReal&&r.ns?parseFloat((r.gp/r.ns*100).toFixed(1)):null,GmPctF:showFcst&&f.ns?parseFloat((f.gp/f.ns*100).toFixed(1)):null,cur:m<=cm};
+            });
+            const nsYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Real,0);
+            const nsFcstYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Forecast,0);
+            const gpYTD=ytdM.reduce((s,m)=>s+buildPL(fd,CUR_YEAR,m,cm,"consolidado").gp,0);
+            const gpFcstYTD=ytdM.reduce((s,m)=>s+buildPL(fd,CUR_YEAR,m,cm,"forecast").gp,0);
+            const gmYTD=nsYTD?gpYTD/nsYTD*100:0;
+            const gmFcstYTD=nsFcstYTD?gpFcstYTD/nsFcstYTD*100:0;
+            const nsLY=ytdM.reduce((s,m)=>s+gV(D,"Net Sales","Reales",CUR_YEAR-1,m),0);
+            const gpLY=ytdM.reduce((s,m)=>s+(gV(D,"Net Sales","Reales",CUR_YEAR-1,m)-gV(D,"COGS","Reales",CUR_YEAR-1,m)),0);
+            const gmLY=nsLY?gpLY/nsLY*100:0;
+            const growthPct=nsLY?(nsYTD-nsLY)/Math.abs(nsLY)*100:0;
+            const deltaMejora=gmYTD-gmLY;
+            const varVsFcst=nsYTD-nsFcstYTD;
+            const fmtLbl=v=>v&&Math.abs(v)>=5e4?(v/1e6).toFixed(1)+'M':'';
+            const maxV=Math.max(...revData.map(d=>Math.max(d.Real||0,d.Forecast||0)),1);
+            const leftMax=Math.ceil(maxV*1.25/1e6)*1e6;
+            const gmVals=revData.filter(d=>d.GmPct!=null).map(d=>d.GmPct);
+            const gmMin=Math.floor(Math.min(...gmVals,gmFcstYTD)-8);
+            const gmMax=Math.ceil(Math.max(...gmVals,gmFcstYTD)+8);
+            return (
+              <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>Ventas Netas (M MXN) &amp; Gross Margin (%)</div>
+                      <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Barras: Net Sales Real · Barras claras: Forecast · Línea verde: Gross Margin %</div>
+                    </div>
+                    <button onClick={()=>{const h="Mes,Real,Forecast,GM%Real,GM%Fcst\n";const r=revData.map(d=>[d.name,d.Real,d.Forecast,d.GmPct??'',d.GmPctF??''].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="ventas_netas.csv";a.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                  </div>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <ComposedChart data={revData} margin={{top:22,right:46,bottom:0,left:2}} barCategoryGap="22%" barGap={2}>
+                      <XAxis dataKey="name" tick={{fontSize:8,fill:"#8A90A8"}} axisLine={false} tickLine={false}/>
+                      <YAxis yAxisId="L" tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'0'} domain={[0,leftMax]}/>
+                      <YAxis yAxisId="R" orientation="right" tick={{fontSize:7,fill:"#1D9E75"}} axisLine={false} tickLine={false} tickFormatter={v=>v+'%'} domain={[gmMin,gmMax]}/>
+                      <Tooltip formatter={(v,n)=>n.includes('%')?[(v!=null?v.toFixed(1):'--')+'%',n]:['$'+(v/1e6).toFixed(1)+'M',n]} contentStyle={{fontSize:9,borderRadius:6}}/>
+                      <Bar yAxisId="L" dataKey="Real" name="Real" fill="#1E3A8A" radius={[3,3,0,0]} maxBarSize={26}>
+                        <LabelList dataKey="Real" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E3A8A",fontWeight:700}}/>
+                      </Bar>
+                      <Bar yAxisId="L" dataKey="Forecast" name="Forecast" fill="#93C5FD" radius={[3,3,0,0]} maxBarSize={26}>
+                        <LabelList dataKey="Forecast" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E40AF",fontWeight:700}}/>
+                      </Bar>
+                      <Line yAxisId="R" type="monotone" dataKey="GmPct" name="GM% Real" stroke="#1D9E75" strokeWidth={2.5} dot={{r:4,fill:"#1D9E75",stroke:"#fff",strokeWidth:1}} activeDot={{r:5}} connectNulls>
+                        <LabelList dataKey="GmPct" position="top" formatter={v=>v!=null?v.toFixed(1)+'%':''} style={{fontSize:7.5,fill:"#1D9E75",fontWeight:700}}/>
+                      </Line>
+                      <Line yAxisId="R" type="monotone" dataKey="GmPctF" name="GM% Fcst" stroke="#1D9E75" strokeWidth={1.5} strokeDasharray="4 2" dot={false} connectNulls/>
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                  <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap",marginTop:4}}>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#1E3A8A",display:"inline-block"}}/>Net Sales Reales</span>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#93C5FD",border:"1px solid #1E40AF",display:"inline-block"}}/>Forecast</span>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:3,background:"#1D9E75",display:"inline-block",borderRadius:2}}/>Gross Margin % Real</span>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:2,background:"#1D9E75",display:"inline-block",borderRadius:2,opacity:0.55}}/>GM% Forecast</span>
+                  </div>
+                </div>
+                <div style={{width:152,flexShrink:0,display:"flex",flexDirection:"column",gap:7,paddingTop:38}}>
+                  {[
+                    {label:"Ventas Netas YTD",value:F(nsYTD),color:"#1E3A8A",bg:"#EFF4FF"},
+                    {label:"Ventas Netas LY YTD",value:F(nsLY),color:"#534AB7",bg:"#F3F0FF"},
+                    {label:"Crecimiento",value:(growthPct>=0?"+":"")+growthPct.toFixed(0)+"%",color:growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct>=0?"#F0FAF6":"#FEF2F2"},
+                    {label:"Gross Margin YTD",value:gmYTD.toFixed(1)+"%",color:"#1D9E75",bg:"#F0FAF6"},
+                    {label:"Gross Margin LY YTD",value:gmLY.toFixed(1)+"%",color:"#059669",bg:"#ECFDF5"},
+                    {label:"Mejora vs LY",value:(deltaMejora>=0?"+":"")+deltaMejora.toFixed(1)+" pp",color:deltaMejora>=0?"#1D9E75":"#E24B4A",bg:deltaMejora>=0?"#F0FAF6":"#FEF2F2"},
+                    {label:"Var. vs Forecast",value:(varVsFcst>=0?"+":"")+F(varVsFcst),color:varVsFcst>=0?"#1D9E75":"#E24B4A",bg:varVsFcst>=0?"#F0FAF6":"#FEF2F2"},
+                  ].map((k,i)=>(
+                    <div key={i} style={{background:k.bg,borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+k.color}}>
+                      <div style={{fontSize:7.5,color:"#8A90A8",marginBottom:1}}>{k.label}</div>
+                      <div style={{fontSize:i<=1?13:12,fontWeight:700,color:k.color}}>{k.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
 
-      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
+      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🧬 Portafolio por Área Terapéutica</div>
       </div>
@@ -1452,92 +1552,6 @@ export default function Dashboard() {
 
 
 
-      {/* VENTAS NETAS CHART */}
-      <div style={{width:"100%",marginBottom:16}}>
-        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",width:"100%",boxSizing:"border-box"}}>
-          {(()=>{
-            const revData=MO.map((mo,i)=>{
-              const m=i+1;
-              const r=buildPL(fd,CUR_YEAR,m,cm,"reales");
-              const f=buildPL(fd,CUR_YEAR,m,cm,"forecast");
-              const showReal=(view==="reales"||view==="consolidado")&&m<=cm&&r.ns>0;
-              const showFcst=view==="forecast"||(view==="consolidado"&&m>=cm);
-              return {name:mo,Real:showReal?Math.round(r.ns):null,Forecast:showFcst?Math.round(f.ns):null,GmPct:showReal&&r.ns?parseFloat((r.gp/r.ns*100).toFixed(1)):null,GmPctF:showFcst&&f.ns?parseFloat((f.gp/f.ns*100).toFixed(1)):null,cur:m<=cm};
-            });
-            const nsYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Real,0);
-            const nsFcstYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Forecast,0);
-            const gpYTD=ytdM.reduce((s,m)=>s+buildPL(fd,CUR_YEAR,m,cm,"consolidado").gp,0);
-            const gpFcstYTD=ytdM.reduce((s,m)=>s+buildPL(fd,CUR_YEAR,m,cm,"forecast").gp,0);
-            const gmYTD=nsYTD?gpYTD/nsYTD*100:0;
-            const gmFcstYTD=nsFcstYTD?gpFcstYTD/nsFcstYTD*100:0;
-            const nsLY=ytdM.reduce((s,m)=>s+gV(D,"Net Sales","Reales",CUR_YEAR-1,m),0);
-            const gpLY=ytdM.reduce((s,m)=>s+(gV(D,"Net Sales","Reales",CUR_YEAR-1,m)-gV(D,"COGS","Reales",CUR_YEAR-1,m)),0);
-            const gmLY=nsLY?gpLY/nsLY*100:0;
-            const growthPct=nsLY?(nsYTD-nsLY)/Math.abs(nsLY)*100:0;
-            const deltaMejora=gmYTD-gmLY;
-            const varVsFcst=nsYTD-nsFcstYTD;
-            const fmtLbl=v=>v&&Math.abs(v)>=5e4?(v/1e6).toFixed(1)+'M':'';
-            const maxV=Math.max(...revData.map(d=>Math.max(d.Real||0,d.Forecast||0)),1);
-            const leftMax=Math.ceil(maxV*1.25/1e6)*1e6;
-            const gmVals=revData.filter(d=>d.GmPct!=null).map(d=>d.GmPct);
-            const gmMin=Math.floor(Math.min(...gmVals,gmFcstYTD)-8);
-            const gmMax=Math.ceil(Math.max(...gmVals,gmFcstYTD)+8);
-            return (
-              <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <div>
-                      <div style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>Ventas Netas (M MXN) &amp; Gross Margin (%)</div>
-                      <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Barras: Net Sales Real · Barras claras: Forecast · Línea verde: Gross Margin %</div>
-                    </div>
-                    <button onClick={()=>{const h="Mes,Real,Forecast,GM%Real,GM%Fcst\n";const r=revData.map(d=>[d.name,d.Real,d.Forecast,d.GmPct??'',d.GmPctF??''].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="ventas_netas.csv";a.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                  </div>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <ComposedChart data={revData} margin={{top:22,right:46,bottom:0,left:2}} barCategoryGap="22%" barGap={2}>
-                      <XAxis dataKey="name" tick={{fontSize:8,fill:"#8A90A8"}} axisLine={false} tickLine={false}/>
-                      <YAxis yAxisId="L" tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'0'} domain={[0,leftMax]}/>
-                      <YAxis yAxisId="R" orientation="right" tick={{fontSize:7,fill:"#1D9E75"}} axisLine={false} tickLine={false} tickFormatter={v=>v+'%'} domain={[gmMin,gmMax]}/>
-                      <Tooltip formatter={(v,n)=>n.includes('%')?[(v!=null?v.toFixed(1):'--')+'%',n]:['$'+(v/1e6).toFixed(1)+'M',n]} contentStyle={{fontSize:9,borderRadius:6}}/>
-                      <Bar yAxisId="L" dataKey="Real" name="Real" fill="#1E3A8A" radius={[3,3,0,0]} maxBarSize={26}>
-                        <LabelList dataKey="Real" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E3A8A",fontWeight:700}}/>
-                      </Bar>
-                      <Bar yAxisId="L" dataKey="Forecast" name="Forecast" fill="#93C5FD" radius={[3,3,0,0]} maxBarSize={26}>
-                        <LabelList dataKey="Forecast" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E40AF",fontWeight:700}}/>
-                      </Bar>
-                      <Line yAxisId="R" type="monotone" dataKey="GmPct" name="GM% Real" stroke="#1D9E75" strokeWidth={2.5} dot={{r:4,fill:"#1D9E75",stroke:"#fff",strokeWidth:1}} activeDot={{r:5}} connectNulls>
-                        <LabelList dataKey="GmPct" position="top" formatter={v=>v!=null?v.toFixed(1)+'%':''} style={{fontSize:7.5,fill:"#1D9E75",fontWeight:700}}/>
-                      </Line>
-                      <Line yAxisId="R" type="monotone" dataKey="GmPctF" name="GM% Fcst" stroke="#1D9E75" strokeWidth={1.5} strokeDasharray="4 2" dot={false} connectNulls/>
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                  <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap",marginTop:4}}>
-                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#1E3A8A",display:"inline-block"}}/>Net Sales Reales</span>
-                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#93C5FD",border:"1px solid #1E40AF",display:"inline-block"}}/>Forecast</span>
-                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:3,background:"#1D9E75",display:"inline-block",borderRadius:2}}/>Gross Margin % Real</span>
-                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:2,background:"#1D9E75",display:"inline-block",borderRadius:2,opacity:0.55}}/>GM% Forecast</span>
-                  </div>
-                </div>
-                <div style={{width:152,flexShrink:0,display:"flex",flexDirection:"column",gap:7,paddingTop:38}}>
-                  {[
-                    {label:"Ventas Netas YTD",value:F(nsYTD),color:"#1E3A8A",bg:"#EFF4FF"},
-                    {label:"Ventas Netas LY YTD",value:F(nsLY),color:"#534AB7",bg:"#F3F0FF"},
-                    {label:"Crecimiento",value:(growthPct>=0?"+":"")+growthPct.toFixed(0)+"%",color:growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct>=0?"#F0FAF6":"#FEF2F2"},
-                    {label:"Gross Margin YTD",value:gmYTD.toFixed(1)+"%",color:"#1D9E75",bg:"#F0FAF6"},
-                    {label:"Gross Margin LY YTD",value:gmLY.toFixed(1)+"%",color:"#059669",bg:"#ECFDF5"},
-                    {label:"Mejora vs LY",value:(deltaMejora>=0?"+":"")+deltaMejora.toFixed(1)+" pp",color:deltaMejora>=0?"#1D9E75":"#E24B4A",bg:deltaMejora>=0?"#F0FAF6":"#FEF2F2"},
-                    {label:"Var. vs Forecast",value:(varVsFcst>=0?"+":"")+F(varVsFcst),color:varVsFcst>=0?"#1D9E75":"#E24B4A",bg:varVsFcst>=0?"#F0FAF6":"#FEF2F2"},
-                  ].map((k,i)=>(
-                    <div key={i} style={{background:k.bg,borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+k.color}}>
-                      <div style={{fontSize:7.5,color:"#8A90A8",marginBottom:1}}>{k.label}</div>
-                      <div style={{fontSize:i<=1?13:12,fontWeight:700,color:k.color}}>{k.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </div>
 {/* */}
 {/* */}
       {/* PIE CHARTS */}
