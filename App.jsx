@@ -1459,17 +1459,21 @@ export default function Dashboard() {
             <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>Revenue Real vs Presupuesto</div>
             <button onClick={()=>{ const h="Mes,Real,Presupuesto,EBITDA\n"; const r=chartData.filter(d=>d.cur).map(d=>`${d.name},${d.Sales||0},${d.Presupuesto||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_vs_presupuesto.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={chartData.filter(d=>d.cur)} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <ComposedChart data={chartData.filter(d=>d.cur)} margin={{ top: 24, right: 10, bottom: 0, left: -10 }} barCategoryGap="20%" barGap={3}>
               <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : "0"} />
               <Tooltip formatter={(v,n) => [`$${(v/1e6).toFixed(2)}M`, n]} contentStyle={{ fontSize: 9, borderRadius: 6 }} />
               <ReferenceLine y={0} stroke="#E4E8F2" />
               <Legend verticalAlign="top" height={24} iconSize={10} />
-              <Bar dataKey="Sales" name="Real" fill="#1E3A8A" radius={[3,3,0,0]} barSize={14} />
-              <Bar dataKey="Presupuesto" name="Presupuesto" fill="#93C5FD" radius={[3,3,0,0]} barSize={14} />
-              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:3,fill:"#F59E0B"}} activeDot={{r:4}}>
-                <LabelList dataKey="EBITDA" position="top" formatter={v => v && Math.abs(v)>100 ? `${(v/1e6).toFixed(1)}M` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:600}} />
+              <Bar dataKey="Sales" name="Real" fill="#1E3A8A" radius={[4,4,0,0]} maxBarSize={38}>
+                <LabelList dataKey="Sales" position="top" formatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : ""} style={{fontSize:7,fill:"#1E3A8A",fontWeight:700}} />
+              </Bar>
+              <Bar dataKey="Presupuesto" name="Presupuesto" fill="#93C5FD" radius={[4,4,0,0]} maxBarSize={38}>
+                <LabelList dataKey="Presupuesto" position="top" formatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : ""} style={{fontSize:7,fill:"#1E40AF",fontWeight:700}} />
+              </Bar>
+              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:4,fill:"#F59E0B",strokeWidth:0}} activeDot={{r:5}} zIndex={10}>
+                <LabelList dataKey="EBITDA" position="insideTopRight" formatter={v => v && Math.abs(v)>100 ? `${(v/1e6).toFixed(1)}M` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:700}} />
               </Line>
             </ComposedChart>
           </ResponsiveContainer>
