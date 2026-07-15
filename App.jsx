@@ -1458,9 +1458,11 @@ export default function Dashboard() {
           {(()=>{
             const revData=MO.map((mo,i)=>{
               const m=i+1;
-              const p=buildPL(fd,CUR_YEAR,m,cm,"consolidado");
+              const r=buildPL(fd,CUR_YEAR,m,cm,"reales");
               const f=buildPL(fd,CUR_YEAR,m,cm,"forecast");
-              return {name:mo,Real:Math.round(p.ns),Forecast:Math.round(f.ns),GmPct:p.ns?parseFloat((p.gp/p.ns*100).toFixed(1)):null,GmPctF:f.ns?parseFloat((f.gp/f.ns*100).toFixed(1)):null,cur:m<=cm};
+              const showReal=(view==="reales"||view==="consolidado")&&m<=cm&&r.ns>0;
+              const showFcst=view==="forecast"||(view==="consolidado"&&m>=cm);
+              return {name:mo,Real:showReal?Math.round(r.ns):null,Forecast:showFcst?Math.round(f.ns):null,GmPct:showReal&&r.ns?parseFloat((r.gp/r.ns*100).toFixed(1)):null,GmPctF:showFcst&&f.ns?parseFloat((f.gp/f.ns*100).toFixed(1)):null,cur:m<=cm};
             });
             const nsYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Real,0);
             const nsFcstYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Forecast,0);
