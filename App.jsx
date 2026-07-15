@@ -1624,10 +1624,9 @@ export default function Dashboard() {
           );
         })()}
 
-      </div>
-
         );
       })()}      </>
+      }
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
