@@ -166,7 +166,7 @@ const PL_KEYS = ["ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","m
 const PL_LABELS = {ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expenses",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["gmPct","totOpexPct","ebitdaPct","ebitPct","netProfitPct"]);
 const BOLD_KEYS = new Set(["ns","gp","totOpex","ebitda","ebit","totFin","netProfit"]);
-const OPEX_KEY_SET = new Set(["cogs","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"]);
+const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"]);
 {/* */}
 export default function Dashboard() {
   const [cm, setCm] = useState(() => {
@@ -689,7 +689,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {(() => {
-              const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
+              const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
               const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
   const SEP_STYLE = {padding:"6px 6px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500};
@@ -786,7 +786,7 @@ export default function Dashboard() {
               <thead><tr>{["Línea", "Forecast", "Reales", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
               <tbody>
                 {(() => {
-                  const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
+                  const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
                   const tRows = [];
                   comp.forEach((r, i) => {
                     const isOpex = OPEX_KEY_SET.has(r.k);
@@ -1443,12 +1443,15 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ===== ROW: CAPITAL DE TRABAJO | INVENTARIOS | FLUJO DE CAJA ===== */}
+      <div style={{display:'flex',gap:12,alignItems:'flex-start',marginBottom:16}}>
+        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== CAPITAL DE TRABAJO ===== */}
-      <div style={{margin:'24px 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+      <div style={{margin:'0 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
         <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>5</div>
         <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CAPITAL DE TRABAJO</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1.2fr',gap:12,marginBottom:16}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {/* DSO */}
         <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
           <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DSO</div>
@@ -1487,12 +1490,14 @@ export default function Dashboard() {
         </div>
       </div>
 
+        </div>
+        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== INVENTARIOS ===== */}
-      <div style={{margin:'24px 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+      <div style={{margin:'0 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
         <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>6</div>
         <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr',gap:10}}>
         {/* KPIs Inventarios */}
         <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
           {[
@@ -1535,6 +1540,70 @@ export default function Dashboard() {
         </div>
       </div>
 
+        </div>
+        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
+      {/* ===== FLUJO DE CAJA ===== */}
+      <div style={{margin:'0 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>7</div>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>FLUJO DE CAJA</div>
+      </div>
+      {(()=>{
+        const waterfallData=[
+          {name:'Saldo Inicial',  value:8529193,  isBase:true,  color:'#1E3A8A'},
+          {name:'OPEX',           value:-2815546, isBase:false, color:'#E24B4A'},
+          {name:'CAPEX',          value:-82862,   isBase:false, color:'#E24B4A'},
+          {name:'Cap. Trabajo',   value:-945598,  isBase:false, color:'#E24B4A'},
+          {name:'Saldo Final',    value:3739589,  isBase:true,  color:'#1D9E75'},
+        ];
+        const entradas=0, salidas=3844006, flujoNeto=-4789604;
+        let running=waterfallData[0].value;
+        const bars=waterfallData.map((d,i)=>{
+          if(d.isBase){const v={...d,base:0,height:Math.abs(d.value)};if(i===0)running=d.value;return v;}
+          const base=d.value<0?running+d.value:running;
+          const height=Math.abs(d.value);
+          running+=d.value;
+          return{...d,base,height};
+        });
+        const maxV=Math.max(...bars.map(b=>b.base+b.height),1);
+        const F2=v=>{const a=Math.abs(v);return(v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?(a/1e3).toFixed(0)+'K':a.toFixed(0));};
+        return(
+          <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:9,color:'#8A90A8',marginBottom:8}}>Waterfall — Julio 2026 (MXN)</div>
+              <div style={{display:'flex',alignItems:'flex-end',gap:4,height:160,paddingBottom:20,position:'relative'}}>
+                {bars.map((b,i)=>{
+                  const pct=b.height/maxV*100;
+                  const basePct=b.base/maxV*100;
+                  return(
+                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',height:'100%',justifyContent:'flex-end',position:'relative'}}>
+                      <div style={{fontSize:7,color:b.color,fontWeight:700,marginBottom:2,textAlign:'center'}}>{F2(b.value)}</div>
+                      <div style={{width:'100%',position:'relative',height:`${pct+basePct}%`}}>
+                        <div style={{position:'absolute',bottom:0,width:'100%',height:`${pct/(pct+basePct)*100}%`,background:b.color,borderRadius:'3px 3px 0 0'}}/>
+                        <div style={{position:'absolute',bottom:0,width:'100%',height:`${basePct/(pct+basePct)*100}%`,background:'transparent'}}/>
+                      </div>
+                      <div style={{fontSize:7,color:'#8A90A8',marginTop:4,textAlign:'center',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:'100%'}}>{b.name}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{width:100,flexShrink:0,display:'flex',flexDirection:'column',gap:6,paddingTop:20}}>
+              {[
+                {label:'Entradas',   value:F2(entradas),  color:'#1D9E75', bg:'#F0FAF6'},
+                {label:'Salidas',    value:F2(salidas),   color:'#E24B4A', bg:'#FEF2F2'},
+                {label:'Flujo Neto', value:F2(flujoNeto), color:flujoNeto>=0?'#1D9E75':'#E24B4A', bg:flujoNeto>=0?'#F0FAF6':'#FEF2F2'},
+              ].map((k,i)=>(
+                <div key={i} style={{background:k.bg,borderRadius:8,padding:'6px 8px',borderLeft:'3px solid '+k.color}}>
+                  <div style={{fontSize:7,color:'#8A90A8',marginBottom:1}}>{k.label}</div>
+                  <div style={{fontSize:11,fontWeight:700,color:k.color}}>{k.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+        </div>
+      </div>
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
