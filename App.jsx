@@ -1566,63 +1566,42 @@ export default function Dashboard() {
           </tbody>
         </table>
       </div>
-        {/* Ejecucion Presupuestal por Area */}
-        {(() => {
-          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
-          const aRows = areas.slice(0,7).map(area => {
-            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const ejec  = fcast !== 0 ? real/fcast*100 : null;
-            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
-          });
-          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
-          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
-          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
-          return (
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
-                <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
-              </div>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-                <thead><tr>
-                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
-                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {aRows.map((r,i) => (
-                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right'}}>
-                        {r.ejec !== null
-                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
-                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
-                              </div>
-                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
-                            </div>
-                          : <span style={{color:'#B0B6C3'}}>N/A</span>
-                        }
-                      </td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
-                    </tr>
-                  ))}
-                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
-                    <td style={{padding:'5px'}}>TOTAL</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
-                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
-                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          );
-        })()}
+{/* */}
+{/* */}
+{/* */}
+      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:13,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:13,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div><div style={{display:"flex",gap:16,alignItems:"flex-start"}}><div style={{flex:1,minWidth:0}}>{pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}{pareto.slice(0,15).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
+<div key={i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
+{/* */}
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div><div style={{flex:1,minWidth:0}}>{paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}{paretoMes.slice(0,15).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
+<div key={"m"+i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
+{/* */}
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div></div>
+      </div>
+{/* */}
+
+
+
+
+
 
         );
       })()}      </>
