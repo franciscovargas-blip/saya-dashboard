@@ -1242,8 +1242,8 @@ export default function Dashboard() {
       </div>
 
       {/* VENTAS NETAS CHART */}
-      <div style={{width:"100%",marginBottom:16}}>
-        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",width:"100%",boxSizing:"border-box"}}>
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:12,marginBottom:16,alignItems:'start'}}>
+        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",boxSizing:"border-box"}}>
           {(()=>{
             const revData=MO.map((mo,i)=>{
               const m=i+1;
@@ -1326,6 +1326,125 @@ export default function Dashboard() {
             );
           })()}
         </div>
+
+
+        {/* Inversion en Moleculas */}
+        {(() => {
+          const totalReal = areaTable.reduce((s,r) => s + Math.abs(r.total), 0);
+          const fcastMap  = {};
+          fd.filter(r => r[1]==='Forecast' && OC_ALL.includes(r[0]) && ytdM.includes(r[3]))
+            .forEach(r => { const mol = mapMol(r[4]); fcastMap[mol] = (fcastMap[mol]||0) + r[9]; });
+          const molRows = areaTable.slice(0,8).map(r => {
+            const fc   = Math.abs(fcastMap[r.mol] || 0);
+            const real = Math.abs(r.total);
+            const ejec = fc > 0 ? real / fc * 100 : null;
+            const pctT = totalReal > 0 ? real / totalReal * 100 : 0;
+            return { mol:r.mol, fc, real, ejec, pctT };
+          });
+          const tFC = molRows.reduce((s,r)=>s+r.fc,  0);
+          const tR  = molRows.reduce((s,r)=>s+r.real, 0);
+          const tE  = tFC > 0 ? tR/tFC*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
+                <button onClick={()=>{const hi="Molecula,Forecast,Real,EjecPct,PctTotal\n"; const ri=molRows.map(r=>[r.mol,r.fc,r.real,(r.ejec||0).toFixed(1),r.pctT.toFixed(1)].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(totalReal)}</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Molécula','Inversión','% Ejec','% Total'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {molRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mol}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end'}}>
+                              <div style={{width:44,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pctT.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px 5px'}}>TOTAL</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>{F(tR)}</td>
+                    <td style={{padding:'5px 5px',textAlign:'right',color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(0)}%</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
+
+        {/* Ejecucion Presupuestal por Area */}
+        {(() => {
+          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
+          const aRows = areas.slice(0,7).map(area => {
+            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const ejec  = fcast !== 0 ? real/fcast*100 : null;
+            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
+          });
+          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
+          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
+          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
+                <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {aRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
+                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px'}}>TOTAL</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
+                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
+                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ===== ANÁLISIS EJECUTIVO PHARMA + TABLA ÁREA ===== */}
@@ -1497,128 +1616,7 @@ export default function Dashboard() {
 
 
 
-      {/* --- Row 2: Inversion en Moleculas + Ejecucion Presupuestal --- */}
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
 
-        {/* Inversion en Moleculas */}
-        {(() => {
-          const totalReal = areaTable.reduce((s,r) => s + Math.abs(r.total), 0);
-          const fcastMap  = {};
-          fd.filter(r => r[1]==='Forecast' && OC_ALL.includes(r[0]) && ytdM.includes(r[3]))
-            .forEach(r => { const mol = mapMol(r[4]); fcastMap[mol] = (fcastMap[mol]||0) + r[9]; });
-          const molRows = areaTable.slice(0,8).map(r => {
-            const fc   = Math.abs(fcastMap[r.mol] || 0);
-            const real = Math.abs(r.total);
-            const ejec = fc > 0 ? real / fc * 100 : null;
-            const pctT = totalReal > 0 ? real / totalReal * 100 : 0;
-            return { mol:r.mol, fc, real, ejec, pctT };
-          });
-          const tFC = molRows.reduce((s,r)=>s+r.fc,  0);
-          const tR  = molRows.reduce((s,r)=>s+r.real, 0);
-          const tE  = tFC > 0 ? tR/tFC*100 : 0;
-          return (
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
-                <button onClick={()=>{const hi="Molecula,Forecast,Real,EjecPct,PctTotal\n"; const ri=molRows.map(r=>[r.mol,r.fc,r.real,(r.ejec||0).toFixed(1),r.pctT.toFixed(1)].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(totalReal)}</div>
-              </div>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-                <thead><tr>
-                  {['Molécula','Inversión','% Ejec','% Total'].map((h,i) => (
-                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {molRows.map((r,i) => (
-                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'4px 5px',maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mol}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right'}}>
-                        {r.ejec !== null
-                          ? <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end'}}>
-                              <div style={{width:44,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                                <div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
-                              </div>
-                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
-                            </div>
-                          : <span style={{color:'#B0B6C3'}}>N/A</span>
-                        }
-                      </td>
-                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pctT.toFixed(1)}%</td>
-                    </tr>
-                  ))}
-                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
-                    <td style={{padding:'5px 5px'}}>TOTAL</td>
-                    <td style={{padding:'5px 5px',textAlign:'right'}}>{F(tR)}</td>
-                    <td style={{padding:'5px 5px',textAlign:'right',color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(0)}%</td>
-                    <td style={{padding:'5px 5px',textAlign:'right'}}>100%</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          );
-        })()}
-
-        {/* Ejecucion Presupuestal por Area */}
-        {(() => {
-          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
-          const aRows = areas.slice(0,7).map(area => {
-            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const ejec  = fcast !== 0 ? real/fcast*100 : null;
-            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
-          });
-          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
-          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
-          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
-          return (
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
-                <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
-              </div>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-                <thead><tr>
-                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
-                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {aRows.map((r,i) => (
-                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right'}}>
-                        {r.ejec !== null
-                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
-                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
-                              </div>
-                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
-                            </div>
-                          : <span style={{color:'#B0B6C3'}}>N/A</span>
-                        }
-                      </td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
-                    </tr>
-                  ))}
-                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
-                    <td style={{padding:'5px'}}>TOTAL</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
-                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
-                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          );
-        })()}
-
-      </div>
 
         );
       })()}      </>
