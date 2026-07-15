@@ -1339,6 +1339,246 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Tabla full-width Ejecucion por Area */}
+      {(()=>{
+        const OA2=['Salaries & Wages','Sales & Marketing','Travel & Accomodation','Professional Fees','Office Expense','Regulatory','Software & Hardware','Mobility','Quality','Operations','Others','OT001'];
+        const ytdMA=Array.from({length:cm},(_,i)=>i+1);
+        const areaList=['CAME','FIXED','INMU','NOAP','ONHE','SAOS'];
+        const fd3=D.filter(r=>r[2]===CUR_YEAR&&OA2.includes(r[0]));
+        const aRows=areaList.map(area=>{
+          const real=fd3.filter(r=>r[1]==='Reales'&&ytdMA.includes(r[3])&&r[5]===area).reduce((s,r)=>s+r[9],0);
+          const fcast=fd3.filter(r=>r[1]==='Forecast'&&ytdMA.includes(r[3])&&r[5]===area).reduce((s,r)=>s+r[9],0);
+          const ejec=fcast!==0?real/fcast*100:null;
+          return {area,real:Math.abs(real),fcast:Math.abs(fcast),ejec,vs:real-fcast};
+        }).filter(r=>r.real>0||r.fcast>0);
+        const tR=aRows.reduce((s,r)=>s+r.real,0);
+        const tF=aRows.reduce((s,r)=>s+r.fcast,0);
+        const tE=tF>0?tR/tF*100:0;
+        const tV=tR-tF;
+        const maxR=Math.max(...aRows.map(r=>r.real),1);
+        const MES2=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const mesL=MES2[cm-1]||('M'+cm);
+        return (
+          <div style={{background:'#fff',borderRadius:12,boxShadow:'0 2px 12px rgba(30,42,58,0.08)',overflow:'hidden',marginBottom:16}}>
+            <div style={{background:'#1a1a2e',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{color:'#fff',fontWeight:800,fontSize:13}}>EJECUCIÓN PRESUPUESTAL POR ÁREA</div>
+                <div style={{color:'#8A90A8',fontSize:10,marginTop:2}}>YTD Ene–{mesL} {CUR_YEAR} · OPEX · Sábanas de Gastos</div>
+              </div>
+              <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                <div style={{textAlign:'right'}}>
+                  <div style={{color:'#8A90A8',fontSize:9}}>% Ejec. Total</div>
+                  <div style={{color:tE>=100?'#E24B4A':'#1D9E75',fontWeight:900,fontSize:22}}>{tE.toFixed(1)}%</div>
+                </div>
+                <button onClick={()=>{const h='Área,Presupuesto,Real,% Ejec,VS\n';const rows=aRows.map(r=>[r.area,r.fcast.toFixed(0),r.real.toFixed(0),(r.ejec||0).toFixed(1),r.vs.toFixed(0)].join(',')).join('\n');const b=new Blob([h+rows],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ejecucion_area.csv';a.click();}} style={{fontSize:9,padding:'5px 12px',background:'#7C3AED',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:700}}>⬇ CSV</button>
+              </div>
+            </div>
+            <table style={{width:'100%',borderCollapse:'collapse'}}>
+              <thead>
+                <tr style={{background:'#f8f9fe'}}>
+                  {['ÁREA','PRESUPUESTO','REAL','% EJECUCIÓN','VS PRESUP.'].map((h,i)=>(
+                    <th key={i} style={{padding:'10px 20px',fontSize:11,fontWeight:700,color:'#534AB7',textAlign:i===0?'left':'right',borderBottom:'2px solid #E4E8F2',textTransform:'uppercase',letterSpacing:0.5}}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {aRows.map((r,i)=>{
+                  const bW=r.real/maxR*100;
+                  const eC=r.ejec===null?'#8A90A8':r.ejec>=100?'#E24B4A':'#1D9E75';
+                  const vC=r.vs<0?'#E24B4A':'#1D9E75';
+                  return(
+                    <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'13px 20px'}}>
+                        <div style={{fontWeight:700,fontSize:12,color:'#1a1a2e'}}>{r.area}</div>
+                        <div style={{marginTop:4,height:4,background:'#f0f2fa',borderRadius:2,width:100,overflow:'hidden'}}><div style={{height:'100%',width:`${bW}%`,background:'#534AB7',borderRadius:2}}/></div>
+                      </td>
+                      <td style={{padding:'13px 20px',textAlign:'right',color:'#8A90A8',fontSize:12}}>{F(r.fcast)}</td>
+                      <td style={{padding:'13px 20px',textAlign:'right',fontSize:13,fontWeight:700,color:'#1a1a2e'}}>{F(r.real)}</td>
+                      <td style={{padding:'13px 20px',textAlign:'right'}}>
+                        {r.ejec===null?<span style={{color:'#B0B6C3'}}>N/A</span>:
+                          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3}}>
+                            <span style={{fontWeight:800,fontSize:13,color:eC}}>{r.ejec.toFixed(1)}%</span>
+                            <div style={{width:80,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:eC,borderRadius:3}}/></div>
+                          </div>}
+                      </td>
+                      <td style={{padding:'13px 20px',textAlign:'right'}}>
+                        <div style={{fontWeight:700,fontSize:12,color:vC}}>{r.vs>=0?'+':''}{F(r.vs)}</div>
+                        <div style={{fontSize:9,color:vC,marginTop:2}}>{r.vs>=0?'▲ Superávit':'▼ Déficit'}</div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr style={{background:'#f0f2fa',borderTop:'2px solid #E4E8F2'}}>
+                  <td style={{padding:'13px 20px',fontSize:13,fontWeight:800,color:'#1a1a2e'}}>TOTAL</td>
+                  <td style={{padding:'13px 20px',textAlign:'right',fontSize:13,color:'#8A90A8'}}>{F(tF)}</td>
+                  <td style={{padding:'13px 20px',textAlign:'right',fontSize:14,fontWeight:900,color:'#1a1a2e'}}>{F(tR)}</td>
+                  <td style={{padding:'13px 20px',textAlign:'right'}}><span style={{fontWeight:900,fontSize:14,color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(1)}%</span></td>
+                  <td style={{padding:'13px 20px',textAlign:'right'}}><span style={{fontWeight:800,fontSize:13,color:tV>=0?'#1D9E75':'#E24B4A'}}>{tV>=0?'+':''}{F(tV)}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        );
+      })()}
+
+      {/* ===== TIMELINE EJECUTIVO ===== */}
+      <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
+        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
+      </div>
+
+      {(() => {
+        const molLaunches = {};
+        D.filter(r=>r[0]==="Net Sales"&&r[1]==="Forecast"&&r[9]>0).forEach(r=>{
+          const mol=r[4]; const yr=r[2]; const mo=r[3];
+          if(!molLaunches[mol]||yr<molLaunches[mol].yr||(yr===molLaunches[mol].yr&&mo<molLaunches[mol].mo))
+            molLaunches[mol]={yr,mo,area:r[5]};
+        });
+        const launches=Object.entries(molLaunches).map(([mol,d])=>({mol,yr:d.yr,mo:d.mo,area:d.area})).sort((a,b)=>a.yr!==b.yr?a.yr-b.yr:a.mo-b.mo);
+        const tlYrs=[...new Set(launches.map(l=>l.yr))].sort();
+        const TCOLS=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4","#EC4899","#10B981"];
+        const aCols={}; let ci=0; launches.forEach(l=>{ if(!aCols[l.area]) aCols[l.area]=TCOLS[ci++%TCOLS.length]; });
+        const MS=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+        return (
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:16,borderTop:"3px solid #E24B4A"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>🚀 Lanzamientos de Moléculas — Primeras Ventas Forecast</div>
+              <div style={{fontSize:9,color:"#8A90A8"}}>{launches.length} moléculas en pipeline</div>
+            </div>
+            {tlYrs.map(yr=>(
+              <div key={yr} style={{marginBottom:14}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <div style={{fontSize:12,fontWeight:800,color:yr===CUR_YEAR?"#534AB7":yr<CUR_YEAR?"#1D9E75":"#8A90A8",minWidth:44}}>{yr}</div>
+                  <div style={{flex:1,height:1,background:"#E4E8F2"}}/> 
+                  <span style={{fontSize:8,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700,background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",borderRadius:6,padding:"2px 8px"}}>{yr<CUR_YEAR?"✓ Completado":yr===CUR_YEAR?"▶ En curso":"⏳ Proyectado"}</span>
+                </div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                  {launches.filter(l=>l.yr===yr).map((l,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+(aCols[l.area]||"#534AB7")}}>
+                      <div>
+                        <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.mol}</div>
+                        <div style={{fontSize:7,color:aCols[l.area]||"#534AB7",fontWeight:600,marginTop:1}}>{(l.area||"--")} · {MS[l.mo-1]} {l.yr}</div>
+                      </div>
+                      <span style={{background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#7C3AED",borderRadius:6,padding:"2px 6px",fontSize:7,fontWeight:700,whiteSpace:"nowrap"}}>{yr<CUR_YEAR?"✓ Lanzado":yr===CUR_YEAR?"▶ Activo":"⏳ Futuro"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap",paddingTop:10,borderTop:"1px solid #f0f2fa",fontSize:8}}>
+              {Object.entries(aCols).map(([area,col],i)=>(
+                <span key={i} style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:2,background:col,display:"inline-block"}}/>{area}</span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
+
+
+{/* */}
+{/* */}
+      {/* PIE CHARTS */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
+          <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
+            <button onClick={()=>{const hp="Molecula,Gasto\n"; const rp=p.data.map(e=>e.name+","+e.value).join("\n"); const bp=new Blob([hp+rp],{type:"text/csv"}); const ap=document.createElement("a"); ap.href=URL.createObjectURL(bp); ap.download=(p.title||"pie")+".csv"; ap.click();}} style={{fontSize:9,padding:"3px 8px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer",marginLeft:8}}>⬇</button>
+            {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <ResponsiveContainer width="60%" height={220}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
+                <div style={{ width: "40%", fontSize: 9 }}>{p.data.map((e, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span><span style={{ marginLeft: "auto", color: "#8A90A8", flexShrink: 0 }}>{F(e.value)}</span></div>)}</div>
+              </div>}
+          </div>
+        ))}
+      </div>
+{/* */}
+      {/* PARETO */}
+{/* */}
+      {/* AREA × MONTH TABLE */}
+      <div style={s.card}>
+        <div style={s.cardTitle}>Gasto Real por Molécula — Mensual</div>
+        <button onClick={()=>{const ha="Molecula," + ytdM.map(m=>MO[m-1]).join(",") + ",Total YTD\n"; const ra=areaTable.map(row=>[row.mol,...ytdM.map(m=>row.monthly[m]||0),row.total].join(",")).join("\n"); const ba=new Blob([ha+ra],{type:"text/csv"}); const aa=document.createElement("a"); aa.href=URL.createObjectURL(ba); aa.download="gasto_mensual_molecula.csv"; aa.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+        <div style={s.cardSub}>Molécula → Clasificación · Clic para expandir</div>
+        <table style={s.tbl}>
+          <thead><tr>
+            <th style={s.thL}>Molécula</th>
+            {ytdM.map(m => <th key={m} style={s.thR}>{MO[m - 1]}</th>)}
+            <th style={s.thTot}>Total YTD</th>
+          </tr></thead>
+          <tbody>
+            {areaTable.map((row, ri) => {
+              const isExp = expArea[row.mol];
+              const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
+              const hasDrill = clsEntries.length > 0;
+              const trStyle = { cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" };
+              const tdStyle = { ...s.td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 };
+              const arrowStyle = { fontSize: 8, marginRight: 4 };
+              const dotStyle = { display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" };
+              const numTdStyle = (v) => ({ ...s.td, textAlign: "right", fontSize: 10, color: v < 0 ? "#E24B4A" : v === 0 ? "#ccc" : "#1a1a2e" });
+              const totTdStyle = { ...s.td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" };
+              return (<>
+                <tr key={ri} style={trStyle} onClick={() => hasDrill && toggleArea(row.mol)}>
+                  <td style={tdStyle}>
+                    {hasDrill && <span style={arrowStyle}>{isExp ? "▼" : "▶"}</span>}
+                    <span style={dotStyle} />
+                    {row.mol}
+                  </td>
+                  {ytdM.map(m => <td key={m} style={numTdStyle(row.monthly[m] || 0)}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
+                  <td style={totTdStyle}>{F(row.total)}</td>
+                </tr>
+                {isExp && clsEntries.map(([cls, cData], ci) => (
+                  <tr key={`{row.mol}|{ci}`} style={{ background: "#f8f9fe" }}>
+                    <td style={{ ...s.td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" }}>{cls}</td>
+                    {ytdM.map(m => <td key={m} style={{ ...s.td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" }}>{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
+                    <td style={{ ...s.td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" }}>{F(cData.total)}</td>
+                  </tr>
+                ))}
+              </>);
+            })}
+            <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
+              <td style={{ ...s.td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
+              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...s.td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
+              <td style={{ ...s.td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+{/* */}
+{/* */}
+{/* */}
+      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:13,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:13,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div><div style={{display:"flex",gap:16,alignItems:"flex-start"}}><div style={{flex:1,minWidth:0}}>{pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}{pareto.slice(0,15).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
+<div key={i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
+{/* */}
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div><div style={{flex:1,minWidth:0}}>{paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}{paretoMes.slice(0,15).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
+<div key={"m"+i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
+{/* */}
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div></div>
+      </div>
+{/* */}
+
+
+
+
       {/* --- Row 2: Inversion en Moleculas + Ejecucion Presupuestal --- */}
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
 
@@ -1461,42 +1701,6 @@ export default function Dashboard() {
         })()}
 
       </div>
-
-{/* */}
-{/* */}
-      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:13,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:13,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div><div style={{display:"flex",gap:16,alignItems:"flex-start"}}><div style={{flex:1,minWidth:0}}>{pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}{pareto.slice(0,15).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
-<div key={i} style={{marginBottom:isE?8:3}}>
-<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
-<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
-<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
-{/* */}
-</div>
-{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:6}}>{F(val)}</span></div>
-))}</div>}
-</div>
-);})}</div><div style={{flex:1,minWidth:0}}>{paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}{paretoMes.slice(0,15).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
-<div key={"m"+i} style={{marginBottom:isE?8:3}}>
-<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
-<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
-<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
-{/* */}
-</div>
-{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:6}}>{F(val)}</span></div>
-))}</div>}
-</div>
-);})}</div></div>
-      </div>
-{/* */}
-
-
-
-
-
 
         );
       })()}      </>
