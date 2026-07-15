@@ -1226,12 +1226,14 @@ export default function Dashboard() {
               const bancosRow=B.find(r=>r[0]==="102-00-000"&&r[4]===1);
               const invRow=B.find(r=>r[0]==="103-00-000"&&r[4]===1);
               const bsM=(row,m)=>row?row.slice(5,5+m).reduce((s,v)=>s+(v||0),0):0;
-              const flujoCaja=(B_OPEN["102-00-000"]||0)+bsM(bancosRow,cm)+(B_OPEN["103-00-000"]||0)+bsM(invRow,cm);
+              // Saldo al mes cm = B_OPEN + movimientos acumulados Jan-cm
+              const bsBalance=(bopen,row,m)=>row?(bopen||0)+row.slice(5,5+m).reduce((s,v)=>s+(v||0),0):(bopen||0);
+              const flujoCaja=bsBalance(B_OPEN["102-00-000"],bancosRow,cm)+bsBalance(B_OPEN["103-00-000"],invRow,cm);
               return (
-                <div style={kC("#06B6D4")}>
+                <div style={kC("#1a1a2e")}>
                   <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>💧</div>
                   <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>FLUJO DE CAJA DISPONIBLE</div>
-                  <div style={{fontSize:20,fontWeight:800,color:"#06B6D4",lineHeight:1.1,letterSpacing:-0.5}}>{F(flujoCaja)}</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(flujoCaja)}</div>
                   <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Bancos + Inversiones · {MO[cm-1]}</div>
                 </div>
               );
