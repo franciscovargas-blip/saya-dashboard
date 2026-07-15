@@ -1452,31 +1452,88 @@ export default function Dashboard() {
 
 
 
-      {/* P&L TABLE */}
+      {/* VENTAS NETAS CHART */}
       <div style={{width:"100%",marginBottom:16}}>
-        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,width:"100%",boxSizing:"border-box"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>Revenue Real vs Presupuesto</div>
-            <button onClick={()=>{ const h="Mes,Real,Presupuesto,EBITDA\n"; const r=chartData.filter(d=>d.cur).map(d=>`${d.name},${d.Sales||0},${d.Presupuesto||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_vs_presupuesto.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
-          </div>
-          <ResponsiveContainer width="100%" height={320}>
-            <ComposedChart data={chartData.filter(d=>d.cur)} margin={{ top: 24, right: 10, bottom: 0, left: -10 }} barCategoryGap="20%" barGap={3}>
-              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : "0"} />
-              <Tooltip formatter={(v,n) => [`$${(v/1e6).toFixed(2)}M`, n]} contentStyle={{ fontSize: 9, borderRadius: 6 }} />
-              <ReferenceLine y={0} stroke="#E4E8F2" />
-              <Legend verticalAlign="top" height={24} iconSize={10} />
-              <Bar dataKey="Sales" name="Real" fill="#1E3A8A" radius={[4,4,0,0]} maxBarSize={38}>
-                <LabelList dataKey="Sales" position="top" formatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : ""} style={{fontSize:7,fill:"#1E3A8A",fontWeight:700}} />
-              </Bar>
-              <Bar dataKey="Presupuesto" name="Presupuesto" fill="#93C5FD" radius={[4,4,0,0]} maxBarSize={38}>
-                <LabelList dataKey="Presupuesto" position="top" formatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : ""} style={{fontSize:7,fill:"#1E40AF",fontWeight:700}} />
-              </Bar>
-              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:4,fill:"#F59E0B",strokeWidth:0}} activeDot={{r:5}} zIndex={10}>
-                <LabelList dataKey="EBITDA" position="insideTopRight" formatter={v => v && Math.abs(v)>100 ? `${(v/1e6).toFixed(1)}M` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:700}} />
-              </Line>
-            </ComposedChart>
-          </ResponsiveContainer>
+        <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",width:"100%",boxSizing:"border-box"}}>
+          {(()=>{
+            const revData=MO.map((mo,i)=>{
+              const m=i+1;
+              const p=buildPL(fd,CUR_YEAR,m,cm,"consolidado");
+              const f=buildPL(fd,CUR_YEAR,m,cm,"forecast");
+              return {name:mo,Real:Math.round(p.ns),Forecast:Math.round(f.ns),GmPct:p.ns?parseFloat((p.gp/p.ns*100).toFixed(1)):null,GmPctF:f.ns?parseFloat((f.gp/f.ns*100).toFixed(1)):null,cur:m<=cm};
+            });
+            const nsYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Real,0);
+            const nsFcstYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Forecast,0);
+            const gpYTD=ytdM.reduce((s,m)=>s+buildPL(fd,CUR_YEAR,m,cm,"consolidado").gp,0);
+            const gpFcstYTD=ytdM.reduce((s,m)=>s+buildPL(fd,CUR_YEAR,m,cm,"forecast").gp,0);
+            const gmYTD=nsYTD?gpYTD/nsYTD*100:0;
+            const gmFcstYTD=nsFcstYTD?gpFcstYTD/nsFcstYTD*100:0;
+            const nsLY=ytdM.reduce((s,m)=>s+gV(D,"Net Sales","Reales",CUR_YEAR-1,m),0);
+            const gpLY=ytdM.reduce((s,m)=>s+(gV(D,"Net Sales","Reales",CUR_YEAR-1,m)-gV(D,"COGS","Reales",CUR_YEAR-1,m)),0);
+            const gmLY=nsLY?gpLY/nsLY*100:0;
+            const growthPct=nsLY?(nsYTD-nsLY)/Math.abs(nsLY)*100:0;
+            const deltaMejora=gmYTD-gmLY;
+            const varVsFcst=nsYTD-nsFcstYTD;
+            const fmtLbl=v=>v&&Math.abs(v)>=5e4?(v/1e6).toFixed(1)+'M':'';
+            const maxV=Math.max(...revData.map(d=>Math.max(d.Real||0,d.Forecast||0)),1);
+            const leftMax=Math.ceil(maxV*1.25/1e6)*1e6;
+            const gmVals=revData.filter(d=>d.GmPct!=null).map(d=>d.GmPct);
+            const gmMin=Math.floor(Math.min(...gmVals,gmFcstYTD)-8);
+            const gmMax=Math.ceil(Math.max(...gmVals,gmFcstYTD)+8);
+            return (
+              <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>Ventas Netas (M MXN) &amp; Gross Margin (%)</div>
+                      <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Barras: Net Sales Real · Barras claras: Forecast · Línea verde: Gross Margin %</div>
+                    </div>
+                    <button onClick={()=>{const h="Mes,Real,Forecast,GM%Real,GM%Fcst\n";const r=revData.map(d=>[d.name,d.Real,d.Forecast,d.GmPct??'',d.GmPctF??''].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="ventas_netas.csv";a.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                  </div>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <ComposedChart data={revData} margin={{top:22,right:46,bottom:0,left:2}} barCategoryGap="22%" barGap={2}>
+                      <XAxis dataKey="name" tick={{fontSize:8,fill:"#8A90A8"}} axisLine={false} tickLine={false}/>
+                      <YAxis yAxisId="L" tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'0'} domain={[0,leftMax]}/>
+                      <YAxis yAxisId="R" orientation="right" tick={{fontSize:7,fill:"#1D9E75"}} axisLine={false} tickLine={false} tickFormatter={v=>v+'%'} domain={[gmMin,gmMax]}/>
+                      <Tooltip formatter={(v,n)=>n.includes('%')?[(v!=null?v.toFixed(1):'--')+'%',n]:['$'+(v/1e6).toFixed(1)+'M',n]} contentStyle={{fontSize:9,borderRadius:6}}/>
+                      <Bar yAxisId="L" dataKey="Real" name="Real" fill="#1E3A8A" radius={[3,3,0,0]} maxBarSize={26}>
+                        <LabelList dataKey="Real" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E3A8A",fontWeight:700}}/>
+                      </Bar>
+                      <Bar yAxisId="L" dataKey="Forecast" name="Forecast" fill="#93C5FD" radius={[3,3,0,0]} maxBarSize={26}>
+                        <LabelList dataKey="Forecast" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E40AF",fontWeight:700}}/>
+                      </Bar>
+                      <Line yAxisId="R" type="monotone" dataKey="GmPct" name="GM% Real" stroke="#1D9E75" strokeWidth={2.5} dot={{r:4,fill:"#1D9E75",stroke:"#fff",strokeWidth:1}} activeDot={{r:5}} connectNulls>
+                        <LabelList dataKey="GmPct" position="top" formatter={v=>v!=null?v.toFixed(1)+'%':''} style={{fontSize:7.5,fill:"#1D9E75",fontWeight:700}}/>
+                      </Line>
+                      <Line yAxisId="R" type="monotone" dataKey="GmPctF" name="GM% Fcst" stroke="#1D9E75" strokeWidth={1.5} strokeDasharray="4 2" dot={false} connectNulls/>
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                  <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap",marginTop:4}}>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#1E3A8A",display:"inline-block"}}/>Net Sales Reales</span>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#93C5FD",border:"1px solid #1E40AF",display:"inline-block"}}/>Forecast</span>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:3,background:"#1D9E75",display:"inline-block",borderRadius:2}}/>Gross Margin % Real</span>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:2,background:"#1D9E75",display:"inline-block",borderRadius:2,opacity:0.55}}/>GM% Forecast</span>
+                  </div>
+                </div>
+                <div style={{width:152,flexShrink:0,display:"flex",flexDirection:"column",gap:7,paddingTop:38}}>
+                  {[
+                    {label:"Ventas Netas YTD",value:F(nsYTD),color:"#1E3A8A",bg:"#EFF4FF"},
+                    {label:"Ventas Netas LY YTD",value:F(nsLY),color:"#534AB7",bg:"#F3F0FF"},
+                    {label:"Crecimiento",value:(growthPct>=0?"+":"")+growthPct.toFixed(0)+"%",color:growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct>=0?"#F0FAF6":"#FEF2F2"},
+                    {label:"Gross Margin YTD",value:gmYTD.toFixed(1)+"%",color:"#1D9E75",bg:"#F0FAF6"},
+                    {label:"Gross Margin LY YTD",value:gmLY.toFixed(1)+"%",color:"#059669",bg:"#ECFDF5"},
+                    {label:"Mejora vs LY",value:(deltaMejora>=0?"+":"")+deltaMejora.toFixed(1)+" pp",color:deltaMejora>=0?"#1D9E75":"#E24B4A",bg:deltaMejora>=0?"#F0FAF6":"#FEF2F2"},
+                    {label:"Var. vs Forecast",value:(varVsFcst>=0?"+":"")+F(varVsFcst),color:varVsFcst>=0?"#1D9E75":"#E24B4A",bg:varVsFcst>=0?"#F0FAF6":"#FEF2F2"},
+                  ].map((k,i)=>(
+                    <div key={i} style={{background:k.bg,borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+k.color}}>
+                      <div style={{fontSize:7.5,color:"#8A90A8",marginBottom:1}}>{k.label}</div>
+                      <div style={{fontSize:i<=1?13:12,fontWeight:700,color:k.color}}>{k.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 {/* */}
