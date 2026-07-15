@@ -286,7 +286,7 @@ export default function Dashboard() {
   }, [fd, cm, ytdM]);
 {/* */}
   // Charts
-  const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, CUR_YEAR, i+1, cm, "consolidado"); const f = buildPL(fd, CUR_YEAR, i+1, cm, "forecast"); return { name: m, Sales: Math.round(p.ns), Presupuesto: Math.round(f.ns), EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
+  const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, CUR_YEAR, i+1, cm, "consolidado"); const f = buildPL(fd, CUR_YEAR, i+1, cm, "forecast"); const gmPct = p.ns ? Math.round((p.gp / p.ns) * 1000) / 10 : null; const gmPctBud = f.ns ? Math.round((f.gp / f.ns) * 1000) / 10 : null; return { name: m, Sales: Math.round(p.ns), Presupuesto: Math.round(f.ns), GmPct: gmPct, GmPctBud: gmPctBud, EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
 {/* */}
   // Waterfall (legacy, kept for reference)
   const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others","Regulatory","Software & Hardware","Mobility"];
@@ -1456,28 +1456,58 @@ export default function Dashboard() {
       <div style={{width:"100%",marginBottom:16}}>
         <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,width:"100%",boxSizing:"border-box"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>Revenue Real vs Presupuesto</div>
-            <button onClick={()=>{ const h="Mes,Real,Presupuesto,EBITDA\n"; const r=chartData.filter(d=>d.cur).map(d=>`${d.name},${d.Sales||0},${d.Presupuesto||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_vs_presupuesto.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
+            <div style={{fontSize:11,fontWeight:700,color:'#1a1a2e',marginBottom:6}}>Revenue Real vs Presupuesto — YTD</div>
+          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:4}}>
+            <button onClick={()=>{}} style={{fontSize:9,padding:'4px 10px',background:'#534AB7',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}}>&darr; CSV</button>
           </div>
-          <ResponsiveContainer width="100%" height={320}>
-            <ComposedChart data={chartData.filter(d=>d.cur)} margin={{ top: 24, right: 10, bottom: 0, left: -10 }} barCategoryGap="20%" barGap={3}>
-              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : "0"} />
-              <Tooltip formatter={(v,n) => [`$${(v/1e6).toFixed(2)}M`, n]} contentStyle={{ fontSize: 9, borderRadius: 6 }} />
-              <ReferenceLine y={0} stroke="#E4E8F2" />
-              <Legend verticalAlign="top" height={24} iconSize={10} />
-              <Bar dataKey="Sales" name="Real" fill="#1E3A8A" radius={[4,4,0,0]} maxBarSize={38}>
-                <LabelList dataKey="Sales" position="top" formatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : ""} style={{fontSize:7,fill:"#1E3A8A",fontWeight:700}} />
-              </Bar>
-              <Bar dataKey="Presupuesto" name="Presupuesto" fill="#93C5FD" radius={[4,4,0,0]} maxBarSize={38}>
-                <LabelList dataKey="Presupuesto" position="top" formatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : ""} style={{fontSize:7,fill:"#1E40AF",fontWeight:700}} />
-              </Bar>
-              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:4,fill:"#F59E0B",strokeWidth:0}} activeDot={{r:5}} zIndex={10}>
-                <LabelList dataKey="EBITDA" position="insideTopRight" formatter={v => v && Math.abs(v)>100 ? `${(v/1e6).toFixed(1)}M` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:700}} />
-              </Line>
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+          {(()=>{
+            const revD = Array.from({length:cm}, (_, i) => {
+              const ms = Array.from({length:i+1}, (_, j) => j+1);
+              const nsR = ms.reduce((s,m) => s + gV(D,'Net Sales','Reales',CUR_YEAR,m), 0);
+              const nsB = ms.reduce((s,m) => s + gV(D,'Net Sales','Forecast',CUR_YEAR,m), 0);
+              const gpR = ms.reduce((s,m) => s + gV(D,'Net Sales','Reales',CUR_YEAR,m) - gV(D,'COGS','Reales',CUR_YEAR,m), 0);
+              const gpB = ms.reduce((s,m) => s + gV(D,'Net Sales','Forecast',CUR_YEAR,m) - gV(D,'COGS','Forecast',CUR_YEAR,m), 0);
+              const gmR = nsR ? parseFloat((gpR/nsR*100).toFixed(1)) : null;
+              const gmB = nsB ? parseFloat((gpB/nsB*100).toFixed(1)) : null;
+              return { name: MO[i], Sales: Math.round(nsR), Ppto: Math.round(nsB), GmPct: gmR, GmPctBud: gmB };
+            });
+            const maxSales = Math.max(...revD.map(d => Math.max(d.Sales||0, d.Ppto||0)), 1);
+            const leftMax = Math.ceil(maxSales * 1.2 / 1e6) * 1e6;
+            const fmtM = v => v >= 1e6 ? ((v/1e6).toFixed(0) + ' M') : v >= 1e3 ? ((v/1e3).toFixed(0) + 'K') : '0';
+            const fmtLbl = v => v >= 1e6 ? ((v/1e6).toFixed(1) + 'M') : v >= 1e3 ? ((v/1e3).toFixed(0) + 'K') : '';
+            return (
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={revD} margin={{top:28,right:48,bottom:0,left:4}} barCategoryGap="22%" barGap={3}>
+                  <XAxis dataKey="name" tick={{fontSize:9,fill:'#8A90A8'}} axisLine={false} tickLine={false}/>
+                  <YAxis yAxisId="L" tick={{fontSize:8,fill:'#8A90A8'}} axisLine={false} tickLine={false}
+                    tickFormatter={fmtM} domain={[0, leftMax]}/>
+                  <YAxis yAxisId="R" orientation="right" tick={{fontSize:8,fill:'#1D9E75'}} axisLine={false} tickLine={false}
+                    tickFormatter={v => v + '%'} domain={[50, 100]}/>
+                  <Tooltip formatter={(v,n) => n.includes('%') ? [(v != null ? v.toFixed(1) : '--') + '%', n] : ['$' + (v/1e6).toFixed(1) + 'M', n]}
+                    contentStyle={{fontSize:9,borderRadius:6}}/>
+                  <Legend verticalAlign="top" height={28} iconSize={10}/>
+                  <Bar yAxisId="L" dataKey="Sales" name="Real" fill="#1E3A8A" radius={[4,4,0,0]}>
+                    <LabelList dataKey="Sales" position="top" formatter={fmtLbl}
+                      style={{fontSize:8,fill:'#1E3A8A',fontWeight:700}}/>
+                  </Bar>
+                  <Bar yAxisId="L" dataKey="Ppto" name="Presupuesto" fill="#93C5FD" radius={[4,4,0,0]}>
+                    <LabelList dataKey="Ppto" position="top" formatter={fmtLbl}
+                      style={{fontSize:8,fill:'#1E40AF',fontWeight:700}}/>
+                  </Bar>
+                  <Line yAxisId="R" type="monotone" dataKey="GmPct" name="GM% Real"
+                    stroke="#1D9E75" strokeWidth={2.5}
+                    dot={{r:4,fill:'#1D9E75',stroke:'#fff',strokeWidth:1}} activeDot={{r:5}}>
+                    <LabelList dataKey="GmPct" position="top"
+                      formatter={v => v != null ? v.toFixed(1) + '%' : ''}
+                      style={{fontSize:8,fill:'#1D9E75',fontWeight:700}}/>
+                  </Line>
+                  <Line yAxisId="R" type="monotone" dataKey="GmPctBud" name="GM% Ppto"
+                    stroke="#93C5FD" strokeWidth={2} strokeDasharray="5 3"
+                    dot={{r:3,fill:'#93C5FD',stroke:'#fff',strokeWidth:1}} activeDot={{r:4}}/>
+                </ComposedChart>
+              </ResponsiveContainer>
+            );
+          })()}</div>
       </div>
 {/* */}
 {/* */}
