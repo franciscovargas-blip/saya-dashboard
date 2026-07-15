@@ -280,13 +280,15 @@ export default function Dashboard() {
     return [
       { l: "NET SALES YTD", v: F(nsYTD), s: `Mes ${MO[cm-1]}: ${F(c.ns)}`, c: "#185FA5" },
       { l: "GROSS MARGIN YTD", v: F(ytdTotals.gp), s: nsYTD ? `${P(ytdTotals.gp / nsYTD)} del NS` : "Pre-revenue", c: "#1D9E75" },
+      { l: "OPEX YTD", v: F(opexYTD), s: `Mes ${MO[cm-1]}: ${F(c.totOpex)}`, c: "#E24B4A" },
       { l: "EBITDA YTD", v: F(ytdTotals.ebitda), s: `Mes ${MO[cm-1]}: ${F(c.ebitda)}`, c: ytdTotals.ebitda < 0 ? "#E24B4A" : "#1D9E75" },
+      { l: "NET PROFIT YTD", v: F(ytdTotals.netProfit), s: `Mes ${MO[cm-1]}: ${F(c.netProfit)}`, c: ytdTotals.netProfit < 0 ? "#E24B4A" : "#1D9E75" },
       { l: "INTANGIBLE ASSETS YTD", v: F(intangYTD), s: `Mes ${MO[cm-1]}: ${F(intangCM)}`, c: "#7C3AED" },
     ];
   }, [fd, cm, ytdM]);
 {/* */}
   // Charts
-  const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, CUR_YEAR, i+1, cm, "consolidado"); const f = buildPL(fd, CUR_YEAR, i+1, cm, "forecast"); const gmPct = p.ns ? Math.round((p.gp / p.ns) * 1000) / 10 : null; const gmPctBud = f.ns ? Math.round((f.gp / f.ns) * 1000) / 10 : null; return { name: m, Sales: Math.round(p.ns), Presupuesto: Math.round(f.ns), GmPct: gmPct, GmPctBud: gmPctBud, EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
+  const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, CUR_YEAR, i+1, cm, "consolidado"); return { name: m, Sales: Math.round(p.ns), EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
 {/* */}
   // Waterfall (legacy, kept for reference)
   const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others","Regulatory","Software & Hardware","Mobility"];
@@ -644,7 +646,7 @@ export default function Dashboard() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #E4E8F2", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src="data:image/png;base64,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" alt="Saya Biologics" style={{width:42,height:42,borderRadius:10,objectFit:"cover"}} />
-          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Business Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]} · <span style={{background:"#E8F4FF",color:"#185FA5",borderRadius:3,padding:"1px 5px",fontWeight:700,letterSpacing:1}}>MXN</span></div></div>
+          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Business Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]}</div></div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
@@ -1188,8 +1190,7 @@ export default function Dashboard() {
           const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
           const kC = c => ({background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 14px",borderTop:"3px solid "+c,boxShadow:"0 2px 8px rgba(26,26,46,0.06)",display:"flex",flexDirection:"column",gap:3});
           return (<React.Fragment>
-            {/* Net Sales, Gross Margin, EBITDA */}
-            {kpis.slice(0,3).map((k, i) => (
+            {kpis.map((k, i) => (
               <div key={i} style={kC(k.c)}>
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{ICONS[k.l]||"📌"}</div>
                 <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k.l}</div>
@@ -1197,34 +1198,58 @@ export default function Dashboard() {
                 <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>{k.s}</div>
               </div>
             ))}
-            {/* BURN MEXICO: histrico como primario, YTD como secundario */}
             {cashFlow && (() => {
               const bArr = cashFlow.months.slice(0,cm).map(mo=>(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0));
               const bYTD = bArr.reduce((s,v)=>s+v,0);
-              const BURN_ACUM_ENE = -86708794;
-              let burnRun = BURN_ACUM_ENE;
-              bArr.forEach((v,i) => { if(i>0) burnRun += v; });
-              const burnHist = burnRun;
-              const bCol = burnHist<0?"#E24B4A":"#065F46";
+              const bCM  = bArr.length?bArr[bArr.length-1]:0;
+              const bCol = bYTD<0?"#E24B4A":"#065F46";
               return (<div style={kC(bCol)}>
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
-                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN HISTÓRICO</div>
-                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(burnHist)}</div>
-                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR}: {F(bYTD)}</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN MEXICO YTD</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(bYTD)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Mes {MO[cm-1]}: {F(bCM)}</div>
               </div>);
             })()}
-            {/* Intangible Assets */}
-            {kpis.slice(3).map((k, i) => (
-              <div key={i+3} style={kC(k.c)}>
-                <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{ICONS[k.l]||"📌"}</div>
-                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k.l}</div>
-                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{k.v}</div>
-                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>{k.s}</div>
-              </div>
-            ))}
           </React.Fragment>);
         })()}
       </div>
+      {/* BURN TABLE EXEC */}
+      {cashFlow && (() => {
+        const bMs = cashFlow.months.slice(0,cm).map(mo => ({m:mo.m, burn:(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0)}));
+        const bTot= bMs.reduce((s,x)=>s+x.burn,0);
+        const bAcc= []; let acc2=0; bMs.forEach(x=>{acc2+=x.burn; bAcc.push({m:x.m,v:acc2});});
+        const Fk3 = v => !v||v===0?"—":(v<0?"-":"")+"$"+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(1)+"M":Math.abs(v)>=1e3?(Math.abs(v)/1e3).toFixed(0)+"K":Math.round(Math.abs(v)));
+        const cVb = v => ({fontSize:11,fontWeight:700,color:v<0?"#DC2626":v>0?"#065F46":"#6B7280"});
+        const tVb = v => ({fontSize:12,fontWeight:800,color:v<0?"#DC2626":v>0?"#065F46":"#6B7280"});
+        const bgw = {display:"flex",flexWrap:"wrap",gap:4,marginTop:6};
+        const bCell={flex:"1 1 60px",minWidth:55,background:"#DBEAFE",borderRadius:6,padding:"6px 4px",textAlign:"center"};
+        const bTCell={flex:"1 1 80px",minWidth:70,background:"#BFDBFE",borderRadius:6,padding:"6px 4px",textAlign:"center"};
+        const bLbl={fontSize:9,color:"#1E40AF",fontWeight:600};
+        const bTLbl={fontSize:9,color:"#1E3A8A",fontWeight:700};
+        return (
+          <div style={{background:"#EFF6FF",borderRadius:10,padding:"14px 16px",marginBottom:14,border:"1px solid #93C5FD"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{fontSize:12,fontWeight:800,color:"#1E3A8A"}}>🔥 Burn Mexico</div>
+              <button onClick={()=>{const hb="Mes,Burn\n"; const rb=bMs.map(x=>MO[x.m-1]+","+x.burn).join("\n"); const bb=new Blob([hb+rb],{type:"text/csv"}); const ab=document.createElement("a"); ab.href=URL.createObjectURL(bb); ab.download="burn_mensual.csv"; ab.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1E40AF",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+              <div style={{fontSize:9,color:"#1E40AF"}}>Operación+Inversión+Otras · Ene–{MO[cm-1]} {CUR_YEAR}</div>
+            </div>
+            <div style={{fontSize:9,color:"#1E40AF",fontWeight:700,marginBottom:4}}>BURN MENSUAL</div>
+            <div style={bgw}>
+              {bMs.map(x=>(
+                <div key={x.m} style={bCell}><div style={bLbl}>{MO[x.m-1]}</div><div style={cVb(x.burn)}>{Fk3(x.burn)}</div></div>
+              ))}
+              <div style={bTCell}><div style={bTLbl}>YTD TOTAL</div><div style={tVb(bTot)}>{Fk3(bTot)}</div></div>
+            </div>
+            <div style={{fontSize:9,color:"#1E40AF",fontWeight:700,marginTop:8,marginBottom:4}}>BURN ACUMULADO</div>
+            <div style={bgw}>
+              {bAcc.map(x=>(
+                <div key={x.m} style={{...bCell,background:"#BFDBFE"}}><div style={bLbl}>{MO[x.m-1]}</div><div style={cVb(x.v)}>{Fk3(x.v)}</div></div>
+              ))}
+              <div style={bTCell}><div style={bTLbl}>ACUM {MO[cm-1]}</div><div style={tVb(bAcc.length?bAcc[bAcc.length-1].v:0)}>{Fk3(bAcc.length?bAcc[bAcc.length-1].v:0)}</div></div>
+            </div>
+          </div>
+        );
+      })()}
 
 
       {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
@@ -1452,62 +1477,92 @@ export default function Dashboard() {
 
 
 
+      {/* === Financial Growth by Year === */}
+      {(() => {
+        const allYrsG=[...new Set(D.map(r=>r[2]))].sort();
+        const yrDataG=allYrsG.map(yr=>{
+          const dy=D.filter(r=>r[2]===yr);
+          const ns=Math.abs(dy.filter(r=>r[0]==="Net Sales").reduce((s,r)=>s+r[9],0));
+          const cogs=Math.abs(dy.filter(r=>r[0]==="COGS"||r[0]==="Cost of Goods Sold").reduce((s,r)=>s+r[9],0));
+          const gp=ns-cogs;
+          const gmPctG=ns>0?Math.round(gp/ns*100):0;
+          const opexG=OC_ALL?Math.abs(dy.filter(r=>OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)):0;
+          const ebitdaG=gp-opexG;
+          const ebitdaPctG=ns>0?Math.round(ebitdaG/ns*100):0;
+          return {yr,ns,gp,gmPctG,ebitdaPctG,isReal:yr<CUR_YEAR};
+        });
+        const mxNS=Math.max(...yrDataG.map(d=>d.ns),1);
+        const dlGrowth=()=>{
+          const h="Anio,NetSales,GrossProfit,GM%,EBITDA%,Tipo\n";
+          const r=yrDataG.map(d=>[d.yr,d.ns.toFixed(0),d.gp.toFixed(0),d.gmPctG,d.ebitdaPctG,d.isReal?"Reales":"Forecast"].join(","));
+          const b=new Blob([h+r.join("\n")],{type:"text/csv"});
+          const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="crecimiento.csv";a.click();
+        };
+        return (
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:12,borderTop:"3px solid #534AB7"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:800,color:"#1a1a2e"}}>📈 Crecimiento Financiero por Año</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginTop:3}}>Barras: Net Sales · Franja verde: Gross Margin % · Franja naranja: EBITDA %</div>
+              </div>
+              <button onClick={dlGrowth} style={{fontSize:9,padding:"5px 12px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
+            </div>
+            <div style={{display:"flex",alignItems:"flex-end",gap:6,height:130,marginBottom:4}}>
+              {yrDataG.map((d,i)=>(
+                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                  <div style={{fontSize:7.5,fontWeight:700,color:"#1a1a2e",whiteSpace:"nowrap"}}>{d.ns>=1e6?(d.ns/1e6).toFixed(1)+"M":(d.ns/1e3).toFixed(0)+"K"}</div>
+                  <div style={{width:"100%",height:Math.max(Math.round(d.ns/mxNS*100),4)+"px",background:d.isReal?"linear-gradient(180deg,#534AB7,#818CF8)":"rgba(83,74,183,0.18)",borderRadius:"4px 4px 0 0",display:"flex",alignItems:"flex-end",justifyContent:"center",paddingBottom:2}}>
+                    <span style={{fontSize:6,color:d.isReal?"#fff":"#534AB7",fontWeight:700}}>{d.isReal?"Real":"Fcst"}</span>
+                  </div>
+                  <div style={{fontSize:8,color:d.yr===CUR_YEAR?"#534AB7":"#8A90A8",fontWeight:d.yr===CUR_YEAR?800:500}}>{d.yr}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:6,alignItems:"flex-end",height:52,marginBottom:10,borderTop:"1px dashed #E4E8F2",paddingTop:6}}>
+              {yrDataG.map((d,i)=>(
+                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                  <div style={{fontSize:6.5,fontWeight:700,color:"#1D9E75"}}>{d.gmPctG}%</div>
+                  <div style={{width:"100%",height:Math.max(Math.round(Math.max(d.gmPctG,0)/100*28),1)+"px",background:"rgba(29,158,117,0.2)",borderRadius:"2px 2px 0 0",borderTop:"2px solid #1D9E75"}}/>
+                  <div style={{fontSize:6.5,fontWeight:700,color:d.ebitdaPctG<0?"#E24B4A":"#F59E0B"}}>{d.ebitdaPctG}%</div>
+                  <div style={{width:"100%",height:Math.max(Math.round(Math.abs(d.ebitdaPctG)/100*20),1)+"px",background:d.ebitdaPctG<0?"rgba(226,75,74,0.15)":"rgba(245,158,11,0.2)",borderRadius:"2px 2px 0 0",borderTop:"2px solid "+(d.ebitdaPctG<0?"#E24B4A":"#F59E0B")}}/>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap"}}>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"linear-gradient(#534AB7,#818CF8)",display:"inline-block"}}/>Net Sales Reales</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:2,background:"rgba(83,74,183,0.18)",border:"1px solid #534AB7",display:"inline-block"}}/>Net Sales Forecast</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#1D9E75",display:"inline-block"}}/>Gross Margin %</span>
+              <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:3,background:"#F59E0B",display:"inline-block"}}/>EBITDA %</span>
+            </div>
+          </div>
+        );
+      })()}
+
+
+
       {/* P&L TABLE */}
       <div style={{width:"100%",marginBottom:16}}>
         <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,width:"100%",boxSizing:"border-box"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-            <div style={{fontSize:11,fontWeight:700,color:'#1a1a2e',marginBottom:6}}>Revenue Real vs Presupuesto — YTD</div>
-          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:4}}>
-            <button onClick={()=>{}} style={{fontSize:9,padding:'4px 10px',background:'#534AB7',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}}>&darr; CSV</button>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+
+            <div/><button onClick={()=>{ const h="Mes,Sales,OpEx,EBITDA\n"; const r=chartData.map(d=>`${d.name},${d.Sales||0},${d.OpEx||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_opex.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
+
           </div>
-          {(()=>{
-            const revD = Array.from({length:cm}, (_, i) => {
-              const ms = Array.from({length:i+1}, (_, j) => j+1);
-              const nsR = ms.reduce((s,m) => s + gV(D,'Net Sales','Reales',CUR_YEAR,m), 0);
-              const nsB = ms.reduce((s,m) => s + gV(D,'Net Sales','Forecast',CUR_YEAR,m), 0);
-              const gpR = ms.reduce((s,m) => s + gV(D,'Net Sales','Reales',CUR_YEAR,m) - gV(D,'COGS','Reales',CUR_YEAR,m), 0);
-              const gpB = ms.reduce((s,m) => s + gV(D,'Net Sales','Forecast',CUR_YEAR,m) - gV(D,'COGS','Forecast',CUR_YEAR,m), 0);
-              const gmR = nsR ? parseFloat((gpR/nsR*100).toFixed(1)) : null;
-              const gmB = nsB ? parseFloat((gpB/nsB*100).toFixed(1)) : null;
-              return { name: MO[i], Sales: Math.round(nsR), Ppto: Math.round(nsB), GmPct: gmR, GmPctBud: gmB };
-            });
-            const maxSales = Math.max(...revD.map(d => Math.max(d.Sales||0, d.Ppto||0)), 1);
-            const leftMax = Math.ceil(maxSales * 1.2 / 1e6) * 1e6;
-            const fmtM = v => v >= 1e6 ? ((v/1e6).toFixed(0) + ' M') : v >= 1e3 ? ((v/1e3).toFixed(0) + 'K') : '0';
-            const fmtLbl = v => v >= 1e6 ? ((v/1e6).toFixed(1) + 'M') : v >= 1e3 ? ((v/1e3).toFixed(0) + 'K') : '';
-            return (
-              <ResponsiveContainer width="100%" height={300}>
-                <ComposedChart data={revD} margin={{top:28,right:48,bottom:0,left:4}} barCategoryGap="22%" barGap={3}>
-                  <XAxis dataKey="name" tick={{fontSize:9,fill:'#8A90A8'}} axisLine={false} tickLine={false}/>
-                  <YAxis yAxisId="L" tick={{fontSize:8,fill:'#8A90A8'}} axisLine={false} tickLine={false}
-                    tickFormatter={fmtM} domain={[0, leftMax]}/>
-                  <YAxis yAxisId="R" orientation="right" tick={{fontSize:8,fill:'#1D9E75'}} axisLine={false} tickLine={false}
-                    tickFormatter={v => v + '%'} domain={[50, 100]}/>
-                  <Tooltip formatter={(v,n) => n.includes('%') ? [(v != null ? v.toFixed(1) : '--') + '%', n] : ['$' + (v/1e6).toFixed(1) + 'M', n]}
-                    contentStyle={{fontSize:9,borderRadius:6}}/>
-                  <Legend verticalAlign="top" height={28} iconSize={10}/>
-                  <Bar yAxisId="L" dataKey="Sales" name="Real" fill="#1E3A8A" radius={[4,4,0,0]}>
-                    <LabelList dataKey="Sales" position="top" formatter={fmtLbl}
-                      style={{fontSize:8,fill:'#1E3A8A',fontWeight:700}}/>
-                  </Bar>
-                  <Bar yAxisId="L" dataKey="Ppto" name="Presupuesto" fill="#93C5FD" radius={[4,4,0,0]}>
-                    <LabelList dataKey="Ppto" position="top" formatter={fmtLbl}
-                      style={{fontSize:8,fill:'#1E40AF',fontWeight:700}}/>
-                  </Bar>
-                  <Line yAxisId="R" type="monotone" dataKey="GmPct" name="GM% Real"
-                    stroke="#1D9E75" strokeWidth={2.5}
-                    dot={{r:4,fill:'#1D9E75',stroke:'#fff',strokeWidth:1}} activeDot={{r:5}}>
-                    <LabelList dataKey="GmPct" position="top"
-                      formatter={v => v != null ? v.toFixed(1) + '%' : ''}
-                      style={{fontSize:8,fill:'#1D9E75',fontWeight:700}}/>
-                  </Line>
-                  <Line yAxisId="R" type="monotone" dataKey="GmPctBud" name="GM% Ppto"
-                    stroke="#93C5FD" strokeWidth={2} strokeDasharray="5 3"
-                    dot={{r:3,fill:'#93C5FD',stroke:'#fff',strokeWidth:1}} activeDot={{r:4}}/>
-                </ComposedChart>
-              </ResponsiveContainer>
-            );
-          })()}</div>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
+              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
+              <Bar dataKey="Sales" fill="#1D9E75" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E75" : "#1D9E7555"} />)}</Bar>
+              <Bar dataKey="OpEx" fill="#E24B4A" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A" : "#E24B4A55"} />)}</Bar>
+              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:3,fill:"#F59E0B"}} activeDot={{r:4}}>
+                <LabelList dataKey="EBITDA" position="top" formatter={v => v && Math.abs(v)>100 ? `${(Math.round(v/1e3))}K` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:600}} />
+              </Line>
+              <Legend verticalAlign="top" height={24} iconSize={10} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 {/* */}
 {/* */}
@@ -1745,7 +1800,182 @@ export default function Dashboard() {
       </div>
 
         );
-      })()}      </>
+      })()}      {/* --- Row 3: Flujo de Caja --- */}
+      {cashFlow && (() => {
+        const cfD = cashFlow.months.slice(0, cm).map((mo, idx) => ({
+          name: MO[idx],
+          op:   mo.totalOperacion      || 0,
+          inv:  mo.totalInversion      || 0,
+          fin:  mo.totalFinanciamiento || 0,
+          net: (mo.totalOperacion||0) + (mo.totalInversion||0) + (mo.totalFinanciamiento||0),
+        }));
+        const ytdOp  = cfD.reduce((s,d)=>s+d.op,  0);
+        const ytdInv = cfD.reduce((s,d)=>s+d.inv, 0);
+        const ytdFin = cfD.reduce((s,d)=>s+d.fin, 0);
+        const ytdNet = ytdOp + ytdInv + ytdFin;
+        const maxCF  = Math.max(...cfD.flatMap(d=>[Math.abs(d.op),Math.abs(d.inv),Math.abs(d.fin)]), 1);
+        const toH    = v => Math.round(Math.abs(v) / maxCF * 60);
+        const COLS   = { op:'#1D9E75', inv:'#E24B4A', fin:'#534AB7' };
+        const LBLS   = { op:'Operación', inv:'Inversión', fin:'Financiamiento' };
+        return (
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',marginBottom:12,borderTop:'3px solid #1D9E75'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💰 Flujo de Caja Mensual – Actividades NIF B-2</div>
+              <button onClick={()=>{const hf="Mes,Operacion,Inversion,Financiamiento,Neto\n"; const rf=cfD.map(d=>[d.name,d.op,d.inv,d.fin,d.net].join(",")).join("\n"); const bf=new Blob([hf+rf],{type:"text/csv"}); const af=document.createElement("a"); af.href=URL.createObjectURL(bf); af.download="flujo_caja.csv"; af.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+              <div style={{display:'flex',gap:10,fontSize:9}}>
+                {['op','inv','fin'].map(k => (
+                  <span key={k}>
+                    <span style={{display:'inline-block',width:8,height:8,borderRadius:2,background:COLS[k],marginRight:3}}/>
+                    {LBLS[k]}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div style={{display:'flex',gap:6,alignItems:'flex-end',paddingBottom:4,overflowX:'auto',minHeight:90}}>
+              {cfD.map((d, i) => (
+                <div key={i} style={{flex:1,minWidth:42,display:'flex',flexDirection:'column',alignItems:'center',gap:1}}>
+                  {['op','inv','fin'].map(k => (
+                    <div
+                      key={k}
+                      title={`${LBLS[k]}: ${F(d[k])}`}
+                      style={{width:'100%',height:toH(d[k]),minHeight:d[k]!==0?3:0,background:COLS[k],borderRadius:'2px 2px 0 0',opacity:0.85}}
+                    />
+                  ))}
+                  <div style={{fontSize:8,color:'#8A90A8',marginTop:3,textAlign:'center'}}>{d.name}</div>
+                  <div style={{fontSize:8,fontWeight:700,color:d.net<0?'#E24B4A':'#1D9E75'}}>{(d.net/1e6).toFixed(1)}M</div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginTop:10,paddingTop:10,borderTop:'1px solid #f0f2fa'}}>
+              {[
+                {l:'Operación YTD',    v:ytdOp,  c:'#1D9E75'},
+                {l:'Inversión YTD',    v:ytdInv, c:'#E24B4A'},
+                {l:'Financiamiento YTD', v:ytdFin, c:'#534AB7'},
+                {l:'Flujo Neto YTD',     v:ytdNet, c:ytdNet<0?'#E24B4A':'#1D9E75'},
+              ].map((s,i) => (
+                <div key={i} style={{textAlign:'center',background:'#f8f9fe',borderRadius:6,padding:'6px 4px'}}>
+                  <div style={{fontSize:8,color:'#8A90A8',marginBottom:2}}>{s.l}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:s.c}}>{F(s.v)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
+
+      {/* ===== DIRECTOR EJECUTIVO: ANALISIS AVANZADO ===== */}
+
+      <div style={{margin:'32px 0 10px',borderTop:'2px solid #534AB7',paddingTop:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e',letterSpacing:-0.5}}>
+            🏦 Comparativo Presupuesto vs Real
+          </div>
+          <button onClick={()=>{const hw="Area,Presupuesto,Real,EjecPct,VarPct\n"; const rw=rows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),r.varPct.toFixed(1)].join(",")).join("\n"); const bw=new Blob([hw+rw],{type:"text/csv"}); const aw=document.createElement("a"); aw.href=URL.createObjectURL(bw); aw.download="presupuesto_vs_real.csv"; aw.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+          <div style={{fontSize:10,color:'#8A90A8'}}>YTD Ene–{MO[cm-1]} {CUR_YEAR}</div>
+        </div>
+      </div>
+
+      {/* --- Budget Waterfall por Area --- */}
+      {(() => {
+        const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))]
+          .sort().slice(0,8);
+        const rows = areas.map(area => {
+          const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+          const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+          const ejec  = fcast !== 0 ? real/fcast*100 : null;
+          const varPct = fcast !== 0 ? (real-fcast)/Math.abs(fcast)*100 : 0;
+          return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varPct };
+        });
+        const maxV = Math.max(...rows.flatMap(r=>[r.real,r.fcast]),1);
+        const toW  = v => Math.round(v/maxV*100);
+        return (
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 18px',marginBottom:12,borderTop:'3px solid #534AB7'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              {rows.map((r,i) => (
+                <div key={i}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:3,fontSize:9}}>
+                    <span style={{fontWeight:700,color:'#1a1a2e',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</span>
+                    <span style={{color:r.varPct>0?'#E24B4A':'#1D9E75',fontWeight:700}}>
+                      {r.ejec!==null?r.ejec.toFixed(1)+'% ejec':'N/A'}
+                      {r.varPct!==0?' ('+(r.varPct>0?'+':'')+r.varPct.toFixed(1)+'%)':''}
+                    </span>
+                  </div>
+                  <div style={{position:'relative',height:14,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                    <div style={{position:'absolute',left:0,top:0,height:'100%',width:toW(r.fcast)+'%',background:'rgba(83,74,183,0.25)',borderRadius:4}}/>
+                    <div style={{position:'absolute',left:0,top:2,height:10,width:toW(r.real)+'%',background:r.varPct>8?'#E24B4A':r.varPct<-5?'#1D9E75':'#534AB7',borderRadius:3}}/>
+                  </div>
+                  <div style={{display:'flex',gap:16,marginTop:2,fontSize:8,color:'#8A90A8'}}>
+                    <span>■ Presup: {F(r.fcast)}</span>
+                    <span>■ Real: {F(r.real)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:16,marginTop:12,paddingTop:10,borderTop:'1px solid #f0f2fa',fontSize:9}}>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'rgba(83,74,183,0.25)',borderRadius:2}}/> Presupuesto</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#534AB7',borderRadius:2}}/> Real</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#E24B4A',borderRadius:2}}/> Sobreejecutado</span>
+              <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{display:'inline-block',width:24,height:8,background:'#1D9E75',borderRadius:2}}/> Subejecutado</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* --- Budget vs Real Mensual Trending --- */}
+      {(() => {
+        const months = Array.from({length:cm},(_,i)=>i+1);
+        const realByM  = months.map(m => Math.abs(fd.filter(r=>r[1]==='Reales'  &&r[3]===m&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)));
+        const fcastByM = months.map(m => Math.abs(fd.filter(r=>r[1]==='Forecast'&&r[3]===m&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0)));
+        const maxM = Math.max(...realByM,...fcastByM,1);
+        const toH  = v => Math.round(v/maxM*80);
+        const cumR = realByM.reduce((a,v,i) => {a.push((a[i-1]||0)+v); return a;},[]);
+        const cumF = fcastByM.reduce((a,v,i) => {a.push((a[i-1]||0)+v); return a;},[]);
+        return (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>📊 OPEX Mensual: Presup vs Real</div>
+              <button onClick={()=>{const hm="Mes,Presupuesto,Real\n"; const rm=months.map((m,i)=>[MO[i],fcastByM[i],realByM[i]].join(",")).join("\n"); const bm=new Blob([hm+rm],{type:"text/csv"}); const am=document.createElement("a"); am.href=URL.createObjectURL(bm); am.download="opex_mensual.csv"; am.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+              <div style={{display:'flex',gap:4,alignItems:'flex-end',height:90}}>
+                {months.map((m,i) => (
+                  <div key={m} style={{flex:1,display:'flex',gap:2,alignItems:'flex-end'}}>
+                    <div style={{flex:1,height:toH(fcastByM[i]),background:'rgba(124,58,237,0.2)',borderRadius:'2px 2px 0 0',minHeight:2}}
+                      title={`Presup ${MO[i]}: ${F(fcastByM[i])}`}/>
+                    <div style={{flex:1,height:toH(realByM[i]),background:realByM[i]>fcastByM[i]?'#E24B4A':'#7C3AED',borderRadius:'2px 2px 0 0',minHeight:2}}
+                      title={`Real ${MO[i]}: ${F(realByM[i])}`}/>
+                  </div>
+                ))}
+              </div>
+              <div style={{display:'flex',justifyContent:'space-around',marginTop:6,fontSize:7,color:'#8A90A8'}}>
+                {months.map((m,i) => <span key={m}>{MO[i].slice(0,3)}</span>)}
+              </div>
+            </div>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B'}}>
+              <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:8}}>📈 OPEX Acumulado YTD</div>
+              <button onClick={()=>{const hac="Mes,Real Acum,Presup Acum\n"; const rac=months.map((m,i)=>[MO[i],cumR[i],cumF[i]].join(",")).join("\n"); const bac=new Blob([hac+rac],{type:"text/csv"}); const aac=document.createElement("a"); aac.href=URL.createObjectURL(bac); aac.download="opex_acumulado.csv"; aac.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+              <div style={{position:'relative',height:90}}>
+                <svg width='100%' height='90' viewBox={`0 0 ${Math.max(months.length*30,1)} 90`} preserveAspectRatio='none'>
+                  <polyline
+                    points={cumF.map((v,i)=>`${i*30+15},${90-Math.round(v/Math.max(...cumF,1)*80)}`).join(' ')}
+                    fill='none' stroke='rgba(245,158,11,0.4)' strokeWidth='2' strokeDasharray='5,3'/>
+                  <polyline
+                    points={cumR.map((v,i)=>`${i*30+15},${90-Math.round(v/Math.max(...cumF,1)*80)}`).join(' ')}
+                    fill='none' stroke='#F59E0B' strokeWidth='2.5'/>
+                </svg>
+              </div>
+              <div style={{display:'flex',gap:10,fontSize:8,marginTop:4}}>
+                <span style={{color:'rgba(245,158,11,0.6)'}}>- - Presup YTD: {F(cumF[cm-1]||0)}</span>
+                <span style={{color:'#F59E0B',fontWeight:700}}>— Real YTD: {F(cumR[cm-1]||0)}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+
+
+      </>
       }
 {/* */}
       {mainTab === "pnl-anual" && (
