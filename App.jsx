@@ -1328,6 +1328,99 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ===== ANÁLISIS EJECUTIVO PHARMA + TABLA ÁREA ===== */}
+
+      <div style={{margin:'24px 0 8px',borderTop:'2px dashed #E4E8F2',paddingTop:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:-0.3}}>
+          📊 Análisis Ejecutivo Pharma
+        </div>
+        <div style={{fontSize:10,color:'#8A90A8'}}>
+          Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}
+        </div>
+      </div>
+
+      {/* Tabla full-width Ejecucion por Area */}
+      {(()=>{
+        const OA2=['Salaries & Wages','Sales & Marketing','Travel & Accomodation','Professional Fees','Office Expense','Regulatory','Software & Hardware','Mobility','Quality','Operations','Others','OT001'];
+        const ytdMA=Array.from({length:cm},(_,i)=>i+1);
+        const areaList=['CAME','FIXED','INMU','NOAP','ONHE','SAOS'];
+        const fd3=D.filter(r=>r[2]===CUR_YEAR&&OA2.includes(r[0]));
+        const aRows=areaList.map(area=>{
+          const real=fd3.filter(r=>r[1]==='Reales'&&ytdMA.includes(r[3])&&r[5]===area).reduce((s,r)=>s+r[9],0);
+          const fcast=fd3.filter(r=>r[1]==='Forecast'&&ytdMA.includes(r[3])&&r[5]===area).reduce((s,r)=>s+r[9],0);
+          const ejec=fcast!==0?real/fcast*100:null;
+          return {area,real:Math.abs(real),fcast:Math.abs(fcast),ejec,vs:real-fcast};
+        }).filter(r=>r.real>0||r.fcast>0);
+        const tR=aRows.reduce((s,r)=>s+r.real,0);
+        const tF=aRows.reduce((s,r)=>s+r.fcast,0);
+        const tE=tF>0?tR/tF*100:0;
+        const tV=tR-tF;
+        const maxR=Math.max(...aRows.map(r=>r.real),1);
+        const MES2=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const mesL=MES2[cm-1]||('M'+cm);
+        return (
+          <div style={{background:'#fff',borderRadius:12,boxShadow:'0 2px 12px rgba(30,42,58,0.08)',overflow:'hidden',marginBottom:16}}>
+            <div style={{background:'#1a1a2e',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{color:'#fff',fontWeight:800,fontSize:13}}>EJECUCIÓN PRESUPUESTAL POR ÁREA</div>
+                <div style={{color:'#8A90A8',fontSize:10,marginTop:2}}>YTD Ene–{mesL} {CUR_YEAR} · OPEX · Sábanas de Gastos</div>
+              </div>
+              <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                <div style={{textAlign:'right'}}>
+                  <div style={{color:'#8A90A8',fontSize:9}}>% Ejec. Total</div>
+                  <div style={{color:tE>=100?'#E24B4A':'#1D9E75',fontWeight:900,fontSize:22}}>{tE.toFixed(1)}%</div>
+                </div>
+                <button onClick={()=>{const h='Área,Presupuesto,Real,% Ejec,VS\n';const rows=aRows.map(r=>[r.area,r.fcast.toFixed(0),r.real.toFixed(0),(r.ejec||0).toFixed(1),r.vs.toFixed(0)].join(',')).join('\n');const b=new Blob([h+rows],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ejecucion_area.csv';a.click();}} style={{fontSize:9,padding:'5px 12px',background:'#7C3AED',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:700}}>⬇ CSV</button>
+              </div>
+            </div>
+            <table style={{width:'100%',borderCollapse:'collapse'}}>
+              <thead>
+                <tr style={{background:'#f8f9fe'}}>
+                  {['ÁREA','PRESUPUESTO','REAL','% EJECUCIÓN','VS PRESUP.'].map((h,i)=>(
+                    <th key={i} style={{padding:'10px 20px',fontSize:11,fontWeight:700,color:'#534AB7',textAlign:i===0?'left':'right',borderBottom:'2px solid #E4E8F2',textTransform:'uppercase',letterSpacing:0.5}}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {aRows.map((r,i)=>{
+                  const bW=r.real/maxR*100;
+                  const eC=r.ejec===null?'#8A90A8':r.ejec>=100?'#E24B4A':'#1D9E75';
+                  const vC=r.vs<0?'#E24B4A':'#1D9E75';
+                  return(
+                    <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'13px 20px'}}>
+                        <div style={{fontWeight:700,fontSize:12,color:'#1a1a2e'}}>{r.area}</div>
+                        <div style={{marginTop:4,height:4,background:'#f0f2fa',borderRadius:2,width:100,overflow:'hidden'}}><div style={{height:'100%',width:`${bW}%`,background:'#534AB7',borderRadius:2}}/></div>
+                      </td>
+                      <td style={{padding:'13px 20px',textAlign:'right',color:'#8A90A8',fontSize:12}}>{F(r.fcast)}</td>
+                      <td style={{padding:'13px 20px',textAlign:'right',fontSize:13,fontWeight:700,color:'#1a1a2e'}}>{F(r.real)}</td>
+                      <td style={{padding:'13px 20px',textAlign:'right'}}>
+                        {r.ejec===null?<span style={{color:'#B0B6C3'}}>N/A</span>:
+                          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3}}>
+                            <span style={{fontWeight:800,fontSize:13,color:eC}}>{r.ejec.toFixed(1)}%</span>
+                            <div style={{width:80,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:eC,borderRadius:3}}/></div>
+                          </div>}
+                      </td>
+                      <td style={{padding:'13px 20px',textAlign:'right'}}>
+                        <div style={{fontWeight:700,fontSize:12,color:vC}}>{r.vs>=0?'+':''}{F(r.vs)}</div>
+                        <div style={{fontSize:9,color:vC,marginTop:2}}>{r.vs>=0?'▲ Superávit':'▼ Déficit'}</div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr style={{background:'#f0f2fa',borderTop:'2px solid #E4E8F2'}}>
+                  <td style={{padding:'13px 20px',fontSize:13,fontWeight:800,color:'#1a1a2e'}}>TOTAL</td>
+                  <td style={{padding:'13px 20px',textAlign:'right',fontSize:13,color:'#8A90A8'}}>{F(tF)}</td>
+                  <td style={{padding:'13px 20px',textAlign:'right',fontSize:14,fontWeight:900,color:'#1a1a2e'}}>{F(tR)}</td>
+                  <td style={{padding:'13px 20px',textAlign:'right'}}><span style={{fontWeight:900,fontSize:14,color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(1)}%</span></td>
+                  <td style={{padding:'13px 20px',textAlign:'right'}}><span style={{fontWeight:800,fontSize:13,color:tV>=0?'#1D9E75':'#E24B4A'}}>{tV>=0?'+':''}{F(tV)}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        );
+      })()}
+
       {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🧬 Portafolio por Área Terapéutica</div>
@@ -1653,16 +1746,7 @@ export default function Dashboard() {
       </div>
 {/* */}
 
-      {/* ===== PHARMA EXECUTIVE ANALYSIS ===== */}
 
-      <div style={{margin:'28px 0 8px',borderTop:'2px dashed #E4E8F2',paddingTop:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:-0.3}}>
-          📊 Análisis Ejecutivo Pharma
-        </div>
-        <div style={{fontSize:10,color:'#8A90A8'}}>
-          Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}
-        </div>
-      </div>
 
 
       {/* --- Row 2: Inversion en Moleculas + Ejecucion Presupuestal --- */}
@@ -1784,101 +1868,6 @@ export default function Dashboard() {
               </table>
             </div>
           );
-
-      {/* ===== TABLA EJECUCION PRESUPUESTAL POR AREA (FULL WIDTH) ===== */}
-      {(()=>{
-        const OPEX_CATS=['Salaries & Wages','Sales & Marketing','Travel & Accomodation','Professional Fees','Office Expense','Regulatory','Software & Hardware','Mobility','Quality','Operations','Others','OT001'];
-        const allYtdM = Array.from({length:cm},(_,i)=>i+1);
-        const areaList=['CAME','FIXED','INMU','NOAP','ONHE','SAOS'];
-        const areaLabel={CAME:'CAME',FIXED:'FIXED',INMU:'INMU',NOAP:'NOAP',ONHE:'ONHE',SAOS:'SAOS'};
-        const fd2=D.filter(r=>r[2]===CUR_YEAR && OPEX_CATS.includes(r[0]));
-        const aRows=areaList.map(area=>{
-          const real=fd2.filter(r=>r[1]==='Reales'&&allYtdM.includes(r[3])&&r[5]===area).reduce((s,r)=>s+r[9],0);
-          const fcast=fd2.filter(r=>r[1]==='Forecast'&&allYtdM.includes(r[3])&&r[5]===area).reduce((s,r)=>s+r[9],0);
-          const ejec=fcast!==0?real/fcast*100:null;
-          const vs=real-fcast;
-          return {area:areaLabel[area]||area,real:Math.abs(real),fcast:Math.abs(fcast),ejec,vs};
-        }).filter(r=>r.real>0||r.fcast>0);
-        const tR=aRows.reduce((s,r)=>s+r.real,0);
-        const tF=aRows.reduce((s,r)=>s+r.fcast,0);
-        const tE=tF>0?tR/tF*100:0;
-        const tV=tR-tF;
-        const maxReal=Math.max(...aRows.map(r=>r.real),1);
-        const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-        const mesLabel=MES[cm-1]||('M'+cm);
-        return (
-          <div style={{margin:'20px 12px 4px 12px',background:'#fff',borderRadius:12,boxShadow:'0 2px 12px rgba(30,42,58,0.08)',overflow:'hidden'}}>
-            <div style={{background:'#1a1a2e',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div>
-                <div style={{color:'#fff',fontWeight:800,fontSize:13,letterSpacing:0.3}}>📊 EJECUCIÓN PRESUPUESTAL POR ÁREA</div>
-                <div style={{color:'#8A90A8',fontSize:10,marginTop:2}}>YTD Ene–{mesLabel} {CUR_YEAR} · Sólo gastos OPEX · Fuente: Sábanas de Gastos (r[5])</div>
-              </div>
-              <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                <div style={{textAlign:'right'}}>
-                  <div style={{color:'#8A90A8',fontSize:9}}>% Ejecución Total</div>
-                  <div style={{color:tE>=100?'#E24B4A':'#1D9E75',fontWeight:900,fontSize:22}}>{tE.toFixed(1)}%</div>
-                </div>
-                <button onClick={()=>{const h="Área,Presupuesto,Real,% Ejec,VS Presup\n";const r2=aRows.map(r=>[r.area,r.fcast.toFixed(0),r.real.toFixed(0),(r.ejec||0).toFixed(1),r.vs.toFixed(0)].join(',')).join('\n');const b=new Blob([h+r2],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ejecucion_area.csv';a.click();}} style={{fontSize:9,padding:'5px 12px',background:'#7C3AED',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:700}}>⬇ CSV</button>
-              </div>
-            </div>
-            <table style={{width:'100%',borderCollapse:'collapse'}}>
-              <thead>
-                <tr style={{background:'#f8f9fe'}}>
-                  {['ÁREA','PRESUPUESTO','REAL','% EJECUCIÓN','VS PRESUP.']. map((h,i)=>(
-                    <th key={i} style={{padding:'10px 16px',fontSize:11,fontWeight:700,color:'#534AB7',textAlign:i===0?'left':'right',borderBottom:'2px solid #E4E8F2',textTransform:'uppercase',letterSpacing:0.5}}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {aRows.map((r,i)=>{
-                  const barW=maxReal>0?r.real/maxReal*100:0;
-                  const ejecColor=r.ejec===null?'#8A90A8':r.ejec>=100?'#E24B4A':'#1D9E75';
-                  const vsColor=r.vs<0?'#E24B4A':'#1D9E75';
-                  return (
-                    <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'12px 16px'}}>
-                        <div style={{fontWeight:700,fontSize:12,color:'#1a1a2e'}}>{r.area}</div>
-                        <div style={{marginTop:4,height:4,background:'#f0f2fa',borderRadius:2,width:120,overflow:'hidden'}}>
-                          <div style={{height:'100%',width:`${barW}%`,background:'#534AB7',borderRadius:2}}/>
-                        </div>
-                      </td>
-                      <td style={{padding:'12px 16px',textAlign:'right',color:'#8A90A8',fontSize:12,fontWeight:500}}>{F(r.fcast)}</td>
-                      <td style={{padding:'12px 16px',textAlign:'right',fontSize:13,fontWeight:700,color:'#1a1a2e'}}>{F(r.real)}</td>
-                      <td style={{padding:'12px 16px',textAlign:'right'}}>
-                        {r.ejec===null
-                          ?<span style={{color:'#B0B6C3',fontSize:11}}>N/A</span>
-                          :<div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3}}>
-                            <span style={{fontWeight:800,fontSize:13,color:ejecColor}}>{r.ejec.toFixed(1)}%</span>
-                            <div style={{width:80,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                              <div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:ejecColor,borderRadius:3}}/>
-                            </div>
-                          </div>
-                        }
-                      </td>
-                      <td style={{padding:'12px 16px',textAlign:'right'}}>
-                        <span style={{fontWeight:700,fontSize:12,color:vsColor}}>{r.vs>=0?'+':''}{F(r.vs)}</span>
-                        <div style={{fontSize:9,color:vsColor,marginTop:2}}>{r.vs>=0?'▲ Superávit':'▼ Déficit'}</div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                <tr style={{background:'#f0f2fa',fontWeight:800,borderTop:'2px solid #E4E8F2'}}>
-                  <td style={{padding:'13px 16px',fontSize:13,color:'#1a1a2e',fontWeight:800}}>TOTAL</td>
-                  <td style={{padding:'13px 16px',textAlign:'right',color:'#8A90A8',fontSize:13}}>{F(tF)}</td>
-                  <td style={{padding:'13px 16px',textAlign:'right',fontSize:14,fontWeight:900,color:'#1a1a2e'}}>{F(tR)}</td>
-                  <td style={{padding:'13px 16px',textAlign:'right'}}>
-                    <span style={{fontWeight:900,fontSize:14,color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(1)}%</span>
-                  </td>
-                  <td style={{padding:'13px 16px',textAlign:'right'}}>
-                    <span style={{fontWeight:800,fontSize:13,color:tV>=0?'#1D9E75':'#E24B4A'}}>{tV>=0?'+':''}{F(tV)}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        );
-      })()}
-      {/* ===== FIN TABLA AREA ===== */}
         })()}
 
       </div>
