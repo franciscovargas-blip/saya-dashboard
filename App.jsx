@@ -668,7 +668,7 @@ export default function Dashboard() {
 {/* */}
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["executive","🎯 Executive KPIs"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"],["next-steps","🗂️ Next Steps"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -1372,64 +1372,43 @@ export default function Dashboard() {
             </div>
           );
         })()}
-
-        {/* Ejecucion Presupuestal por Area */}
-        {(() => {
-          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
-          const aRows = areas.slice(0,7).map(area => {
-            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const ejec  = fcast !== 0 ? real/fcast*100 : null;
-            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
-          });
-          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
-          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
-          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
-          return (
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED',height:'100%',boxSizing:'border-box'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
-                <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
-              </div>
-              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-                <thead><tr>
-                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
-                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {aRows.map((r,i) => (
-                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right'}}>
-                        {r.ejec !== null
-                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
-                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
-                              </div>
-                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
-                            </div>
-                          : <span style={{color:'#B0B6C3'}}>N/A</span>
-                        }
-                      </td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
-                    </tr>
-                  ))}
-                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
-                    <td style={{padding:'5px'}}>TOTAL</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
-                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
-                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
-                  </tr>
-                </tbody>
-              </table>
+        {/* Pareto por Partner YTD */}
+        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, height: "100%", boxSizing: "border-box" }}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:11,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:11,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div>
+          <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
+            <div style={{flex:1,minWidth:0}}>
+              {pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}
+              {pareto.slice(0,12).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
+                <div key={i} style={{marginBottom:isE?8:3}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+                    <div style={{width:100,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>15?p.partner.slice(0,15)+"…":p.partner}</div>
+                    <div style={{flex:1,height:12,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
+                    <div style={{width:52,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
+                  </div>
+                  {isE&&<div style={{marginLeft:14,borderLeft:"2px solid #E4E8F2",paddingLeft:5,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+                    <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"72%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:4}}>{F(val)}</span></div>
+                  ))}</div>}
+                </div>
+              );})}
             </div>
-          );
-        })()}
+            <div style={{flex:1,minWidth:0}}>
+              {paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}
+              {paretoMes.slice(0,12).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
+                <div key={"m"+i} style={{marginBottom:isE?8:3}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+                    <div style={{width:100,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>15?p.partner.slice(0,15)+"…":p.partner}</div>
+                    <div style={{flex:1,height:12,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
+                    <div style={{width:52,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
+                  </div>
+                  {isE&&<div style={{marginLeft:14,borderLeft:"2px solid #E4E8F2",paddingLeft:5,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+                    <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"72%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:4}}>{F(val)}</span></div>
+                  ))}</div>}
+                </div>
+              );})}
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* ===== ANÁLISIS EJECUTIVO PHARMA + TABLA ÁREA ===== */}
@@ -1590,251 +1569,3 @@ export default function Dashboard() {
 
 
 
-{/* */}
-{/* */}
-      {/* PIE CHARTS */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-        {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
-          <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
-            <button onClick={()=>{const hp="Molecula,Gasto\n"; const rp=p.data.map(e=>e.name+","+e.value).join("\n"); const bp=new Blob([hp+rp],{type:"text/csv"}); const ap=document.createElement("a"); ap.href=URL.createObjectURL(bp); ap.download=(p.title||"pie")+".csv"; ap.click();}} style={{fontSize:9,padding:"3px 8px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer",marginLeft:8}}>⬇</button>
-            {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <ResponsiveContainer width="60%" height={220}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
-                <div style={{ width: "40%", fontSize: 9 }}>{p.data.map((e, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span><span style={{ marginLeft: "auto", color: "#8A90A8", flexShrink: 0 }}>{F(e.value)}</span></div>)}</div>
-              </div>}
-          </div>
-        ))}
-      </div>
-{/* */}
-      {/* PARETO */}
-{/* */}
-      {/* AREA × MONTH TABLE */}
-      <div style={s.card}>
-        <div style={s.cardTitle}>Gasto Real por Molécula — Mensual</div>
-        <button onClick={()=>{const ha="Molecula," + ytdM.map(m=>MO[m-1]).join(",") + ",Total YTD\n"; const ra=areaTable.map(row=>[row.mol,...ytdM.map(m=>row.monthly[m]||0),row.total].join(",")).join("\n"); const ba=new Blob([ha+ra],{type:"text/csv"}); const aa=document.createElement("a"); aa.href=URL.createObjectURL(ba); aa.download="gasto_mensual_molecula.csv"; aa.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-        <div style={s.cardSub}>Molécula → Clasificación · Clic para expandir</div>
-        <table style={s.tbl}>
-          <thead><tr>
-            <th style={s.thL}>Molécula</th>
-            {ytdM.map(m => <th key={m} style={s.thR}>{MO[m - 1]}</th>)}
-            <th style={s.thTot}>Total YTD</th>
-          </tr></thead>
-          <tbody>
-            {areaTable.map((row, ri) => {
-              const isExp = expArea[row.mol];
-              const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
-              const hasDrill = clsEntries.length > 0;
-              const trStyle = { cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" };
-              const tdStyle = { ...s.td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 };
-              const arrowStyle = { fontSize: 8, marginRight: 4 };
-              const dotStyle = { display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" };
-              const numTdStyle = (v) => ({ ...s.td, textAlign: "right", fontSize: 10, color: v < 0 ? "#E24B4A" : v === 0 ? "#ccc" : "#1a1a2e" });
-              const totTdStyle = { ...s.td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" };
-              return (<>
-                <tr key={ri} style={trStyle} onClick={() => hasDrill && toggleArea(row.mol)}>
-                  <td style={tdStyle}>
-                    {hasDrill && <span style={arrowStyle}>{isExp ? "▼" : "▶"}</span>}
-                    <span style={dotStyle} />
-                    {row.mol}
-                  </td>
-                  {ytdM.map(m => <td key={m} style={numTdStyle(row.monthly[m] || 0)}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
-                  <td style={totTdStyle}>{F(row.total)}</td>
-                </tr>
-                {isExp && clsEntries.map(([cls, cData], ci) => (
-                  <tr key={`{row.mol}|{ci}`} style={{ background: "#f8f9fe" }}>
-                    <td style={{ ...s.td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" }}>{cls}</td>
-                    {ytdM.map(m => <td key={m} style={{ ...s.td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" }}>{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
-                    <td style={{ ...s.td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" }}>{F(cData.total)}</td>
-                  </tr>
-                ))}
-              </>);
-            })}
-            <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
-              <td style={{ ...s.td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
-              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...s.td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
-              <td style={{ ...s.td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-{/* */}
-{/* */}
-{/* */}
-      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:13,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:13,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div><div style={{display:"flex",gap:16,alignItems:"flex-start"}}><div style={{flex:1,minWidth:0}}>{pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}{pareto.slice(0,15).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
-<div key={i} style={{marginBottom:isE?8:3}}>
-<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
-<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
-<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
-{/* */}
-</div>
-{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:6}}>{F(val)}</span></div>
-))}</div>}
-</div>
-);})}</div><div style={{flex:1,minWidth:0}}>{paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}{paretoMes.slice(0,15).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
-<div key={"m"+i} style={{marginBottom:isE?8:3}}>
-<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
-<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
-<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
-{/* */}
-</div>
-{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:6}}>{F(val)}</span></div>
-))}</div>}
-</div>
-);})}</div></div>
-      </div>
-{/* */}
-
-
-
-
-
-
-        );
-      })()}      </>
-      }
-{/* */}
-      {mainTab === "pnl-anual" && (
-        <div style={{padding:"20px",overflowX:"hidden"}}>
-          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
-          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-          <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
-            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
-            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
-          </div>
-          {/* KPI cards */}
-          {(()=>{
-            const RATE=0.1151;
-            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
-            const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
-            const inv=annualEBIT.filter(v=>v<0).reduce((s,v)=>s+v,0);
-            const npv=annualEBIT.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
-            let irr=0;try{if(annualEBIT.length>1&&annualEBIT.some(v=>v<0)&&annualEBIT.some(v=>v>0)){const npvAt=r=>annualEBIT.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const lo=-0.999,hi=9.999;const nlo=npvAt(lo),nhi=npvAt(hi);if(nlo*nhi<0){let a=lo,b=hi;for(let i=0;i<80;i++){const mid=(a+b)/2;if(npvAt(mid)*npvAt(a)<0)b=mid;else a=mid;if(b-a<1e-8)break;}irr=(a+b)/2;}}}catch(e){irr=0;}
-            const ip=irr*100;
-            const badge=ip===0?null:ip<45?{t:'Riesgo Alto',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
-            const bSt=badge?Object.fromEntries([['fontSize',11],['fontWeight',600],['color',badge.c],['background',badge.bg],['border','1px solid '+badge.bc],['borderRadius',6],['padding','3px 9px']]):null;
-            const Fk=v=>{const abs=Math.abs(v);const sign=v<0?'-':'';return sign+(abs>=1e6?(abs/1e6).toFixed(2)+'M':abs>=1e3?Math.round(abs/1e3).toLocaleString('es-MX')+'K':Math.round(abs).toLocaleString('es-MX'));};
-            return(
-              <div style={{display:'flex',flexWrap:'wrap',gap:14,marginBottom:20,marginTop:8}}>
-                <div style={{flex:'1 1 170px',background:'#EFF6FF',border:'1.5px solid #BFDBFE',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#1E40AF',fontWeight:600,marginBottom:4}}>Investment (EBIT negativo acumulado)</div>
-                  <div style={{fontSize:22,fontWeight:700,color:'#1E40AF'}}>{Fk(inv)}</div>
-                </div>
-                <div style={{flex:'1 1 170px',background:'#ECFDF5',border:'1.5px solid #6EE7B7',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#065F46',fontWeight:600,marginBottom:4}}>NPV EBIT 11.51%</div>
-                  <div style={{fontSize:22,fontWeight:700,color:'#065F46'}}>{Fk(npv)}</div>
-                </div>
-                <div style={{flex:'1 1 170px',background:'#F5F3FF',border:'1.5px solid #C4B5FD',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#5B21B6',fontWeight:600,marginBottom:4}}>EBITDA Acumulado</div>
-                  <div style={{fontSize:22,fontWeight:700,color:'#5B21B6'}}>{Fk(annualEBIT.reduce((s,v)=>s+v,0))}</div>
-                </div>
-                <div style={{flex:'1 1 170px',background:'#FFF7ED',border:'1.5px solid #FCD34D',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#92400E',fontWeight:600,marginBottom:4}}>IRR (EBIT) %</div>
-                  <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-                    <span style={{fontSize:22,fontWeight:700,color:'#92400E'}}>{ip!==0?ip.toFixed(2)+' %':'0.00 %'}</span>
-                    
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-          <div style={{overflowX:"auto"}}>
-          <table style={{borderCollapse:"collapse",width:"100%",fontSize:14}}>
-            <thead>
-              <tr>
-                <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:13,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
-                {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => (
-                  <React.Fragment key={yr}>
-                    <th
-                      style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:14,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
-                      onClick={() => setExpPnlAnn(p => ({...p,[yr]:!p[yr]}))}
-                    >
-                      {expPnlAnn[yr] ? "▼" : "►"} {yr}
-                    </th>
-                    {expPnlAnn[yr] && MO.map((mo,mi) => {
-                      const isReal = yr < CUR_YEAR || (yr===CUR_YEAR && mi+1<=cm);
-                      return <th key={mi} style={{textAlign:"right",padding:"5px 6px",background:isReal?"#EEF6F2":"#F5F6FA",fontWeight:500,fontSize:10,borderBottom:"2px solid #E4E8F2",color:isReal?"#1D9E75":"#8A90A8",whiteSpace:"nowrap"}}>{mo}</th>;
-                    })}
-                    {expPnlAnn[yr] && <th key="tot" style={({textAlign:"right",padding:"5px 6px",background:"#F4F6FB",fontWeight:700,fontSize:10,borderBottom:"2px solid #E4E8F2",borderLeft:"2px solid #B0B8D0"})}>Total</th>}
-                  </React.Fragment>
-                ))}
-                <th style={{textAlign:"right",padding:"10px 16px",background:"#E8EEFF",fontWeight:700,fontSize:14,borderBottom:"2px solid #B0B8D0",borderLeft:"3px solid #6366F1",color:"#1E2A3A",whiteSpace:"nowrap"}}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {PL_KEYS.map((k,ki) => {
-                const isPct = PCT_KEYS.has(k);
-                const isBold = BOLD_KEYS.has(k);
-                const rowStyle = k==="netProfit"
-                  ? {background:"#F3E8FF",borderTop:"3px solid #7C3AED",color:"#4C1D95"}
-                  : k==="totFin"
-                    ? {background:"#fafbfe",borderTop:"1px solid #E4E8F2"}
-                    : {background: isBold ? "#F4F6FB" : "transparent"};
-                const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:14,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
-                return (
-                  <React.Fragment key={k}>
-                    {k==="sw" && (
-                      <tr key="sep-sw">
-                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
-                      </tr>
-                    )}
-                    <tr style={rowStyle}>
-                      <td style={tdLbl}>{PL_LABELS[k]}</td>
-                      {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
-                        const isExp = expPnlAnn[yr];
-                        const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
-                        const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
-                        const fyNs = allM.reduce((a,m)=>a+bpl(yr,m,modeForYr).ns,0);
-                        const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+bpl(yr,m,modeForYr)[(k==="gmPct"?"gp":k.replace("Pct",""))],0)/fyNs : null;
-                        return (
-                          <React.Fragment key={yr}>
-                            <td style={{textAlign:"right",padding:"8px 14px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,fontSize:14,color:k==="netProfit"?"#4C1D95":undefined}}>
-                              {isPct ? P(fyPct) : F(fyVal)}
-                            </td>
-                            {isExp && allM.map((m,mi) => {
-                              const mNum = Number(m); const isReal = view==="reales" || (view==="consolidado" && mNum <= cm);
-                              const mMode = isReal ? "reales" : "forecast"; const v = bpl(yr,m,mMode)[k];
-                              const vNs = bpl(yr,m,mMode).ns;
-                              const vPct = isPct && vNs ? bpl(yr,m,mMode)[(k==="gmPct"?"gp":k.replace("Pct",""))]/vNs : null;
-                              return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
-                            })}
-                          </React.Fragment>
-                        );
-                      })}
-                    {(()=>{
-                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));});
-                      const tVal=ay.reduce((s,yr)=>{
-                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
-                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[k],0);
-                      },0);
-                      const tNs=ay.reduce((s,yr)=>{
-                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
-                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md).ns,0);
-                      },0);
-                      const tPct=isPct&&tNs?ay.reduce((s,yr)=>{
-                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
-                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[(k==="gmPct"?"gp":k.replace("Pct",""))],0);
-                      },0)/tNs:null;
-                      return <td key="total" style={{textAlign:"right",padding:"8px 14px",fontWeight:700,borderBottom:"1px solid #B0B8D0",borderLeft:"3px solid #6366F1",background:"#EEF2FF",color:k==="netProfit"?"#4C1D95":"#1E2A3A",fontSize:14,whiteSpace:"nowrap"}}>{isPct?P(tPct):F(tVal)}</td>;
-                    })()}
-                    </tr>
-                  </React.Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-          </div>
-{/* */}
-        </div>
-      )}
-{/* */}
-      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
-    </div>
-  );
-}
-{/* */}
