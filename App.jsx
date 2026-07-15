@@ -1443,6 +1443,98 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ===== CAPITAL DE TRABAJO ===== */}
+      <div style={{margin:'24px 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>5</div>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CAPITAL DE TRABAJO</div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1.2fr',gap:12,marginBottom:16}}>
+        {/* DSO */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DSO</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cobranza)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>60</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -3 días</div>
+        </div>
+        {/* DPO */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DPO</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Proveedores)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>4</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#E24B4A'}}>▲ +2 días</div>
+        </div>
+        {/* DIO */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DIO</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Inventarios)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>523</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -14 días</div>
+        </div>
+        {/* CCC */}
+        <div style={{background:'#1a1a2e',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#A78BFA'}}>CCC</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cycle Cash Conversion)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#fff',lineHeight:1}}>579</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#FCA5A5'}}>▼ -15 días</div>
+        </div>
+      </div>
+
+      {/* ===== INVENTARIOS ===== */}
+      <div style={{margin:'24px 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>6</div>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+        {/* KPIs Inventarios */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
+          {[
+            {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
+            {label:'Días de Inventario',     value:'523 días', bold:false},
+            {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
+            {label:'Días Cartera (DSO)',      value:'60 días',  bold:false},
+            {label:'Proveedores (AP)',        value:'$360,043', bold:false},
+            {label:'Días Proveedores (DPO)', value:'4 días',   bold:false},
+          ].map((k,i)=>(
+            <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<5?'1px solid #F0F2FA':'none'}}>
+              <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
+              <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
+            </div>
+          ))}
+        </div>
+        {/* Barra Valor por Componente */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
+          <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>Valor por Componente</div>
+          {[
+            {label:'Inventarios',       val:1412425},
+            {label:'Cuentas por Cobrar',val:449048},
+            {label:'Proveedores',       val:360043},
+          ].map((item,i)=>{
+            const maxV=1412425;
+            const w=item.val/maxV*100;
+            const colors=['#1a1a2e','#534AB7','#1D9E75'];
+            return(
+              <div key={i} style={{marginBottom:12}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                  <span style={{fontSize:9,color:'#8A90A8'}}>{item.label}</span>
+                  <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{F(item.val)}</span>
+                </div>
+                <div style={{height:8,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                  <div style={{height:'100%',width:`${w}%`,background:colors[i],borderRadius:4}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
