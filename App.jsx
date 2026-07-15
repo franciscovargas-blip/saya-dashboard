@@ -1568,4 +1568,145 @@ export default function Dashboard() {
 
 
 
-
+      })()}      </>
+      }
+{/* */}
+      {mainTab === "pnl-anual" && (
+        <div style={{padding:"20px",overflowX:"hidden"}}>
+          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
+          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+          <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
+            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
+            <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
+          </div>
+          {/* KPI cards */}
+          {(()=>{
+            const RATE=0.1151;
+            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
+            const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
+            const inv=annualEBIT.filter(v=>v<0).reduce((s,v)=>s+v,0);
+            const npv=annualEBIT.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
+            let irr=0;try{if(annualEBIT.length>1&&annualEBIT.some(v=>v<0)&&annualEBIT.some(v=>v>0)){const npvAt=r=>annualEBIT.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const lo=-0.999,hi=9.999;const nlo=npvAt(lo),nhi=npvAt(hi);if(nlo*nhi<0){let a=lo,b=hi;for(let i=0;i<80;i++){const mid=(a+b)/2;if(npvAt(mid)*npvAt(a)<0)b=mid;else a=mid;if(b-a<1e-8)break;}irr=(a+b)/2;}}}catch(e){irr=0;}
+            const ip=irr*100;
+            const badge=ip===0?null:ip<45?{t:'Riesgo Alto',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
+            const bSt=badge?Object.fromEntries([['fontSize',11],['fontWeight',600],['color',badge.c],['background',badge.bg],['border','1px solid '+badge.bc],['borderRadius',6],['padding','3px 9px']]):null;
+            const Fk=v=>{const abs=Math.abs(v);const sign=v<0?'-':'';return sign+(abs>=1e6?(abs/1e6).toFixed(2)+'M':abs>=1e3?Math.round(abs/1e3).toLocaleString('es-MX')+'K':Math.round(abs).toLocaleString('es-MX'));};
+            return(
+              <div style={{display:'flex',flexWrap:'wrap',gap:14,marginBottom:20,marginTop:8}}>
+                <div style={{flex:'1 1 170px',background:'#EFF6FF',border:'1.5px solid #BFDBFE',borderRadius:12,padding:'13px 18px'}}>
+                  <div style={{fontSize:11,color:'#1E40AF',fontWeight:600,marginBottom:4}}>Investment (EBIT negativo acumulado)</div>
+                  <div style={{fontSize:22,fontWeight:700,color:'#1E40AF'}}>{Fk(inv)}</div>
+                </div>
+                <div style={{flex:'1 1 170px',background:'#ECFDF5',border:'1.5px solid #6EE7B7',borderRadius:12,padding:'13px 18px'}}>
+                  <div style={{fontSize:11,color:'#065F46',fontWeight:600,marginBottom:4}}>NPV EBIT 11.51%</div>
+                  <div style={{fontSize:22,fontWeight:700,color:'#065F46'}}>{Fk(npv)}</div>
+                </div>
+                <div style={{flex:'1 1 170px',background:'#F5F3FF',border:'1.5px solid #C4B5FD',borderRadius:12,padding:'13px 18px'}}>
+                  <div style={{fontSize:11,color:'#5B21B6',fontWeight:600,marginBottom:4}}>EBITDA Acumulado</div>
+                  <div style={{fontSize:22,fontWeight:700,color:'#5B21B6'}}>{Fk(annualEBIT.reduce((s,v)=>s+v,0))}</div>
+                </div>
+                <div style={{flex:'1 1 170px',background:'#FFF7ED',border:'1.5px solid #FCD34D',borderRadius:12,padding:'13px 18px'}}>
+                  <div style={{fontSize:11,color:'#92400E',fontWeight:600,marginBottom:4}}>IRR (EBIT) %</div>
+                  <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                    <span style={{fontSize:22,fontWeight:700,color:'#92400E'}}>{ip!==0?ip.toFixed(2)+' %':'0.00 %'}</span>
+                    
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          <div style={{overflowX:"auto"}}>
+          <table style={{borderCollapse:"collapse",width:"100%",fontSize:14}}>
+            <thead>
+              <tr>
+                <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:13,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>Línea P&L</th>
+                {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => (
+                  <React.Fragment key={yr}>
+                    <th
+                      style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:14,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
+                      onClick={() => setExpPnlAnn(p => ({...p,[yr]:!p[yr]}))}
+                    >
+                      {expPnlAnn[yr] ? "▼" : "►"} {yr}
+                    </th>
+                    {expPnlAnn[yr] && MO.map((mo,mi) => {
+                      const isReal = yr < CUR_YEAR || (yr===CUR_YEAR && mi+1<=cm);
+                      return <th key={mi} style={{textAlign:"right",padding:"5px 6px",background:isReal?"#EEF6F2":"#F5F6FA",fontWeight:500,fontSize:10,borderBottom:"2px solid #E4E8F2",color:isReal?"#1D9E75":"#8A90A8",whiteSpace:"nowrap"}}>{mo}</th>;
+                    })}
+                    {expPnlAnn[yr] && <th key="tot" style={({textAlign:"right",padding:"5px 6px",background:"#F4F6FB",fontWeight:700,fontSize:10,borderBottom:"2px solid #E4E8F2",borderLeft:"2px solid #B0B8D0"})}>Total</th>}
+                  </React.Fragment>
+                ))}
+                <th style={{textAlign:"right",padding:"10px 16px",background:"#E8EEFF",fontWeight:700,fontSize:14,borderBottom:"2px solid #B0B8D0",borderLeft:"3px solid #6366F1",color:"#1E2A3A",whiteSpace:"nowrap"}}>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PL_KEYS.map((k,ki) => {
+                const isPct = PCT_KEYS.has(k);
+                const isBold = BOLD_KEYS.has(k);
+                const rowStyle = k==="netProfit"
+                  ? {background:"#F3E8FF",borderTop:"3px solid #7C3AED",color:"#4C1D95"}
+                  : k==="totFin"
+                    ? {background:"#fafbfe",borderTop:"1px solid #E4E8F2"}
+                    : {background: isBold ? "#F4F6FB" : "transparent"};
+                const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:14,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
+                return (
+                  <React.Fragment key={k}>
+                    {k==="sw" && (
+                      <tr key="sep-sw">
+                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
+                      </tr>
+                    )}
+                    <tr style={rowStyle}>
+                      <td style={tdLbl}>{PL_LABELS[k]}</td>
+                      {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
+                        const isExp = expPnlAnn[yr];
+                        const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
+                        const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
+                        const fyNs = allM.reduce((a,m)=>a+bpl(yr,m,modeForYr).ns,0);
+                        const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+bpl(yr,m,modeForYr)[(k==="gmPct"?"gp":k.replace("Pct",""))],0)/fyNs : null;
+                        return (
+                          <React.Fragment key={yr}>
+                            <td style={{textAlign:"right",padding:"8px 14px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?700:400,fontSize:14,color:k==="netProfit"?"#4C1D95":undefined}}>
+                              {isPct ? P(fyPct) : F(fyVal)}
+                            </td>
+                            {isExp && allM.map((m,mi) => {
+                              const mNum = Number(m); const isReal = view==="reales" || (view==="consolidado" && mNum <= cm);
+                              const mMode = isReal ? "reales" : "forecast"; const v = bpl(yr,m,mMode)[k];
+                              const vNs = bpl(yr,m,mMode).ns;
+                              const vPct = isPct && vNs ? bpl(yr,m,mMode)[(k==="gmPct"?"gp":k.replace("Pct",""))]/vNs : null;
+                              return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
+                            })}
+                          </React.Fragment>
+                        );
+                      })}
+                    {(()=>{
+                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));});
+                      const tVal=ay.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[k],0);
+                      },0);
+                      const tNs=ay.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md).ns,0);
+                      },0);
+                      const tPct=isPct&&tNs?ay.reduce((s,yr)=>{
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[(k==="gmPct"?"gp":k.replace("Pct",""))],0);
+                      },0)/tNs:null;
+                      return <td key="total" style={{textAlign:"right",padding:"8px 14px",fontWeight:700,borderBottom:"1px solid #B0B8D0",borderLeft:"3px solid #6366F1",background:"#EEF2FF",color:k==="netProfit"?"#4C1D95":"#1E2A3A",fontSize:14,whiteSpace:"nowrap"}}>{isPct?P(tPct):F(tVal)}</td>;
+                    })()}
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+          </div>
+{/* */}
+        </div>
+      )}
+{/* */}
+      <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
+    </div>
+  );
+}
+{/* */}
