@@ -286,7 +286,7 @@ export default function Dashboard() {
   }, [fd, cm, ytdM]);
 {/* */}
   // Charts
-  const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, CUR_YEAR, i+1, cm, "consolidado"); return { name: m, Sales: Math.round(p.ns), EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
+  const chartData = useMemo(() => MO.map((m, i) => { const p = buildPL(fd, CUR_YEAR, i+1, cm, "consolidado"); const f = buildPL(fd, CUR_YEAR, i+1, cm, "forecast"); return { name: m, Sales: Math.round(p.ns), Presupuesto: Math.round(f.ns), EBITDA: Math.round(p.ebitda), OpEx: Math.round(p.totOpex), cur: i+1 <= cm }; }), [fd, cm]);
 {/* */}
   // Waterfall (legacy, kept for reference)
   const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accomodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others","Regulatory","Software & Hardware","Mobility"];
@@ -1188,20 +1188,34 @@ export default function Dashboard() {
           const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
           const kC = c => ({background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 14px",borderTop:"3px solid "+c,boxShadow:"0 2px 8px rgba(26,26,46,0.06)",display:"flex",flexDirection:"column",gap:3});
           return (<React.Fragment>
+            {/* Net Sales, Gross Margin, EBITDA */}
+            {kpis.slice(0,3).map((k, i) => (
+              <div key={i} style={kC(k.c)}>
+                <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{ICONS[k.l]||"📌"}</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k.l}</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{k.v}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>{k.s}</div>
+              </div>
+            ))}
+            {/* BURN MEXICO: histrico como primario, YTD como secundario */}
             {cashFlow && (() => {
               const bArr = cashFlow.months.slice(0,cm).map(mo=>(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0));
               const bYTD = bArr.reduce((s,v)=>s+v,0);
-              const bCM  = bArr.length?bArr[bArr.length-1]:0;
-              const bCol = bYTD<0?"#E24B4A":"#065F46";
+              const BURN_ACUM_ENE = -86708794;
+              let burnRun = BURN_ACUM_ENE;
+              bArr.forEach((v,i) => { if(i>0) burnRun += v; });
+              const burnHist = burnRun;
+              const bCol = burnHist<0?"#E24B4A":"#065F46";
               return (<div style={kC(bCol)}>
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
-                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN MEXICO YTD</div>
-                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(bYTD)}</div>
-                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Mes {MO[cm-1]}: {F(bCM)}</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN HISTÓRICO</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(burnHist)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR}: {F(bYTD)}</div>
               </div>);
             })()}
-            {kpis.map((k, i) => (
-              <div key={i} style={kC(k.c)}>
+            {/* Intangible Assets */}
+            {kpis.slice(3).map((k, i) => (
+              <div key={i+3} style={kC(k.c)}>
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{ICONS[k.l]||"📌"}</div>
                 <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>{k.l}</div>
                 <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{k.v}</div>
@@ -1441,23 +1455,22 @@ export default function Dashboard() {
       {/* P&L TABLE */}
       <div style={{width:"100%",marginBottom:16}}>
         <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,width:"100%",boxSizing:"border-box"}}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 8 }}>Revenue vs OpEx Mensual</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-
-            <div/><button onClick={()=>{ const h="Mes,Sales,OpEx,EBITDA\n"; const r=chartData.map(d=>`${d.name},${d.Sales||0},${d.OpEx||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_opex.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
-
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>Revenue Real vs Presupuesto</div>
+            <button onClick={()=>{ const h="Mes,Real,Presupuesto,EBITDA\n"; const r=chartData.filter(d=>d.cur).map(d=>`${d.name},${d.Sales||0},${d.Presupuesto||0},${d.EBITDA||0}`).join("\n"); const b=new Blob([h+r],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="revenue_vs_presupuesto.csv"; a.click(); }} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:6,cursor:"pointer"}}>⬇ CSV</button>
           </div>
-
           <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
-              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : "0"} />
-              <Tooltip formatter={v => `$${(v / 1e3).toFixed(1)}K`} contentStyle={{ fontSize: 9, borderRadius: 6 }} /><ReferenceLine y={0} stroke="#E4E8F2" />
-              <Bar dataKey="Sales" fill="#1D9E75" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#1D9E75" : "#1D9E7555"} />)}</Bar>
-              <Bar dataKey="OpEx" fill="#E24B4A" radius={[3, 3, 0, 0]}>{chartData.map((e, i) => <Cell key={i} fill={e.cur ? "#E24B4A" : "#E24B4A55"} />)}</Bar>
-              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:3,fill:"#F59E0B"}} activeDot={{r:4}}>
-                <LabelList dataKey="EBITDA" position="top" formatter={v => v && Math.abs(v)>100 ? `${(Math.round(v/1e3))}K` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:600}} />
-              </Line>
+            <ComposedChart data={chartData.filter(d=>d.cur)} margin={{ top: 5, right: 5, bottom: 0, left: -15 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 8, fill: "#8A90A8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 7, fill: "#8A90A8" }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1e6 ? `${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `${(v/1e3).toFixed(0)}K` : "0"} />
+              <Tooltip formatter={(v,n) => [`$${(v/1e6).toFixed(2)}M`, n]} contentStyle={{ fontSize: 9, borderRadius: 6 }} />
+              <ReferenceLine y={0} stroke="#E4E8F2" />
               <Legend verticalAlign="top" height={24} iconSize={10} />
+              <Bar dataKey="Sales" name="Real" fill="#1E3A8A" radius={[3,3,0,0]} barSize={14} />
+              <Bar dataKey="Presupuesto" name="Presupuesto" fill="#93C5FD" radius={[3,3,0,0]} barSize={14} />
+              <Line type="monotone" dataKey="EBITDA" name="EBITDA" stroke="#F59E0B" strokeWidth={2.5} dot={{r:3,fill:"#F59E0B"}} activeDot={{r:4}}>
+                <LabelList dataKey="EBITDA" position="top" formatter={v => v && Math.abs(v)>100 ? `${(v/1e6).toFixed(1)}M` : ""} style={{fontSize:7,fill:"#92400E",fontWeight:600}} />
+              </Line>
             </ComposedChart>
           </ResponsiveContainer>
         </div>
