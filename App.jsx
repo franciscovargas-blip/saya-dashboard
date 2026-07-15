@@ -1327,7 +1327,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */
+      {/* ===== PORTAFOLIO POR AREA TERAPEUTICA ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #F59E0B',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>🧬 Portafolio por Área Terapéutica</div>
       </div>
