@@ -1515,6 +1515,84 @@ export default function Dashboard() {
         </div>
       </div>
 
+
+      {/* ===== FLUJO DE CAJA ===== */}
+      <div style={{margin:'24px 0 10px',borderTop:'2px solid #06B6D4',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>7</div>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>FLUJO DE CAJA</div>
+      </div>
+      {(()=>{
+        const wfItems = [
+          { name:'Saldo\nInicial',   value:8529193,  isBase:true  },
+          { name:'Salidas\nOperaci\u00f3n', value:-2815546, isBase:false },
+          { name:'Inversi\u00f3n',        value:-82862,   isBase:false },
+          { name:'Cap. de\nTrabajo',   value:-945598,  isBase:false },
+          { name:'Saldo\nFinal',     value:3739589,  isBase:true  },
+        ];
+        let running = 0;
+        const chartData = wfItems.map((item, i) => {
+          if (item.isBase) {
+            running = item.value;
+            return { name:item.name, spacer:0, bar:item.value, raw:item.value, isBase:true, isPositive:item.value>=0 };
+          }
+          const start = running;
+          const end   = running + item.value;
+          const spacer = Math.min(start, end);
+          const bar    = Math.abs(item.value);
+          running = end;
+          return { name:item.name, spacer, bar, raw:item.value, isBase:false, isPositive:item.value>=0 };
+        });
+        const entradas  = 0;
+        const salidas   = 2815546 + 82862 + 945598;
+        const flujoNeto = 3739589 - 8529193;
+        const Fm = v => { const a=Math.abs(v); const s=v<0?'-':''; return s+(a>=1e6?(a/1e6).toFixed(1)+'M':a>=1e3?(a/1e3).toFixed(0)+'K':a.toFixed(0)); };
+        const Fc = v => { const a=Math.abs(v); const s=v<0?'-$':'$'; return s+(a>=1e6?(a/1e6).toFixed(1)+'M':a>=1e3?Math.round(a/1e3).toLocaleString('es-MX')+'K':'$'+Math.round(a).toLocaleString('es-MX')); };
+        const maxY = Math.max(...chartData.map(d=>d.spacer+d.bar)) * 1.18;
+        const BAR_COLOR_BASE = '#1a1a2e';
+        const BAR_COLOR_POS  = '#1D9E75';
+        const BAR_COLOR_NEG  = '#E24B4A';
+        const barColor = d => d.isBase ? BAR_COLOR_BASE : d.isPositive ? BAR_COLOR_POS : BAR_COLOR_NEG;
+        return (
+          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px 20px',marginBottom:16,borderTop:'3px solid #06B6D4',display:'flex',gap:20,alignItems:'flex-start'}}>
+            {/* CHART */}
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:9,color:'#8A90A8',marginBottom:8}}>Millones MXN</div>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={chartData} margin={{top:28,right:10,bottom:30,left:10}} barCategoryGap="25%">
+                  <XAxis dataKey="name" tick={{fontSize:8,fill:'#8A90A8',whiteSpace:'pre'}} axisLine={false} tickLine={false}
+                    tickFormatter={v=>v.replace('\\n','\n')}
+                  />
+                  <YAxis hide domain={[0, maxY]}/>
+                  <Bar dataKey="spacer" stackId="wf" fill="transparent" isAnimationActive={false}/>
+                  <Bar dataKey="bar" stackId="wf" radius={[3,3,0,0]} isAnimationActive={false}
+                    label={{ position:'top', formatter:(v,entry)=>{ const d=chartData[entry ? entry.index : 0]; return Fm(d.raw); }, style:{fontSize:9,fontWeight:700,fill:'#1a1a2e'} }}
+                  >
+                    {chartData.map((d,i)=>(
+                      <Cell key={i} fill={barColor(d)}/>
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {/* KPI SIDEBAR */}
+            <div style={{width:130,flexShrink:0,display:'flex',flexDirection:'column',gap:10,paddingTop:36}}>
+              <div style={{background:'#F0FAF6',border:'1px solid #1D9E75',borderRadius:10,padding:'12px 14px'}}>
+                <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>Entradas</div>
+                <div style={{fontSize:18,fontWeight:800,color:'#1D9E75'}}>{Fc(entradas)}</div>
+              </div>
+              <div style={{background:'#FEF2F2',border:'1px solid #E24B4A',borderRadius:10,padding:'12px 14px'}}>
+                <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>Salidas</div>
+                <div style={{fontSize:18,fontWeight:800,color:'#E24B4A'}}>{Fc(salidas)}</div>
+              </div>
+              <div style={{background: flujoNeto>=0?'#F0FAF6':'#FEF2F2', border:'1px solid '+(flujoNeto>=0?'#1D9E75':'#E24B4A'),borderRadius:10,padding:'12px 14px'}}>
+                <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>Flujo Neto</div>
+                <div style={{fontSize:18,fontWeight:800,color:flujoNeto>=0?'#1D9E75':'#E24B4A'}}>{flujoNeto>=0?'+':''}{Fc(flujoNeto)}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
