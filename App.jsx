@@ -1330,57 +1330,42 @@ export default function Dashboard() {
 
         {/* Inversion en Moleculas */}
         {(() => {
-          const totalReal = areaTable.reduce((s,r) => s + Math.abs(r.total), 0);
-          const fcastMap  = {};
-          fd.filter(r => r[1]==='Forecast' && OC_ALL.includes(r[0]) && ytdM.includes(r[3]))
-            .forEach(r => { const mol = mapMol(r[4]); fcastMap[mol] = (fcastMap[mol]||0) + r[9]; });
-          const molRows = areaTable.slice(0,8).map(r => {
-            const fc   = Math.abs(fcastMap[r.mol] || 0);
-            const real = Math.abs(r.total);
-            const ejec = fc > 0 ? real / fc * 100 : null;
-            const pctT = totalReal > 0 ? real / totalReal * 100 : 0;
-            return { mol:r.mol, fc, real, ejec, pctT };
-          });
-          const tFC = molRows.reduce((s,r)=>s+r.fc,  0);
-          const tR  = molRows.reduce((s,r)=>s+r.real, 0);
-          const tE  = tFC > 0 ? tR/tFC*100 : 0;
+          const molRows = [
+            { mol: 'Hyaxum',                    monto: 4469657,  pct: 10 },
+            { mol: 'Euxara',                    monto: 16083997, pct: 36 },
+            { mol: 'Bevalyax',                  monto: 3609101,  pct: 8  },
+            { mol: 'Corelis',                   monto: 17650713, pct: 39 },
+            { mol: 'Neutorum',                  monto: 1246423,  pct: 3  },
+            { mol: 'Saytelya',                  monto: 1311705,  pct: 3  },
+            { mol: 'Sitagliptina y Merformina', monto: 424695,   pct: 1  },
+            { mol: 'Acido Micofenolico',        monto: 246528,   pct: 1  },
+          ];
+          const total = 45042818;
           return (
             <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',height:'100%',boxSizing:'border-box'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
-                <button onClick={()=>{const hi="Molecula,Forecast,Real,EjecPct,PctTotal\n"; const ri=molRows.map(r=>[r.mol,r.fc,r.real,(r.ejec||0).toFixed(1),r.pctT.toFixed(1)].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(totalReal)}</div>
+                <button onClick={()=>{const hi="Molecula,Monto,% Total\n"; const ri=molRows.map(r=>[r.mol,r.monto,r.pct+'%'].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(total)}</div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
                 <thead><tr>
-                  {['Molécula','Inversión','% Ejec','% Total'].map((h,i) => (
+                  {['Molécula','Monto','% Total'].map((h,i) => (
                     <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
                   {molRows.map((r,i) => (
                     <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'4px 5px',maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mol}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right'}}>
-                        {r.ejec !== null
-                          ? <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end'}}>
-                              <div style={{width:44,height:6,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                                <div style={{height:'100%',width:`${Math.min(r.ejec,100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
-                              </div>
-                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
-                            </div>
-                          : <span style={{color:'#B0B6C3'}}>N/A</span>
-                        }
-                      </td>
-                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pctT.toFixed(1)}%</td>
+                      <td style={{padding:'4px 5px',maxWidth:110,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mol}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.monto)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pct}%</td>
                     </tr>
                   ))}
                   <tr style={{background:'#f0f2fa',fontWeight:700}}>
                     <td style={{padding:'5px 5px'}}>TOTAL</td>
-                    <td style={{padding:'5px 5px',textAlign:'right'}}>{F(tR)}</td>
-                    <td style={{padding:'5px 5px',textAlign:'right',color:tE>=100?'#E24B4A':'#1D9E75'}}>{tE.toFixed(0)}%</td>
-                    <td style={{padding:'5px 5px',textAlign:'right'}}>100%</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>{F(total)}</td>
+                    <td style={{padding:'5px 5px',textAlign:'right',color:'#534AB7'}}>100%</td>
                   </tr>
                 </tbody>
               </table>
