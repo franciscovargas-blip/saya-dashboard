@@ -668,7 +668,7 @@ export default function Dashboard() {
 {/* */}
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["executive","🎯 Executive KPIs"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"],["next-steps","🗂️ Next Steps"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -1372,43 +1372,64 @@ export default function Dashboard() {
             </div>
           );
         })()}
-        {/* Pareto por Partner YTD */}
-        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, height: "100%", boxSizing: "border-box" }}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:11,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:11,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div>
-          <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
-            <div style={{flex:1,minWidth:0}}>
-              {pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}
-              {pareto.slice(0,12).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
-                <div key={i} style={{marginBottom:isE?8:3}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-                    <div style={{width:100,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>15?p.partner.slice(0,15)+"…":p.partner}</div>
-                    <div style={{flex:1,height:12,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
-                    <div style={{width:52,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
-                  </div>
-                  {isE&&<div style={{marginLeft:14,borderLeft:"2px solid #E4E8F2",paddingLeft:5,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-                    <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"72%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:4}}>{F(val)}</span></div>
-                  ))}</div>}
-                </div>
-              );})}
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              {paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}
-              {paretoMes.slice(0,12).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
-                <div key={"m"+i} style={{marginBottom:isE?8:3}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-                    <div style={{width:100,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>15?p.partner.slice(0,15)+"…":p.partner}</div>
-                    <div style={{flex:1,height:12,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
-                    <div style={{width:52,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
-                  </div>
-                  {isE&&<div style={{marginLeft:14,borderLeft:"2px solid #E4E8F2",paddingLeft:5,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-                    <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"72%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:4}}>{F(val)}</span></div>
-                  ))}</div>}
-                </div>
-              );})}
-            </div>
-          </div>
-        </div>
 
+        {/* Ejecucion Presupuestal por Area */}
+        {(() => {
+          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
+          const aRows = areas.slice(0,7).map(area => {
+            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const ejec  = fcast !== 0 ? real/fcast*100 : null;
+            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
+          });
+          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
+          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
+          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED',height:'100%',boxSizing:'border-box'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
+                <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {aRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
+                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px'}}>TOTAL</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
+                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
+                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ===== ANÁLISIS EJECUTIVO PHARMA + TABLA ÁREA ===== */}
@@ -1419,98 +1440,6 @@ export default function Dashboard() {
         </div>
         <div style={{fontSize:10,color:'#8A90A8'}}>
           Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}
-        </div>
-      </div>
-
-      {/* ===== CAPITAL DE TRABAJO ===== */}
-      <div style={{margin:'24px 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>5</div>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CAPITAL DE TRABAJO</div>
-      </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1.2fr',gap:12,marginBottom:16}}>
-        {/* DSO */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DSO</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cobranza)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>60</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -3 días</div>
-        </div>
-        {/* DPO */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DPO</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Proveedores)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>4</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#E24B4A'}}>▲ +2 días</div>
-        </div>
-        {/* DIO */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DIO</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Inventarios)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>523</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -14 días</div>
-        </div>
-        {/* CCC */}
-        <div style={{background:'#1a1a2e',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#A78BFA'}}>CCC</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cycle Cash Conversion)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#fff',lineHeight:1}}>579</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#FCA5A5'}}>▼ -15 días</div>
-        </div>
-      </div>
-
-      {/* ===== INVENTARIOS ===== */}
-      <div style={{margin:'24px 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>6</div>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
-      </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-        {/* KPIs Inventarios */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
-          {[
-            {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
-            {label:'Días de Inventario',     value:'523 días', bold:false},
-            {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
-            {label:'Días Cartera (DSO)',      value:'60 días',  bold:false},
-            {label:'Proveedores (AP)',        value:'$360,043', bold:false},
-            {label:'Días Proveedores (DPO)', value:'4 días',   bold:false},
-          ].map((k,i)=>(
-            <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<5?'1px solid #F0F2FA':'none'}}>
-              <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
-              <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
-            </div>
-          ))}
-        </div>
-        {/* Barra Valor por Componente */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
-          <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>Valor por Componente</div>
-          {[
-            {label:'Inventarios',       val:1412425},
-            {label:'Cuentas por Cobrar',val:449048},
-            {label:'Proveedores',       val:360043},
-          ].map((item,i)=>{
-            const maxV=1412425;
-            const w=item.val/maxV*100;
-            const colors=['#1a1a2e','#534AB7','#1D9E75'];
-            return(
-              <div key={i} style={{marginBottom:12}}>
-                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-                  <span style={{fontSize:9,color:'#8A90A8'}}>{item.label}</span>
-                  <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{F(item.val)}</span>
-                </div>
-                <div style={{height:8,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
-                  <div style={{height:'100%',width:`${w}%`,background:colors[i],borderRadius:4}}/>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
 
@@ -1568,8 +1497,137 @@ export default function Dashboard() {
 
 
 
+
+{/* */}
+{/* */}
+      {/* PIE CHARTS */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
+          <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
+            <button onClick={()=>{const hp="Molecula,Gasto\n"; const rp=p.data.map(e=>e.name+","+e.value).join("\n"); const bp=new Blob([hp+rp],{type:"text/csv"}); const ap=document.createElement("a"); ap.href=URL.createObjectURL(bp); ap.download=(p.title||"pie")+".csv"; ap.click();}} style={{fontSize:9,padding:"3px 8px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer",marginLeft:8}}>⬇</button>
+            {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <ResponsiveContainer width="60%" height={220}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
+                <div style={{ width: "40%", fontSize: 9 }}>{p.data.map((e, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span><span style={{ marginLeft: "auto", color: "#8A90A8", flexShrink: 0 }}>{F(e.value)}</span></div>)}</div>
+              </div>}
+          </div>
+        ))}
+      </div>
+{/* */}
+      {/* PARETO */}
+{/* */}
+      {/* AREA × MONTH TABLE */}
+      <div style={s.card}>
+        <div style={s.cardTitle}>Gasto Real por Molécula — Mensual</div>
+        <button onClick={()=>{const ha="Molecula," + ytdM.map(m=>MO[m-1]).join(",") + ",Total YTD\n"; const ra=areaTable.map(row=>[row.mol,...ytdM.map(m=>row.monthly[m]||0),row.total].join(",")).join("\n"); const ba=new Blob([ha+ra],{type:"text/csv"}); const aa=document.createElement("a"); aa.href=URL.createObjectURL(ba); aa.download="gasto_mensual_molecula.csv"; aa.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+        <div style={s.cardSub}>Molécula → Clasificación · Clic para expandir</div>
+        <table style={s.tbl}>
+          <thead><tr>
+            <th style={s.thL}>Molécula</th>
+            {ytdM.map(m => <th key={m} style={s.thR}>{MO[m - 1]}</th>)}
+            <th style={s.thTot}>Total YTD</th>
+          </tr></thead>
+          <tbody>
+            {areaTable.map((row, ri) => {
+              const isExp = expArea[row.mol];
+              const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
+              const hasDrill = clsEntries.length > 0;
+              const trStyle = { cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" };
+              const tdStyle = { ...s.td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 };
+              const arrowStyle = { fontSize: 8, marginRight: 4 };
+              const dotStyle = { display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" };
+              const numTdStyle = (v) => ({ ...s.td, textAlign: "right", fontSize: 10, color: v < 0 ? "#E24B4A" : v === 0 ? "#ccc" : "#1a1a2e" });
+              const totTdStyle = { ...s.td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" };
+              return (<>
+                <tr key={ri} style={trStyle} onClick={() => hasDrill && toggleArea(row.mol)}>
+                  <td style={tdStyle}>
+                    {hasDrill && <span style={arrowStyle}>{isExp ? "▼" : "▶"}</span>}
+                    <span style={dotStyle} />
+                    {row.mol}
+                  </td>
+                  {ytdM.map(m => <td key={m} style={numTdStyle(row.monthly[m] || 0)}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
+                  <td style={totTdStyle}>{F(row.total)}</td>
+                </tr>
+                {isExp && clsEntries.map(([cls, cData], ci) => (
+                  <tr key={`{row.mol}|{ci}`} style={{ background: "#f8f9fe" }}>
+                    <td style={{ ...s.td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" }}>{cls}</td>
+                    {ytdM.map(m => <td key={m} style={{ ...s.td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" }}>{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
+                    <td style={{ ...s.td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" }}>{F(cData.total)}</td>
+                  </tr>
+                ))}
+              </>);
+            })}
+            <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
+              <td style={{ ...s.td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
+              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...s.td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
+              <td style={{ ...s.td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+        {/* Ejecucion Presupuestal por Area */}
+        {(() => {
+          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
+          const aRows = areas.slice(0,7).map(area => {
+            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
+            const ejec  = fcast !== 0 ? real/fcast*100 : null;
+            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
+          });
+          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
+          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
+          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
+                <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {aRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right'}}>
+                        {r.ejec !== null
+                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
+                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
+                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
+                              </div>
+                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
+                            </div>
+                          : <span style={{color:'#B0B6C3'}}>N/A</span>
+                        }
+                      </td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px'}}>TOTAL</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
+                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
+                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
+
+      </div>
+
+        );
       })()}      </>
-      }
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
