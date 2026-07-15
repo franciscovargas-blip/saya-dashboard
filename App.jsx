@@ -1242,7 +1242,7 @@ export default function Dashboard() {
       </div>
 
       {/* VENTAS NETAS CHART */}
-      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:12,marginBottom:16,alignItems:'start'}}>
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:12,marginBottom:16,alignItems:'stretch'}}>
         <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px",boxSizing:"border-box"}}>
           {(()=>{
             const revData=MO.map((mo,i)=>{
@@ -1345,7 +1345,7 @@ export default function Dashboard() {
           const tR  = molRows.reduce((s,r)=>s+r.real, 0);
           const tE  = tFC > 0 ? tR/tFC*100 : 0;
           return (
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75'}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',height:'100%',boxSizing:'border-box'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
                 <button onClick={()=>{const hi="Molecula,Forecast,Real,EjecPct,PctTotal\n"; const ri=molRows.map(r=>[r.mol,r.fc,r.real,(r.ejec||0).toFixed(1),r.pctT.toFixed(1)].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
@@ -1401,7 +1401,7 @@ export default function Dashboard() {
           const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
           const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
           return (
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED',height:'100%',boxSizing:'border-box'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
                 <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
