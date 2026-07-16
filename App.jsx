@@ -1479,6 +1479,19 @@ export default function Dashboard() {
       <div style={{margin:'0 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
                 <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
       </div>
+      {/* KPIs Inventarios */}
+      <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',marginBottom:10}}>
+        {[
+          {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
+          {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
+          {label:'Proveedores (AP)',        value:'$360,043', bold:false},
+        ].map((k,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<2?'1px solid #F0F2FA':'none'}}>
+            <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
+            <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
+          </div>
+        ))}
+      </div>
       {/* Grafico Inventario por Molecula */}
       <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
         <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:2}}>Inventario por Molécula</div>
@@ -1533,7 +1546,7 @@ export default function Dashboard() {
         const maxVal=Math.max(...bars.map(b=>b.base+b.h));
         const CHART_H=180;
         const toY=v=>(v/maxVal)*CHART_H;
-        const salidas=3844006, flujoNeto=-4789604;
+        const salidas=3844006, flujoNeto=-4690000;
         return(
           <div style={{display:'flex',flexDirection:'column',height:'100%',justifyContent:'space-between'}}>
             <div style={{fontSize:9,color:'#8A90A8',marginBottom:4,fontWeight:500}}>Montos en MXN</div>
