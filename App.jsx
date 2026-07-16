@@ -1547,14 +1547,11 @@ export default function Dashboard() {
       {(()=>{
         // Waterfall data: base = donde empieza la barra, height = alto visible
         const wData=[
-          {name:'Saldo
-Inicial', value:8529193,  type:'total',    color:'#1E3A8A'},
+          {name:'Saldo Inicial', value:8529193,  type:'total',    color:'#1E3A8A'},
           {name:'OPEX',           value:-2815546, type:'decrease', color:'#E24B4A'},
           {name:'CAPEX',          value:-82862,   type:'decrease', color:'#E24B4A'},
-          {name:'Cap.
-Trabajo',  value:-945598,  type:'decrease', color:'#E24B4A'},
-          {name:'Saldo
-Final',   value:3739589,  type:'total',    color:'#1D9E75'},
+          {name:'Cap. Trabajo',  value:-945598,  type:'decrease', color:'#E24B4A'},
+          {name:'Saldo Final',   value:3739589,  type:'total',    color:'#1D9E75'},
         ];
         const F2=v=>{const a=Math.abs(v);return(v<0?'−':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a).toLocaleString('es-MX'));};
         // Calcular base y height para cada barra
@@ -1621,7 +1618,7 @@ Final',   value:3739589,  type:'total',    color:'#1D9E75'},
                         <div style={{
                           position:'absolute',bottom:0,
                           fontSize:6.5,color:'#8A90A8',
-                          textAlign:'center',whiteSpace:'pre-line',lineHeight:1.2,
+                          textAlign:'center',whiteSpace:'nowrap',lineHeight:1.2,
                           maxWidth:'100%'
                         }}>{b.name}</div>
                       </div>
