@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ───────────────────────────────────────────────────────��─────────
+    // ────────────────────────────────────────────────────���──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -1344,7 +1344,7 @@ export default function Dashboard() {
           return (
             <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',height:'100%',boxSizing:'border-box'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>CAPEX</div>
                 <button onClick={()=>{const hi="Molecula,Monto,% Total\n"; const ri=molRows.map(r=>[r.mol,r.monto,r.pct+'%'].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
                 <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(total)}</div>
               </div>
