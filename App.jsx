@@ -1448,8 +1448,7 @@ export default function Dashboard() {
         <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== CAPITAL DE TRABAJO ===== */}
       <div style={{margin:'0 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>5</div>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CAPITAL DE TRABAJO</div>
+                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CAPITAL DE TRABAJO</div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {/* DSO */}
@@ -1494,8 +1493,7 @@ export default function Dashboard() {
         <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== INVENTARIOS ===== */}
       <div style={{margin:'0 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>6</div>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
+                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr',gap:10}}>
         {/* KPIs Inventarios */}
@@ -1544,60 +1542,106 @@ export default function Dashboard() {
         <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== FLUJO DE CAJA ===== */}
       <div style={{margin:'0 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>7</div>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>FLUJO DE CAJA</div>
+                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>FLUJO DE CAJA</div>
       </div>
       {(()=>{
-        const waterfallData=[
-          {name:'Saldo Inicial',  value:8529193,  isBase:true,  color:'#1E3A8A'},
-          {name:'OPEX',           value:-2815546, isBase:false, color:'#E24B4A'},
-          {name:'CAPEX',          value:-82862,   isBase:false, color:'#E24B4A'},
-          {name:'Cap. Trabajo',   value:-945598,  isBase:false, color:'#E24B4A'},
-          {name:'Saldo Final',    value:3739589,  isBase:true,  color:'#1D9E75'},
+        // Waterfall data: base = donde empieza la barra, height = alto visible
+        const wData=[
+          {name:'Saldo
+Inicial', value:8529193,  type:'total',    color:'#1E3A8A'},
+          {name:'OPEX',           value:-2815546, type:'decrease', color:'#E24B4A'},
+          {name:'CAPEX',          value:-82862,   type:'decrease', color:'#E24B4A'},
+          {name:'Cap.
+Trabajo',  value:-945598,  type:'decrease', color:'#E24B4A'},
+          {name:'Saldo
+Final',   value:3739589,  type:'total',    color:'#1D9E75'},
         ];
-        const entradas=0, salidas=3844006, flujoNeto=-4789604;
-        let running=waterfallData[0].value;
-        const bars=waterfallData.map((d,i)=>{
-          if(d.isBase){const v={...d,base:0,height:Math.abs(d.value)};if(i===0)running=d.value;return v;}
-          const base=d.value<0?running+d.value:running;
-          const height=Math.abs(d.value);
-          running+=d.value;
-          return{...d,base,height};
+        const F2=v=>{const a=Math.abs(v);return(v<0?'−':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a).toLocaleString('es-MX'));};
+        // Calcular base y height para cada barra
+        let running = 0;
+        const bars = wData.map((d,i)=>{
+          if(d.type==='total'){
+            const h = Math.abs(d.value);
+            running = d.value;
+            return {...d, base: 0, h};
+          }
+          const base = d.value < 0 ? running + d.value : running;
+          const h    = Math.abs(d.value);
+          running += d.value;
+          return {...d, base, h};
         });
-        const maxV=Math.max(...bars.map(b=>b.base+b.height),1);
-        const F2=v=>{const a=Math.abs(v);return(v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?(a/1e3).toFixed(0)+'K':a.toFixed(0));};
+        const maxVal = Math.max(...bars.map(b=>b.base+b.h));
+        const CHART_H = 170; // px altura util del grafico
+        const toY = v => (v / maxVal) * CHART_H;
+        const salidas=3844006, flujoNeto=-4789604;
         return(
-          <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:9,color:'#8A90A8',marginBottom:8}}>Waterfall — Julio 2026 (MXN)</div>
-              <div style={{display:'flex',alignItems:'flex-end',gap:4,height:160,paddingBottom:20,position:'relative'}}>
-                {bars.map((b,i)=>{
-                  const pct=b.height/maxV*100;
-                  const basePct=b.base/maxV*100;
-                  return(
-                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',height:'100%',justifyContent:'flex-end',position:'relative'}}>
-                      <div style={{fontSize:7,color:b.color,fontWeight:700,marginBottom:2,textAlign:'center'}}>{F2(b.value)}</div>
-                      <div style={{width:'100%',position:'relative',height:`${pct+basePct}%`}}>
-                        <div style={{position:'absolute',bottom:0,width:'100%',height:`${pct/(pct+basePct)*100}%`,background:b.color,borderRadius:'3px 3px 0 0'}}/>
-                        <div style={{position:'absolute',bottom:0,width:'100%',height:`${basePct/(pct+basePct)*100}%`,background:'transparent'}}/>
-                      </div>
-                      <div style={{fontSize:7,color:'#8A90A8',marginTop:4,textAlign:'center',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:'100%'}}>{b.name}</div>
+          <div>
+            <div style={{fontSize:9,color:'#8A90A8',marginBottom:6,fontWeight:500}}>Montos en MXN</div>
+            <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+              {/* Grafico waterfall */}
+              <div style={{flex:1,minWidth:0,position:'relative'}}>
+                {/* Eje Y con lineas de fondo */}
+                <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',justifyContent:'space-between',pointerEvents:'none'}}>
+                  {[1,.75,.5,.25,0].map((t,i)=>(
+                    <div key={i} style={{borderTop:t===0?'':'1px dashed #E4E8F2',display:'flex',alignItems:'center'}}>
+                      <span style={{fontSize:6,color:'#B0B6C3',marginRight:2,minWidth:22,textAlign:'right'}}>
+                        {t===0?'':(maxVal*t>=1e6?(maxVal*t/1e6).toFixed(0)+'M':Math.round(maxVal*t/1e3)+'K')}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div style={{width:100,flexShrink:0,display:'flex',flexDirection:'column',gap:6,paddingTop:20}}>
-              {[
-                {label:'Entradas',   value:F2(entradas),  color:'#1D9E75', bg:'#F0FAF6'},
-                {label:'Salidas',    value:F2(salidas),   color:'#E24B4A', bg:'#FEF2F2'},
-                {label:'Flujo Neto', value:F2(flujoNeto), color:flujoNeto>=0?'#1D9E75':'#E24B4A', bg:flujoNeto>=0?'#F0FAF6':'#FEF2F2'},
-              ].map((k,i)=>(
-                <div key={i} style={{background:k.bg,borderRadius:8,padding:'6px 8px',borderLeft:'3px solid '+k.color}}>
-                  <div style={{fontSize:7,color:'#8A90A8',marginBottom:1}}>{k.label}</div>
-                  <div style={{fontSize:11,fontWeight:700,color:k.color}}>{k.value}</div>
+                  ))}
                 </div>
-              ))}
+                {/* Barras */}
+                <div style={{display:'flex',alignItems:'flex-end',gap:3,height:CHART_H+30,paddingLeft:26,paddingBottom:20}}>
+                  {bars.map((b,i)=>{
+                    const barH   = toY(b.h);
+                    const baseH  = toY(b.base);
+                    const isLast = i===bars.length-1;
+                    // Linea conector: de esta barra a la siguiente (si no es total)
+                    const nextBar = i<bars.length-1 ? bars[i+1] : null;
+                    return(
+                      <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',position:'relative',height:'100%'}}>
+                        {/* Label valor encima de la barra */}
+                        <div style={{
+                          position:'absolute',
+                          bottom: baseH + barH + 2,
+                          fontSize:7,fontWeight:700,
+                          color:b.type==='decrease'?'#E24B4A':'#1E3A8A',
+                          textAlign:'center',whiteSpace:'nowrap',width:'120%',left:'-10%'
+                        }}>{F2(b.value)}</div>
+                        {/* Spacer transparente (base) */}
+                        <div style={{width:'100%',height:baseH,flexShrink:0}}/>
+                        {/* Barra coloreada */}
+                        <div style={{
+                          width:'80%',height:barH,
+                          background:b.color,
+                          borderRadius:b.type==='total'?'4px':'4px 4px 0 0',
+                          flexShrink:0,position:'relative'
+                        }}/>
+                        {/* Label nombre debajo */}
+                        <div style={{
+                          position:'absolute',bottom:0,
+                          fontSize:6.5,color:'#8A90A8',
+                          textAlign:'center',whiteSpace:'pre-line',lineHeight:1.2,
+                          maxWidth:'100%'
+                        }}>{b.name}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Sidebar KPIs */}
+              <div style={{width:90,flexShrink:0,display:'flex',flexDirection:'column',gap:5,paddingTop:4}}>
+                {[
+                  {label:'Entradas',    value:F2(0),          color:'#1D9E75', bg:'#F0FAF6'},
+                  {label:'Salidas',     value:F2(salidas),    color:'#E24B4A', bg:'#FEF2F2'},
+                  {label:'Flujo Neto',  value:F2(flujoNeto),  color:'#E24B4A', bg:'#FEF2F2'},
+                ].map((k,i)=>(
+                  <div key={i} style={{background:k.bg,borderRadius:7,padding:'5px 7px',borderLeft:'3px solid '+k.color}}>
+                    <div style={{fontSize:7,color:'#8A90A8',marginBottom:1}}>{k.label}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:k.color}}>{k.value}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         );
