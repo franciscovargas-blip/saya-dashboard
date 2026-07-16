@@ -1775,7 +1775,7 @@ export default function Dashboard() {
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
           <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
-          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
           <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
@@ -1783,7 +1783,7 @@ export default function Dashboard() {
           {/* KPI cards */}
           {(()=>{
             const RATE=0.1151;
-            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
+            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':yr===CUR_YEAR?'consolidado':'forecast');
             const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
             const inv=annualEBIT.filter(v=>v<0).reduce((s,v)=>s+v,0);
             const npv=annualEBIT.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
@@ -1860,7 +1860,7 @@ export default function Dashboard() {
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
                       {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
                         const isExp = expPnlAnn[yr];
-                        const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
+                        const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "consolidado" : "forecast");
                         const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
                         const fyNs = allM.reduce((a,m)=>a+bpl(yr,m,modeForYr).ns,0);
                         const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+bpl(yr,m,modeForYr)[(k==="gmPct"?"gp":k.replace("Pct",""))],0)/fyNs : null;
@@ -1870,8 +1870,8 @@ export default function Dashboard() {
                               {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
-                              const mNum = Number(m); const isReal = view==="reales" || (view==="consolidado" && mNum <= cm);
-                              const mMode = isReal ? "reales" : "forecast"; const v = bpl(yr,m,mMode)[k];
+                              const mNum = Number(m); const mMode = view==="reales" ? "reales" : view==="forecast" ? "forecast" : "consolidado";
+                              const isReal = mMode==="consolidado" ? Number(m)<=cm : mMode==="reales"; const v = bpl(yr,m,mMode)[k];
                               const vNs = bpl(yr,m,mMode).ns;
                               const vPct = isPct && vNs ? bpl(yr,m,mMode)[(k==="gmPct"?"gp":k.replace("Pct",""))]/vNs : null;
                               return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
