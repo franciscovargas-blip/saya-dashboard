@@ -116,9 +116,9 @@ function buildPL(fd, yr, m, cm, mode) {
   // For PL lines (Net Sales, COGS, etc.) - have Forecast data
   const getPL = (pl) => {
     if (mode === "forecast") return gV(fd, pl, "Forecast", yr, m);
-    if (mode === "reales") return m <= cm ? gV(fd, pl, "Reales", yr, m) : 0;
+    if (mode === "reales") { const _v=gV(fd,pl,"Reales",yr,m); return m<=cm?(_v!==0?_v:gV(fd,pl,"Forecast",yr,m)):0; }
     // consolidado: reales up to cm (fallback to forecast if no reales), forecast after cm
-    if (m <= cm) return gV(fd, pl, "Reales", yr, m);
+    if (m <= cm) { const _v=gV(fd,pl,"Reales",yr,m); return _v!==0?_v:gV(fd,pl,"Forecast",yr,m); }
     return gV(fd, pl, "Forecast", yr, m);
   };
   // For OpEx lines (codes) - only have Reales data
@@ -211,7 +211,7 @@ export default function Dashboard() {
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
     const gVf = (pl, tp) => (fd !== D ? fd.filter(r=>r[0]===pl&&r[1]===tp&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0) : (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0));
-    const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; return m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"); };
+    const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales"){const v=gVf(pl,"Reales");return m<=cm?(v!==0?v:gVf(pl,"Forecast")):0;} const v=gVf(pl,"Reales");return m<=cm?(v!==0?v:gVf(pl,"Forecast")):gVf(pl,"Forecast"); };
     const getOpex = getPL;
     const ns=getPL("Net Sales"),cogs=getPL("COGS"),gp=ns-cogs,gmPct=ns?gp/ns:0;
     const sw=getOpex("Salaries & Wages"),sm=getOpex("Sales & Marketing"),ta=getOpex("Travel & Accomodation"),pf=getOpex("Professional Fees"),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=getOpex("Software & Hardware"),mob=getOpex("Mobility");
