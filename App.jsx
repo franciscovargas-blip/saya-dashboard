@@ -1331,12 +1331,12 @@ export default function Dashboard() {
         {/* Inversion en Moleculas */}
         {(() => {
           const molRows = [
-            { mol: 'Hyaxum',                    monto: 4469657,  pct: 10 },
-            { mol: 'Euxara',                    monto: 16083997, pct: 36 },
-            { mol: 'Bevalyax',                  monto: 3609101,  pct: 8  },
             { mol: 'Corelis',                   monto: 17650713, pct: 39 },
-            { mol: 'Neutorum',                  monto: 1246423,  pct: 3  },
+            { mol: 'Euxara',                    monto: 16083997, pct: 36 },
+            { mol: 'Hyaxum',                    monto: 4469657,  pct: 10 },
+            { mol: 'Bevalyax',                  monto: 3609101,  pct: 8  },
             { mol: 'Saytelya',                  monto: 1311705,  pct: 3  },
+            { mol: 'Neutorum',                  monto: 1246423,  pct: 3  },
             { mol: 'Sitagliptina y Merformina', monto: 424695,   pct: 1  },
             { mol: 'Acido Micofenolico',        monto: 246528,   pct: 1  },
           ];
@@ -1373,63 +1373,47 @@ export default function Dashboard() {
           );
         })()}
 
-        {/* Ejecucion Presupuestal por Area */}
+                {/* CAPEX por Categoria */}
         {(() => {
-          const areas = [...new Set(fd.filter(r=>OC_ALL.includes(r[0])).map(r=>r[5]).filter(Boolean))].sort();
-          const aRows = areas.slice(0,7).map(area => {
-            const real  = fd.filter(r=>r[1]==='Reales'  &&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const fcast = fd.filter(r=>r[1]==='Forecast'&&ytdM.includes(r[3])&&r[5]===area&&OC_ALL.includes(r[0])).reduce((s,r)=>s+r[9],0);
-            const ejec  = fcast !== 0 ? real/fcast*100 : null;
-            return { area, real:Math.abs(real), fcast:Math.abs(fcast), ejec, varD:real-fcast };
-          });
-          const tR2 = aRows.reduce((s,r)=>s+r.real, 0);
-          const tF2 = aRows.reduce((s,r)=>s+r.fcast,0);
-          const tE2 = tF2 > 0 ? tR2/tF2*100 : 0;
+          const capexRows = [
+            { cat: 'Licencias de Moléculas', monto: 37618124, pct: 87 },
+            { cat: 'Licencias de Software',  monto: 3711387,  pct: 9  },
+            { cat: 'COFEPRIS',               monto: 1650567,  pct: 4  },
+            { cat: 'Equipo de Computo',      monto: 353484,   pct: 1  },
+            { cat: 'Mobiliario y Equipo',    monto: 9036,     pct: 0  },
+          ];
+          const totalCapex = 43342597;
           return (
             <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED',height:'100%',boxSizing:'border-box'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>🎯 Ejecución Presupuestal por Área (YTD)</div>
-                <button onClick={()=>{const he="Area,Presupuesto,Real,EjecPct,VarD\n"; const re2=aRows.map(r=>[r.area,r.fcast,r.real,(r.ejec||0).toFixed(1),(r.varD||0).toFixed(0)].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="ejecucion_presupuestal.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                <div style={{fontSize:10,fontWeight:800,color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}% ejec</div>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>📦 CAPEX por Categoría</div>
+                <button onClick={()=>{const hc="Categoria,Monto,% Total\n"; const rc=capexRows.map(r=>[r.cat,r.monto,r.pct+'%'].join(",")).join("\n"); const bc=new Blob([hc+rc],{type:"text/csv"}); const ac=document.createElement("a"); ac.href=URL.createObjectURL(bc); ac.download="capex_categoria.csv"; ac.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div style={{fontSize:10,fontWeight:800,color:'#534AB7'}}>TOTAL {F(totalCapex)}</div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
                 <thead><tr>
-                  {['Área','Presupuesto','Real','% Ejec','Var $'].map((h,i) => (
+                  {['Categoría','Monto','% Total'].map((h,i) => (
                     <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {aRows.map((r,i) => (
+                  {capexRows.map((r,i) => (
                     <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                      <td style={{padding:'4px 5px',maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',color:'#8A90A8'}}>{F(r.fcast)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.real)}</td>
-                      <td style={{padding:'4px 5px',textAlign:'right'}}>
-                        {r.ejec !== null
-                          ? <div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}}>
-                              <div style={{width:36,height:5,background:'#f0f2fa',borderRadius:3,overflow:'hidden'}}>
-                                <div style={{height:'100%',width:`${Math.min(Math.abs(r.ejec),100)}%`,background:r.ejec>=100?'#E24B4A':'#1D9E75',borderRadius:3}}/>
-                              </div>
-                              <span style={{fontWeight:700,color:r.ejec>=100?'#E24B4A':'#1D9E75'}}>{r.ejec.toFixed(0)}%</span>
-                            </div>
-                          : <span style={{color:'#B0B6C3'}}>N/A</span>
-                        }
-                      </td>
-                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600,color:r.varD<0?'#E24B4A':'#1D9E75'}}>{F(r.varD)}</td>
+                      <td style={{padding:'4px 5px',maxWidth:110,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.cat}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.monto)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pct}%</td>
                     </tr>
                   ))}
                   <tr style={{background:'#f0f2fa',fontWeight:700}}>
                     <td style={{padding:'5px'}}>TOTAL</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tF2)}</td>
-                    <td style={{padding:'5px',textAlign:'right'}}>{F(tR2)}</td>
-                    <td style={{padding:'5px',textAlign:'right',color:tE2>=100?'#E24B4A':'#1D9E75'}}>{tE2.toFixed(1)}%</td>
-                    <td style={{padding:'5px',textAlign:'right',color:(tR2-tF2)<0?'#E24B4A':'#1D9E75'}}>{F(tR2-tF2)}</td>
+                    <td style={{padding:'5px',textAlign:'right'}}>{F(totalCapex)}</td>
+                    <td style={{padding:'5px',textAlign:'right',color:'#534AB7'}}>100%</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           );
-        })()}
+        })()} 
       </div>
 
       {/* ===== ANÁLISIS EJECUTIVO PHARMA + TABLA ÁREA ===== */}
