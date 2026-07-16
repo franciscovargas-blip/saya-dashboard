@@ -1479,45 +1479,32 @@ export default function Dashboard() {
       <div style={{margin:'0 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
                 <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr',gap:10}}>
-        {/* KPIs Inventarios */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
-          {[
-            {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
-            {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
-            {label:'Proveedores (AP)',        value:'$360,043', bold:false},
-          ].map((k,i)=>(
-            <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<2?'1px solid #F0F2FA':'none'}}>
-              <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
-              <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
-            </div>
-          ))}
-        </div>
-        {/* Barra Valor por Componente */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
-          <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:2}}>Valor por Molécula</div>
-          <div style={{fontSize:9,fontWeight:500,color:'#8A90A8',marginBottom:12}}>Hyaxum Pro</div>
-          {[
-            {label:'Inventarios',       val:1412425},
-            {label:'Cuentas por Cobrar',val:449048},
-            {label:'Proveedores',       val:360043},
-          ].map((item,i)=>{
-            const maxV=1412425;
-            const w=item.val/maxV*100;
-            const colors=['#1a1a2e','#534AB7','#1D9E75'];
-            return(
-              <div key={i} style={{marginBottom:12}}>
-                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-                  <span style={{fontSize:9,color:'#8A90A8'}}>{item.label}</span>
-                  <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{F(item.val)}</span>
-                </div>
-                <div style={{height:8,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
-                  <div style={{height:'100%',width:`${w}%`,background:colors[i],borderRadius:4}}/>
-                </div>
+      {/* Grafico Inventario por Molecula */}
+      <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
+        <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:2}}>Inventario por Molécula</div>
+        <div style={{fontSize:9,fontWeight:500,color:'#8A90A8',marginBottom:14}}>Valor en MXN · YTD</div>
+        {[
+          {label:'Hyaxum',      val:1412425, active:true},
+          {label:'Euxara',      val:0,       active:false},
+          {label:'Bevacizumab', val:0,       active:false},
+        ].map((item,i)=>{
+          const maxV=1412425;
+          const w=item.active?(item.val/maxV*100):0;
+          const colors=['#1D9E75','#534AB7','#E24B4A'];
+          return(
+            <div key={i} style={{marginBottom:14}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                <span style={{fontSize:9,color: item.active?'#1a1a2e':'#B0B6C3',fontWeight:item.active?600:400}}>{item.label}</span>
+                <span style={{fontSize:10,fontWeight:700,color:item.active?colors[i]:'#B0B6C3'}}>
+                  {item.active?F(item.val):'--'}
+                </span>
               </div>
-            );
-          })}
-        </div>
+              <div style={{height:8,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${w}%`,background:colors[i],borderRadius:4,transition:'width 0.4s'}}/>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
         </div>
