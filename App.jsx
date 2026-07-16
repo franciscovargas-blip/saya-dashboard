@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ─────────────────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────────────��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -1499,7 +1499,7 @@ export default function Dashboard() {
         {[
           {label:'Hyaxum',      val:1412425, active:true},
           {label:'Euxara',      val:0,       active:false},
-          {label:'Bevacizumab', val:0,       active:false},
+          {label:'Bevaliax',    val:0,       active:false},
         ].map((item,i)=>{
           const maxV=1412425;
           const w=item.active?(item.val/maxV*100):0;
