@@ -1532,7 +1532,7 @@ export default function Dashboard() {
           {name:'OPEX',          value:-2815546, type:'decrease', color:'#E24B4A'},
           {name:'CAPEX',         value:-82862,   type:'decrease', color:'#E24B4A'},
           {name:'Cap. Trabajo',  value:-945598,  type:'decrease', color:'#E24B4A'},
-          {name:'Saldo Final',   value:3739589,  type:'total',    color:'#1D9E75'},
+          {name:'Saldo Final',   value:4685187,  type:'total',    color:'#1D9E75'},
         ];
         const F2=v=>{const a=Math.abs(v);return(v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a).toLocaleString('es-MX'));};
         let running=0;
@@ -1560,7 +1560,7 @@ export default function Dashboard() {
                     return(
                       <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',position:'relative'}}>
                         <div style={{height:topH,flexShrink:0}}/>
-                        <div style={{position:'absolute',top:Math.max(topH-16,0),fontSize:7,fontWeight:700,color:b.color,textAlign:'center',width:'120%',left:'-10%',whiteSpace:'nowrap'}}>
+                        <div style={{position:'absolute',top:topH<20?topH+3:Math.max(topH-16,0),fontSize:7,fontWeight:700,color:topH<20?'#fff':b.color,textAlign:'center',width:'120%',left:'-10%',whiteSpace:'nowrap',zIndex:2}}>
                           {F2(b.value)}
                         </div>
                         <div style={{width:'75%',height:barH,background:b.color,borderRadius:'3px 3px 0 0',flexShrink:0}}/>
