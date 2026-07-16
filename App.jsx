@@ -1444,7 +1444,7 @@ export default function Dashboard() {
       </div>
 
       {/* ===== ROW: CAPITAL DE TRABAJO | INVENTARIOS | FLUJO DE CAJA ===== */}
-      <div style={{display:'flex',gap:12,alignItems:'flex-start',marginBottom:16}}>
+      <div style={{display:'flex',gap:12,alignItems:'stretch',marginBottom:16}}>
         <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== CAPITAL DE TRABAJO ===== */}
       <div style={{margin:'0 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
@@ -1500,13 +1500,10 @@ export default function Dashboard() {
         <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
           {[
             {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
-            {label:'Días de Inventario',     value:'523 días', bold:false},
             {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
-            {label:'Días Cartera (DSO)',      value:'60 días',  bold:false},
             {label:'Proveedores (AP)',        value:'$360,043', bold:false},
-            {label:'Días Proveedores (DPO)', value:'4 días',   bold:false},
           ].map((k,i)=>(
-            <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<5?'1px solid #F0F2FA':'none'}}>
+            <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<2?'1px solid #F0F2FA':'none'}}>
               <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
               <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
             </div>
@@ -1545,93 +1542,59 @@ export default function Dashboard() {
                 <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>FLUJO DE CAJA</div>
       </div>
       {(()=>{
-        // Waterfall data: base = donde empieza la barra, height = alto visible
         const wData=[
           {name:'Saldo Inicial', value:8529193,  type:'total',    color:'#1E3A8A'},
-          {name:'OPEX',           value:-2815546, type:'decrease', color:'#E24B4A'},
-          {name:'CAPEX',          value:-82862,   type:'decrease', color:'#E24B4A'},
+          {name:'OPEX',          value:-2815546, type:'decrease', color:'#E24B4A'},
+          {name:'CAPEX',         value:-82862,   type:'decrease', color:'#E24B4A'},
           {name:'Cap. Trabajo',  value:-945598,  type:'decrease', color:'#E24B4A'},
           {name:'Saldo Final',   value:3739589,  type:'total',    color:'#1D9E75'},
         ];
-        const F2=v=>{const a=Math.abs(v);return(v<0?'−':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a).toLocaleString('es-MX'));};
-        // Calcular base y height para cada barra
-        let running = 0;
-        const bars = wData.map((d,i)=>{
-          if(d.type==='total'){
-            const h = Math.abs(d.value);
-            running = d.value;
-            return {...d, base: 0, h};
-          }
-          const base = d.value < 0 ? running + d.value : running;
-          const h    = Math.abs(d.value);
-          running += d.value;
-          return {...d, base, h};
+        const F2=v=>{const a=Math.abs(v);return(v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a).toLocaleString('es-MX'));};
+        let running=0;
+        const bars=wData.map((d,i)=>{
+          if(d.type==='total'){const h=Math.abs(d.value);running=d.value;return{...d,base:0,h};}
+          const base=d.value<0?running+d.value:running;
+          const h=Math.abs(d.value);
+          running+=d.value;
+          return{...d,base,h};
         });
-        const maxVal = Math.max(...bars.map(b=>b.base+b.h));
-        const CHART_H = 170; // px altura util del grafico
-        const toY = v => (v / maxVal) * CHART_H;
+        const maxVal=Math.max(...bars.map(b=>b.base+b.h));
+        const CHART_H=180;
+        const toY=v=>(v/maxVal)*CHART_H;
         const salidas=3844006, flujoNeto=-4789604;
         return(
-          <div>
-            <div style={{fontSize:9,color:'#8A90A8',marginBottom:6,fontWeight:500}}>Montos en MXN</div>
-            <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
-              {/* Grafico waterfall */}
-              <div style={{flex:1,minWidth:0,position:'relative'}}>
-                {/* Eje Y con lineas de fondo */}
-                <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',justifyContent:'space-between',pointerEvents:'none'}}>
-                  {[1,.75,.5,.25,0].map((t,i)=>(
-                    <div key={i} style={{borderTop:t===0?'':'1px dashed #E4E8F2',display:'flex',alignItems:'center'}}>
-                      <span style={{fontSize:6,color:'#B0B6C3',marginRight:2,minWidth:22,textAlign:'right'}}>
-                        {t===0?'':(maxVal*t>=1e6?(maxVal*t/1e6).toFixed(0)+'M':Math.round(maxVal*t/1e3)+'K')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                {/* Barras */}
-                <div style={{display:'flex',alignItems:'flex-end',gap:3,height:CHART_H+30,paddingLeft:26,paddingBottom:20}}>
+          <div style={{display:'flex',flexDirection:'column',height:'100%',justifyContent:'space-between'}}>
+            <div style={{fontSize:9,color:'#8A90A8',marginBottom:4,fontWeight:500}}>Montos en MXN</div>
+            <div style={{display:'flex',gap:8,flex:1,alignItems:'flex-start'}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',gap:3,height:CHART_H,alignItems:'stretch'}}>
                   {bars.map((b,i)=>{
-                    const barH   = toY(b.h);
-                    const baseH  = toY(b.base);
-                    const isLast = i===bars.length-1;
-                    // Linea conector: de esta barra a la siguiente (si no es total)
-                    const nextBar = i<bars.length-1 ? bars[i+1] : null;
+                    const topH  = CHART_H - toY(b.base+b.h);
+                    const barH  = toY(b.h);
+                    const botH  = toY(b.base);
                     return(
-                      <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',position:'relative',height:'100%'}}>
-                        {/* Label valor encima de la barra */}
-                        <div style={{
-                          position:'absolute',
-                          bottom: baseH + barH + 2,
-                          fontSize:7,fontWeight:700,
-                          color:b.type==='decrease'?'#E24B4A':'#1E3A8A',
-                          textAlign:'center',whiteSpace:'nowrap',width:'120%',left:'-10%'
-                        }}>{F2(b.value)}</div>
-                        {/* Spacer transparente (base) */}
-                        <div style={{width:'100%',height:baseH,flexShrink:0}}/>
-                        {/* Barra coloreada */}
-                        <div style={{
-                          width:'80%',height:barH,
-                          background:b.color,
-                          borderRadius:b.type==='total'?'4px':'4px 4px 0 0',
-                          flexShrink:0,position:'relative'
-                        }}/>
-                        {/* Label nombre debajo */}
-                        <div style={{
-                          position:'absolute',bottom:0,
-                          fontSize:6.5,color:'#8A90A8',
-                          textAlign:'center',whiteSpace:'nowrap',lineHeight:1.2,
-                          maxWidth:'100%'
-                        }}>{b.name}</div>
+                      <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',position:'relative'}}>
+                        <div style={{height:topH,flexShrink:0}}/>
+                        <div style={{position:'absolute',top:Math.max(topH-16,0),fontSize:7,fontWeight:700,color:b.color,textAlign:'center',width:'120%',left:'-10%',whiteSpace:'nowrap'}}>
+                          {F2(b.value)}
+                        </div>
+                        <div style={{width:'75%',height:barH,background:b.color,borderRadius:'3px 3px 0 0',flexShrink:0}}/>
+                        <div style={{width:'75%',height:botH,background:'transparent',flexShrink:0}}/>
                       </div>
                     );
                   })}
                 </div>
+                <div style={{display:'flex',gap:3,marginTop:4}}>
+                  {bars.map((b,i)=>(
+                    <div key={i} style={{flex:1,fontSize:6.5,color:'#8A90A8',textAlign:'center',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{b.name}</div>
+                  ))}
+                </div>
               </div>
-              {/* Sidebar KPIs */}
-              <div style={{width:90,flexShrink:0,display:'flex',flexDirection:'column',gap:5,paddingTop:4}}>
+              <div style={{width:88,flexShrink:0,display:'flex',flexDirection:'column',gap:5}}>
                 {[
-                  {label:'Entradas',    value:F2(0),          color:'#1D9E75', bg:'#F0FAF6'},
-                  {label:'Salidas',     value:F2(salidas),    color:'#E24B4A', bg:'#FEF2F2'},
-                  {label:'Flujo Neto',  value:F2(flujoNeto),  color:'#E24B4A', bg:'#FEF2F2'},
+                  {label:'Entradas',   value:F2(0),         color:'#1D9E75',bg:'#F0FAF6'},
+                  {label:'Salidas',    value:F2(salidas),   color:'#E24B4A',bg:'#FEF2F2'},
+                  {label:'Flujo Neto', value:F2(flujoNeto), color:'#E24B4A',bg:'#FEF2F2'},
                 ].map((k,i)=>(
                   <div key={i} style={{background:k.bg,borderRadius:7,padding:'5px 7px',borderLeft:'3px solid '+k.color}}>
                     <div style={{fontSize:7,color:'#8A90A8',marginBottom:1}}>{k.label}</div>
