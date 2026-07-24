@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ───────────────────��──────���─���─���─���──��─��──────────���─���─���──��─────────
+    // ───────────────��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -1328,7 +1328,6 @@ export default function Dashboard() {
         </div>
 
 
-        <div style={{display:'flex',gap:12,alignItems:'stretch'}}>
         {/* Inversion en Moleculas */}
         {(() => {
           const molRows = [
@@ -1343,7 +1342,7 @@ export default function Dashboard() {
           ];
           const total = 45042818;
           return (
-            <div style={{flex:1,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',boxSizing:'border-box'}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',boxSizing:'border-box',height:'100%'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Portafolio Investment</div>
                 <button onClick={()=>{const hi="Molecula,Monto,% Total\n"; const ri=molRows.map(r=>[r.mol,r.monto,r.pct+'%'].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
@@ -1393,7 +1392,7 @@ export default function Dashboard() {
             areaRows = ["BD","CA","CO","DG","FI","GE","HR","MA","RE","RH","TA"].map(a => ({ area: a, total: 0 }));
           }
           return (
-            <div style={{flex:1,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B',boxSizing:'border-box'}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B',boxSizing:'border-box',height:'100%'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Expenses by Area</div>
                 <button onClick={()=>{const he="Área de Trabajo,Monto,% Total\n"; const re2=areaRows.map(r=>[r.area,r.total.toFixed(2),(grandTotal>0?Math.round(r.total/grandTotal*100):0)+'%'].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="expenses_by_area.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
@@ -1423,7 +1422,6 @@ export default function Dashboard() {
             </div>
           );
         })()}
-        </div>
 
       </div>
 
