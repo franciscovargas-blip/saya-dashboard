@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ───────────��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
+    // ─────────��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -1506,11 +1506,12 @@ export default function Dashboard() {
       {/* KPIs Inventarios */}
       <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',marginBottom:10}}>
         {[
-          {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
-          {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
-          {label:'Proveedores (AP)',        value:'$360,043', bold:false},
-        ].map((k,i)=>(
-          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<2?'1px solid #F0F2FA':'none'}}>
+          {label:'Valor Total del Inventario',      value:'$1.4 M',  bold:true},
+          {label:'Días de Inventario',               value:'--',      bold:false},
+          {label:'Rotación (Últimos 12 Meses)',       value:'--',      bold:false},
+          {label:'% Próximo a Caducar',              value:'5.3%',    bold:false},
+        ].map((k,i,arr)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<arr.length-1?'1px solid #F0F2FA':'none'}}>
             <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
             <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
           </div>
