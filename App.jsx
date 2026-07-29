@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ─────────��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
+    // ───────────��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -1237,18 +1237,19 @@ export default function Dashboard() {
                 </div>
               );
             })()}
-            {(()=>{
-              const empCount = 22;
-              const revEmp = nsYTD && empCount ? Math.round(nsYTD / empCount) : 0;
-              return (
-                <div style={kC("#D97706")}>
-                  <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{"👤"}</div>
-                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>REVENUE POR EMPLEADO</div>
-                  <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(revEmp)}</div>
-                  <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR} · {empCount} colaboradores</div>
-                </div>
-              );
-            })()}
+          {(()=>{
+            const empCount=22;
+            const nsYTDe=MO.slice(0,cm).reduce((s,_mo,i)=>{const r=buildPL(fd,CUR_YEAR,i+1,cm,"reales");return s+(r.ns||0);},0);
+            const revEmp=nsYTDe&&empCount?Math.round(nsYTDe/empCount):0;
+            return(
+              <div style={kC("#D97706")}>
+                <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>👤</div>
+                <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>REVENUE POR EMPLEADO</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(revEmp)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR} · {empCount} colaboradores</div>
+              </div>
+            );
+          })()}
           </React.Fragment>);
         })()}
       </div>
@@ -1699,6 +1700,7 @@ export default function Dashboard() {
           </div>
         );
       })()}
+        </div>
       </div>
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
