@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ──────���──��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
+    // ────���─���──��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -1562,7 +1562,7 @@ export default function Dashboard() {
           {label:'Valor Total del Inventario',      value:'$1.4 M',  bold:true},
           {label:'Días de Inventario',               value:'--',      bold:false},
           {label:'Rotación (Últimos 12 Meses)',       value:'--',      bold:false},
-          {label:'% Próximo a Caducar',              value:'5.3%',    bold:false},
+          {label:'% Próximo a Caducar',              value:'--',    bold:false},
         ].map((k,i,arr)=>(
           <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<arr.length-1?'1px solid #F0F2FA':'none'}}>
             <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
@@ -2230,7 +2230,7 @@ export default function Dashboard() {
                 <tbody>
                   {[
                     ["Bevacizumab","$8.4M","$7.7M","8.1%","$0.7M"],
-                    ["Corelis","$7.1M","$6.7M","5.3%","$0.4M"],
+                    ["Corelis","$7.1M","$6.7M","--","$0.4M"],
                     ["Euxara","$6.5M","$6.2M","4.8%","$0.3M"],
                     ["Hyaxum","$4.2M","$4.1M","2.1%","$0.1M"],
                     ["Certolizumab","$5.8M","$5.4M","7.4%","$0.4M"],
