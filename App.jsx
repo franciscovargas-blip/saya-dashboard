@@ -1956,178 +1956,245 @@ export default function Dashboard() {
               <div style={{fontSize:10,color:"#FEF3C7"}}>Los datos mostrados en esta pestaña son ilustrativos. No representan cifras reales de la compañía.</div>
             </div>
           </div>
+{/* HEADER */}
+          <div style={{background:"linear-gradient(135deg,#1a1a3e 0%,#312e81 50%,#7c3aed 100%)",borderRadius:12,padding:"20px 24px",marginBottom:16,display:"flex",alignItems:"center",gap:16}}>
+            <div style={{background:"rgba(255,255,255,0.15)",borderRadius:10,padding:"10px 14px",fontSize:28}}>📦</div>
+            <div>
+              <div style={{fontSize:18,fontWeight:700,color:"#fff",letterSpacing:0.5}}>Sell-In / Sell-Out — Propuesta Visual · Junio 2026</div>
+              <div style={{fontSize:10,color:"#C4B5FD",marginTop:3}}>Sin comparativa Forecast · Gradiente de Devoluciones % · Por molécula y canal</div>
+            </div>
+          </div>
 {/* KPI STRIP */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:16}}>
             {[
-              {label:"Ventas Netas YTD",value:"$124.3M",sub:"+18% vs Budget",color:"#1D9E75",bg:"#D4F0E6",icon:"📈"},
-              {label:"Gross Margin YTD",value:"68.2%",sub:"+2.1pp vs Budget",color:"#534AB7",bg:"#EDE9FE",icon:"💎"},
-              {label:"Unidades Vendidas",value:"48,320",sub:"+12% vs LY",color:"#185FA5",bg:"#DBEAFE",icon:"📦"},
-              {label:"Clientes Activos",value:"312",sub:"+24 nuevos",color:"#D85A30",bg:"#FEE2E2",icon:"🏥"},
-              {label:"Top Molécula",value:"Hyaxum",sub:"42% de Ventas",color:"#BA7517",bg:"#FEF3C7",icon:"⭐"},
+              {label:"SELL-IN YTD",value:"$42.3M",sub:"vs Budget $40.1M ↑+5.5%",tc:"#1D9E75",bc:"#D4F0E6",lc:"#085041"},
+              {label:"SELL-OUT YTD",value:"$38.1M",sub:"vs Budget $39.0M ↓-2.3%",tc:"#1D9E75",bc:"#D4F0E6",lc:"#085041"},
+              {label:"NET SALES YTD",value:"$36.5M",sub:"Sell-Out – Devoluciones",tc:"#185FA5",bc:"#DBEAFE",lc:"#1E3A8A"},
+              {label:"DEVOLUCIONES YTD",value:"$1.6M",sub:"4.2% del Sell-Out",tc:"#B45309",bc:"#FEF3C7",lc:"#92400E"},
+              {label:"GAP SELL-IN VS OUT",value:"$4.2M",sub:"Inventario en canal",tc:"#E24B4A",bc:"#FEE2E2",lc:"#991B1B"},
             ].map((k,i)=>(
-              <div key={i} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
-                <div style={{fontSize:18,marginBottom:4}}>{k.icon}</div>
-                <div style={{fontSize:9,color:"#8A90A8",marginBottom:2}}>{k.label}</div>
-                <div style={{fontSize:16,fontWeight:700,color:k.color}}>{k.value}</div>
-                <div style={{fontSize:9,marginTop:3,color:k.color,background:k.bg,borderRadius:4,padding:"2px 6px",display:"inline-block"}}>{k.sub}</div>
+              <div key={i} style={{background:"#fff",border:`2px solid ${k.bc}`,borderRadius:10,padding:"14px 16px"}}>
+                <div style={{fontSize:9,color:"#8A90A8",fontWeight:600,letterSpacing:1,textTransform:"uppercase",marginBottom:4}}>{k.label}</div>
+                <div style={{fontSize:22,fontWeight:700,color:k.tc}}>{k.value}</div>
+                <div style={{fontSize:9,marginTop:4,color:k.lc}}>{k.sub}</div>
               </div>
             ))}
           </div>
-{/* CHARTS ROW */}
-          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:12,marginBottom:16}}>
-{/* BAR CHART Ventas por Mes */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
-              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:2}}>Ventas Netas Mensuales (M MXN)</div>
-              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Real vs Forecast · 2026</div>
-              <ResponsiveContainer width="100%" height={180}>
+{/* MIDDLE ROW */}
+          <div style={{display:"grid",gridTemplateColumns:"3fr 2fr",gap:12,marginBottom:16}}>
+{/* COMPOSED CHART */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px"}}>
+              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:2}}>Sell-In vs Sell-Out — Mensual (M MXN)</div>
+              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Solo meses reales · Gradiente = % devoluciones · Línea naranja = % Dev mensual</div>
+              <ResponsiveContainer width="100%" height={220}>
                 <ComposedChart data={[
-                  {m:"Ene",Real:18.2,Forecast:17.5,GM:66},
-                  {m:"Feb",Real:21.4,Forecast:20.0,GM:67},
-                  {m:"Mar",Real:19.8,Forecast:21.0,GM:68},
-                  {m:"Abr",Real:22.1,Forecast:21.5,GM:68},
-                  {m:"May",Real:20.5,Forecast:22.0,GM:69},
-                  {m:"Jun",Real:22.3,Forecast:22.8,GM:69},
-                  {m:"Jul",Real:null,Forecast:24.0,GM:null},
-                  {m:"Ago",Real:null,Forecast:25.2,GM:null},
-                  {m:"Sep",Real:null,Forecast:26.1,GM:null},
-                  {m:"Oct",Real:null,Forecast:26.8,GM:null},
-                  {m:"Nov",Real:null,Forecast:27.5,GM:null},
-                  {m:"Dic",Real:null,Forecast:28.3,GM:null},
-                ]} margin={{top:4,right:16,left:0,bottom:0}}>
+                  {m:"Ene",SI:8.1,SO:7.5,Dev:8.1},
+                  {m:"Feb",SI:7.8,SO:7.4,Dev:5.3},
+                  {m:"Mar",SI:6.9,SO:6.4,Dev:7.2},
+                  {m:"Abr",SI:9.2,SO:8.5,Dev:7.6},
+                  {m:"May",SI:5.3,SO:4.9,Dev:7.5},
+                  {m:"Jun",SI:5.0,SO:3.4,Dev:6.9},
+                ]} margin={{top:16,right:20,left:0,bottom:0}}>
                   <XAxis dataKey="m" tick={{fontSize:9}} />
-                  <YAxis tick={{fontSize:9}} />
-                  <Tooltip formatter={(v)=>v?`$${v}M`:"—"} />
-                  <Bar dataKey="Real" fill="#1D9E75" radius={[3,3,0,0]} maxBarSize={22} />
-                  <Bar dataKey="Forecast" fill="#185FA5" opacity={0.5} radius={[3,3,0,0]} maxBarSize={22} />
-                  <Line type="monotone" dataKey="GM" stroke="#D85A30" strokeWidth={2} dot={false} yAxisId={0} />
+                  <YAxis yAxisId="left" tick={{fontSize:9}} />
+                  <YAxis yAxisId="right" orientation="right" tick={{fontSize:9}} unit="%" domain={[0,15]} />
+                  <Tooltip />
+                  <Bar yAxisId="left" dataKey="SI" name="Sell-In Real" fill="#312e81" radius={[3,3,0,0]} maxBarSize={28} />
+                  <Bar yAxisId="left" dataKey="SO" name="Sell-Out Real" fill="#7c3aed" opacity={0.7} radius={[3,3,0,0]} maxBarSize={28} />
+                  <Line yAxisId="right" type="monotone" dataKey="Dev" name="% Devoluciones" stroke="#F97316" strokeWidth={2} dot={{r:4,fill:"#F97316"}} />
                 </ComposedChart>
               </ResponsiveContainer>
-              <div style={{display:"flex",gap:12,marginTop:6}}>
-                {[{c:"#1D9E75",l:"Real"},{c:"#185FA5",l:"Forecast"},{c:"#D85A30",l:"GM% Tendencia"}].map((lg,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:9,color:"#555"}}>
-                    <span style={{width:10,height:10,background:lg.c,borderRadius:2,display:"inline-block"}}></span>{lg.l}
+              <div style={{display:"flex",gap:14,marginTop:8,flexWrap:"wrap"}}>
+                {[["#312e81","Sell-In Real"],["#7c3aed","Sell-Out Real"],["#F97316","% Devoluciones"],["#bbf7d0","Gradiente Dev"]].map(([c,l],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:5,fontSize:9,color:"#555"}}>
+                    <span style={{width:12,height:i<2?12:4,background:c,borderRadius:i<2?2:2,display:"inline-block"}}></span>{l}
                   </div>
                 ))}
               </div>
             </div>
-{/* PIE Ventas por Molécula */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
-              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:2}}>Mix por Molécula</div>
-              <div style={{fontSize:9,color:"#8A90A8",marginBottom:6}}>% Ventas YTD</div>
-              <ResponsiveContainer width="100%" height={150}>
-                <PieChart>
-                  <Pie data={[
-                    {name:"Hyaxum",value:42},
-                    {name:"Bevacizumab",value:28},
-                    {name:"Euxara",value:15},
-                    {name:"Certolizumab",value:10},
-                    {name:"Otros",value:5},
-                  ]} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={30} paddingAngle={2}>
-                    {["#1D9E75","#534AB7","#D85A30","#185FA5","#8A90A8"].map((c,i)=>(
-                      <Cell key={i} fill={c} />
-                    ))}
-                    <LabelList dataKey="value" position="outside" formatter={(v)=>`${v}%`} style={{fontSize:8}} />
-                  </Pie>
-                  <Tooltip formatter={(v)=>`${v}%`} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:4}}>
-                {[["Hyaxum","#1D9E75"],["Bevacizumab","#534AB7"],["Euxara","#D85A30"],["Certolizumab","#185FA5"],["Otros","#8A90A8"]].map(([n,c],i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8,color:"#555"}}>
-                    <span style={{width:8,height:8,background:c,borderRadius:2,display:"inline-block"}}></span>{n}
-                  </div>
-                ))}
+{/* CUMPLIMIENTO GAUGES */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                <span style={{color:"#E24B4A",fontSize:14}}>🎯</span>
+                <span style={{fontSize:11,fontWeight:600,color:"#1a1a2e"}}>Cumplimiento vs Budget</span>
               </div>
+              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Sell-In y Sell-Out por molécula · YTD Jun 2026</div>
+              {[
+                {mol:"Bevacizumab",si:105,so:97,siV:"+5.5%",soV:"-2.3%",siC:"#185FA5",soC:"#E24B4A"},
+                {mol:"Corelis",si:98,so:103,siV:"-2.1%",soV:"+3.1%",siC:"#E24B4A",soC:"#1D9E75"},
+                {mol:"Euxara",si:102,so:98,siV:"+1.5%",soV:"-1.2%",siC:"#185FA5",soC:"#E24B4A"},
+                {mol:"Hyaxum",si:103,so:101,siV:"+3.0%",soV:"+1.0%",siC:"#1D9E75",soC:"#1D9E75"},
+                {mol:"Certolizumab",si:95,so:96,siV:"-5.0%",soV:"-4.0%",siC:"#E24B4A",soC:"#E24B4A"},
+              ].map((row,i)=>{
+                const SvgGauge=({pct,color,label})=>{
+                  const r=22,circ=2*Math.PI*r;
+                  const fill=Math.min(pct,100)/100*circ;
+                  return(
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                      <svg width={54} height={54} viewBox="0 0 54 54">
+                        <circle cx={27} cy={27} r={r} fill="none" stroke="#E4E8F2" strokeWidth={5}/>
+                        <circle cx={27} cy={27} r={r} fill="none" stroke={color} strokeWidth={5}
+                          strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
+                          transform="rotate(-90 27 27)"/>
+                        <text x={27} y={31} textAnchor="middle" fontSize={11} fontWeight={700} fill={color}>{pct}%</text>
+                      </svg>
+                      <span style={{fontSize:8,color:color,fontWeight:600}}>{label}</span>
+                    </div>
+                  );
+                };
+                return(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<4?"1px solid #F0F2FA":"none"}}>
+                    <SvgGauge pct={row.si} color={row.siC} label={`SI ${row.siV}`}/>
+                    <SvgGauge pct={row.so} color={row.soC} label={`SO ${row.soV}`}/>
+                    <div>
+                      <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>{row.mol}</div>
+                      <div style={{fontSize:8,color:row.siC}}>▲ SI {row.siV}</div>
+                      <div style={{fontSize:8,color:row.soC}}>▲ SO {row.soV}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 {/* BOTTOM ROW */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-{/* Tabla por área */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
-              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:6}}>Desglose por Área Terapéutica</div>
+          <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1.2fr",gap:12,marginBottom:16}}>
+{/* TABLA SI vs SO */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>Sell-In vs Sell-Out por Molécula — YTD Junio 2026</div>
+                <button style={{fontSize:8,padding:"3px 8px",background:"#534AB7",color:"#fff",border:"none",borderRadius:4,cursor:"pointer"}}>⬇ CSV</button>
+              </div>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
                 <thead><tr style={{background:"#F8F9FE"}}>
-                  {["Área","Molécula","Real YTD","Fcst YTD","Var %","GM%"].map((h,i)=>(
-                    <th key={i} style={{padding:"5px 6px",textAlign:i>1?"right":"left",color:"#8A90A8",fontWeight:600,borderBottom:"1px solid #E4E8F2"}}>{h}</th>
+                  {["Molécula","Sell-In","SO","Dev%","Gap Canal"].map((h,i)=>(
+                    <th key={i} style={{padding:"5px 6px",textAlign:i===0?"left":"right",color:"#8A90A8",fontWeight:600,borderBottom:"2px solid #E4E8F2"}}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
                   {[
-                    ["SAOS","Hyaxum","$52.2M","$48.0M","+8.7%","74%","#1D9E75"],
-                    ["ONHE","Bevacizumab","$34.8M","$36.0M","-3.3%","61%","#E24B4A"],
-                    ["SAOS","Euxara","$18.6M","$17.5M","+6.3%","70%","#1D9E75"],
-                    ["INMU","Certolizumab","$12.4M","$11.8M","+5.1%","65%","#1D9E75"],
-                    ["CAME","Ezetimiba","$6.3M","$7.0M","-10%","58%","#E24B4A"],
-                  ].map(([area,mol,real,fcst,vr,gm,vc],i)=>(
-                    <tr key={i} style={{borderBottom:"1px solid #F0F2FA",background:i%2?"#FAFBFF":"#fff"}}>
-                      <td style={{padding:"5px 6px"}}><span style={{background:"#EDE9FE",color:"#534AB7",borderRadius:4,padding:"1px 5px",fontWeight:600}}>{area}</span></td>
-                      <td style={{padding:"5px 6px",color:"#1a1a2e"}}>{mol}</td>
-                      <td style={{padding:"5px 6px",textAlign:"right",fontWeight:600,color:"#1a1a2e"}}>{real}</td>
-                      <td style={{padding:"5px 6px",textAlign:"right",color:"#8A90A8"}}>{fcst}</td>
-                      <td style={{padding:"5px 6px",textAlign:"right",color:vc,fontWeight:600}}>{vr}</td>
-                      <td style={{padding:"5px 6px",textAlign:"right",color:"#185FA5"}}>{gm}</td>
-                    </tr>
-                  ))}
+                    ["Bevacizumab","$8.4M","$7.7M","8.1%","$0.7M"],
+                    ["Corelis","$7.1M","$6.7M","5.3%","$0.4M"],
+                    ["Euxara","$6.5M","$6.2M","4.8%","$0.3M"],
+                    ["Hyaxum","$4.2M","$4.1M","2.1%","$0.1M"],
+                    ["Certolizumab","$5.8M","$5.4M","7.4%","$0.4M"],
+                    ["Bevalyax","$5.2M","$5.1M","1.9%","$0.1M"],
+                    ["Saytelya","$5.1M","$2.9M","3.2%","$0.2M"],
+                  ].map((row,i)=>{
+                    const devPct=parseFloat(row[3]);
+                    const devC=devPct>=5?"#E24B4A":devPct>=3?"#D97706":"#1D9E75";
+                    return(
+                      <tr key={i} style={{borderBottom:"1px solid #F0F2FA",background:i%2?"#FAFBFF":"#fff"}}>
+                        <td style={{padding:"5px 6px",color:"#1a1a2e",fontWeight:500}}>{row[0]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:"#185FA5",fontWeight:600}}>{row[1]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:"#534AB7",fontWeight:600}}>{row[2]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:devC,fontWeight:700}}>{row[3]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:"#E24B4A",fontWeight:600}}>{row[4]}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr style={{background:"#EDE9FE",fontWeight:700,borderTop:"2px solid #534AB7"}}>
+                    {["TOTAL","$42.3M","$38.1M","4.2%","$2.2M"].map((v,i)=>(
+                      <td key={i} style={{padding:"6px 6px",textAlign:i===0?"left":"right",color:"#312e81",fontWeight:700}}>{v}</td>
+                    ))}
+                  </tr>
                 </tbody>
               </table>
             </div>
-{/* Heatmap por mes/producto */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
-              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:6}}>Heatmap Ventas — Unidades por Mes</div>
+{/* DEVOLUCIONES % LIST */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>Devoluciones % por Molécula</div>
+                <div style={{display:"flex",gap:0,borderRadius:5,border:"1px solid #E4E8F2",overflow:"hidden"}}>
+                  {["YTD","Jun"].map((t,i)=>(
+                    <span key={i} style={{padding:"2px 8px",fontSize:8,background:i===0?"#534AB7":"#fff",color:i===0?"#fff":"#8A90A8",cursor:"pointer"}}>{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div style={{height:8,borderRadius:4,background:"linear-gradient(90deg,#1D9E75,#D97706,#E24B4A)",marginBottom:8,position:"relative"}}>
+                <span style={{position:"absolute",left:"60%",top:-12,fontSize:7,color:"#D97706"}}>Alerta 5%</span>
+                <span style={{position:"absolute",right:0,top:-12,fontSize:7,color:"#E24B4A"}}>Alto ≥5%</span>
+              </div>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
-                <thead><tr style={{background:"#F8F9FE"}}>
-                  <th style={{padding:"4px 6px",textAlign:"left",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Molécula</th>
-                  {["E","F","M","A","M","J"].map((m,i)=>(
-                    <th key={i} style={{padding:"4px 6px",textAlign:"center",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>{m}</th>
+                <thead><tr>
+                  {["Molécula","Dev%","Trend"].map((h,i)=>(
+                    <th key={i} style={{padding:"4px 4px",textAlign:i===0?"left":"center",color:"#8A90A8",fontWeight:600,borderBottom:"1px solid #E4E8F2"}}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
                   {[
-                    {mol:"Hyaxum",vals:[820,950,870,1100,980,1050],max:1100},
-                    {mol:"Bevacizumab",vals:[430,390,460,420,480,510],max:510},
-                    {mol:"Euxara",vals:[210,240,200,290,260,310],max:310},
-                    {mol:"Certolizumab",vals:[85,100,95,120,110,130],max:130},
-                    {mol:"Ezetimiba",vals:[1200,980,1100,1050,900,800],max:1200},
+                    ["Bevacizumab",8.1,"↑"],
+                    ["Corelis",5.3,"→"],
+                    ["Euxara",4.8,"↓"],
+                    ["Hyaxum",2.1,"↓"],
+                    ["Certolizumab",7.4,"↑"],
+                    ["Bevalyax",1.9,"↓"],
+                    ["Saytelya",3.2,"→"],
+                  ].map(([mol,dev,trend],i)=>{
+                    const c=dev>=5?"#E24B4A":dev>=3?"#D97706":"#1D9E75";
+                    const tc=trend==="↑"?"#E24B4A":trend==="↓"?"#1D9E75":"#8A90A8";
+                    return(
+                      <tr key={i} style={{borderBottom:"1px solid #F0F2FA"}}>
+                        <td style={{padding:"5px 4px",color:"#1a1a2e"}}>{mol}</td>
+                        <td style={{padding:"5px 4px",textAlign:"center"}}>
+                          <span style={{background:c+"22",color:c,borderRadius:4,padding:"2px 7px",fontWeight:700}}>{dev}%</span>
+                        </td>
+                        <td style={{padding:"5px 4px",textAlign:"center",color:tc,fontSize:14,fontWeight:700}}>{trend}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+                {[["#E24B4A","≥5% crítico"],["#D97706","3-5% alerta"],["#1D9E75","<3% normal"]].map(([c,l],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8,color:"#555"}}>
+                    <span style={{width:8,height:8,background:c,borderRadius:50,display:"inline-block"}}></span>{l}
+                  </div>
+                ))}
+              </div>
+            </div>
+{/* HEATMAP DEVOLUCIONES */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e",marginBottom:8}}>Heatmap Devoluciones % — Mes × Molécula</div>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
+                <thead><tr style={{background:"#F8F9FE"}}>
+                  <th style={{padding:"4px 5px",textAlign:"left",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Mol</th>
+                  {["Ene","Feb","Mar","Abr","May","Jun"].map((m,i)=>(
+                    <th key={i} style={{padding:"4px 5px",textAlign:"center",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>{m}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {[
+                    {mol:"Beva",vals:[7.9,8.1,7.2,8.5,8.8,6.9]},
+                    {mol:"Corel",vals:[5.1,5.4,4.6,5.0,5.2,5.7]},
+                    {mol:"Euxara",vals:[4.5,4.8,4.3,5.1,4.7,4.8]},
+                    {mol:"Cert",vals:[7.1,7.5,6.9,8.2,7.8,6.8]},
+                    {mol:"Hyaxum",vals:[2.0,2.3,1.9,2.2,2.1,2.4]},
                   ].map((row,i)=>(
                     <tr key={i} style={{borderBottom:"1px solid #F0F2FA"}}>
-                      <td style={{padding:"4px 6px",color:"#1a1a2e",fontWeight:500}}>{row.mol}</td>
+                      <td style={{padding:"5px 5px",color:"#1a1a2e",fontWeight:600}}>{row.mol}</td>
                       {row.vals.map((v,j)=>{
-                        const pct=v/row.max;
-                        const bg=`rgba(83,74,183,${(pct*0.7+0.05).toFixed(2)})`;
-                        return <td key={j} style={{padding:"4px 6px",textAlign:"center",background:bg,color:pct>0.5?"#fff":"#534AB7",fontWeight:pct>0.6?700:400,borderRadius:3}}>{v>=1000?(v/1000).toFixed(1)+"K":v}</td>;
+                        const bg=v>=5?"#FECACA":v>=3?"#FEF3C7":"#D1FAE5";
+                        const tc=v>=5?"#991B1B":v>=3?"#92400E":"#065F46";
+                        return(
+                          <td key={j} style={{padding:"5px 5px",textAlign:"center",background:bg,color:tc,fontWeight:600,borderRadius:3}}>{v}%</td>
+                        );
                       })}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div style={{fontSize:8,color:"#B0B6C3",marginTop:8}}>Ene–Jun 2026 · Unidades vendidas (dummy)</div>
-            </div>
-          </div>
-{/* BOTTOM KPI: Top Clientes */}
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,marginBottom:16}}>
-            <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:8}}>🏆 Top 5 Clientes — Ventas YTD</div>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-              {[
-                {name:"IMSS",val:"$38.2M",pct:31,color:"#534AB7"},
-                {name:"ISSSTE",val:"$24.5M",pct:20,color:"#1D9E75"},
-                {name:"Secretaría de Salud",val:"$18.7M",pct:15,color:"#185FA5"},
-                {name:"Hospital Ángeles",val:"$12.3M",pct:10,color:"#D85A30"},
-                {name:"Farmacias SB",val:"$8.9M",pct:7,color:"#BA7517"},
-              ].map((c,i)=>(
-                <div key={i} style={{flex:1,minWidth:120}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                    <span style={{fontSize:9,color:"#1a1a2e",fontWeight:500}}>{c.name}</span>
-                    <span style={{fontSize:9,color:c.color,fontWeight:700}}>{c.val}</span>
+              <div style={{display:"flex",gap:8,marginTop:8}}>
+                {[["#D1FAE5","#065F46","<3%"],["#FEF3C7","#92400E","3-5%"],["#FECACA","#991B1B",">5%"]].map(([bg,tc,l],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8}}>
+                    <span style={{width:14,height:10,background:bg,borderRadius:2,display:"inline-block",border:`1px solid ${tc}`}}></span>
+                    <span style={{color:tc}}>{l}</span>
                   </div>
-                  <div style={{background:"#F0F2FA",borderRadius:4,height:6}}>
-                    <div style={{width:`${c.pct}%`,background:c.color,borderRadius:4,height:6}}></div>
-                  </div>
-                  <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>{c.pct}% del total</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
+      )}
       )}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
     </div>
