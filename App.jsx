@@ -2080,7 +2080,7 @@ export default function Dashboard() {
                   {["E","F","M","A","M","J"].map((m,i)=>(
                     <th key={i} style={{padding:"4px 6px",textAlign:"center",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>{m}</th>
                   ))}
-                </thead>
+                </tr></thead>
                 <tbody>
                   {[
                     {mol:"Hyaxum",vals:[820,950,870,1100,980,1050],max:1100},
