@@ -1237,6 +1237,18 @@ export default function Dashboard() {
                 </div>
               );
             })()}
+            {(()=>{
+              const empCount = 22;
+              const revEmp = nsYTD && empCount ? Math.round(nsYTD / empCount) : 0;
+              return (
+                <div style={kC("#D97706")}>
+                  <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>{"👤"}</div>
+                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>REVENUE POR EMPLEADO</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(revEmp)}</div>
+                  <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR} · {empCount} colaboradores</div>
+                </div>
+              );
+            })()}
           </React.Fragment>);
         })()}
       </div>
@@ -1482,10 +1494,17 @@ export default function Dashboard() {
         </div>
       </div>
 
+        <div style={{background:'linear-gradient(90deg,#F59E0B,#D97706)',borderRadius:8,padding:'8px 14px',marginBottom:10,display:'flex',alignItems:'center',gap:8,border:'2px dashed #B45309'}}>
+          <span style={{fontSize:16}}>⚠️</span>
+          <div>
+            <div style={{fontWeight:700,color:'#fff',fontSize:10,letterSpacing:0.8}}>📦 PRÓXIMAMENTE — DATOS DUMMY DE PRUEBA</div>
+            <div style={{fontSize:9,color:'#FEF3C7'}}>La información de caducidad por lotes será real una vez conectada al ERP / WMS. Los datos mostrados son ilustrativos.</div>
+          </div>
+        </div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
           <div>
             <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:1}}>📦 Caducidad por Lotes · Shelf Life</div>
-            <div style={{fontSize:8,color:'#8A90A8'}}>Vida útil restante por lote · ⚠️ ≤12 meses = destrucción</div>
+            <div style={{fontSize:8,color:'#8A90A8'}}>Vida útil restante por lote · ⚠️ ≤12 meses = destrucción · Datos dummy</div>
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'flex-end'}}>
             {[['#FECACA','#991B1B','Destrucción (≤12m)'],['#FEF3C7','#92400E','Alerta (12-18m)'],['#D1FAE5','#065F46','OK (>18m)']].map(([bg,tc,l],i)=>(
@@ -1507,15 +1526,6 @@ export default function Dashboard() {
             {[
               {mol:'Hyaxum Pro',  lote:'HXP-2025-001', uds:1324, fab:'2024-06-08', fecha:'2027-06-08', sl:36, si:false},
               {mol:'Hyaxum Pro',  lote:'HXP-2026-SI',  uds:75,   fab:'2024-12-08', fecha:'2027-12-08', sl:36, si:true, siDate:'08-Jun-2026'},
-              {mol:'Bevacizumab',  lote:'BV-2024-003', uds:420,  fab:'2022-09-30', fecha:'2025-09-30', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2024-004', uds:310,  fab:'2023-01-15', fecha:'2026-01-15', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2025-001', uds:900,  fab:'2024-08-22', fecha:'2026-08-22', sl:24},
-              {mol:'Euxara',       lote:'EX-2024-002', uds:180,  fab:'2023-11-05', fecha:'2025-11-05', sl:24},
-              {mol:'Euxara',       lote:'EX-2025-001', uds:540,  fab:'2024-06-30', fecha:'2026-06-30', sl:24},
-              {mol:'Certolizumab', lote:'CT-2024-001', uds:95,   fab:'2023-10-01', fecha:'2025-10-01', sl:24},
-              {mol:'Certolizumab', lote:'CT-2025-001', uds:280,  fab:'2024-04-18', fecha:'2026-04-18', sl:24},
-              {mol:'Bevalyax',     lote:'BL-2025-001', uds:620,  fab:'2024-09-10', fecha:'2027-09-10', sl:36},
-              {mol:'Saytelya',     lote:'SY-2025-001', uds:440,  fab:'2024-07-15', fecha:'2026-07-15', sl:24},
             ].map((row,i)=>{
               const totalDias = row.sl * 30;
               const cad = new Date(row.fecha);
@@ -1529,9 +1539,9 @@ export default function Dashboard() {
               const tc = isDestruct ? '#991B1B' : isAlerta ? '#92400E' : '#065F46';
               const bc = isDestruct ? '#EF4444' : isAlerta ? '#F59E0B' : '#10B981';
               const est = isDestruct ? '🔴 Destruir' : isAlerta ? '🟡 Alerta' : '🟢 OK';
-              const prevMols=['Hyaxum Pro','Hyaxum Pro','Bevacizumab','Bevacizumab','Bevacizumab','Euxara','Euxara','Certolizumab','Certolizumab','Bevalyax','Saytelya'];
+              const prevMols=['Hyaxum Pro','Hyaxum Pro'];
               const isFirst = i===0 || row.mol !== prevMols[i-1];
-              const MCOLS={'Hyaxum Pro':'#534AB7','Bevacizumab':'#185FA5','Euxara':'#1D9E75','Certolizumab':'#D97706','Bevalyax':'#E24B4A','Saytelya':'#7C3AED'};
+              const MCOLS={'Hyaxum Pro':'#534AB7'};
               const mc = MCOLS[row.mol] || '#8A90A8';
               const destructLinePct = Math.round(12 / row.sl * 100);
               return(
@@ -1689,6 +1699,7 @@ export default function Dashboard() {
           </div>
         );
       })()}
+        </div>
       </div>
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
