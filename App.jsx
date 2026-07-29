@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ────���─���──��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
+    // ──���─���─���──��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -1560,7 +1560,7 @@ export default function Dashboard() {
       <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',marginBottom:10}}>
         {[
           {label:'Valor Total del Inventario',      value:'$1.4 M',  bold:true},
-          {label:'Días de Inventario',               value:'--',      bold:false},
+          {label:'Días de Inventario',               value:'523',     bold:false},
           {label:'Rotación (Últimos 12 Meses)',       value:'--',      bold:false},
           {label:'% Próximo a Caducar',              value:'--',    bold:false},
         ].map((k,i,arr)=>(
