@@ -166,7 +166,7 @@ const PL_KEYS = ["ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","m
 const PL_LABELS = {ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expenses",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["gmPct","totOpexPct","ebitdaPct","ebitPct","netProfitPct"]);
 const BOLD_KEYS = new Set(["ns","gp","totOpex","ebitda","ebit","totFin","netProfit"]);
-const OPEX_KEY_SET = new Set(["cogs","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"]);
+const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"]);
 {/* */}
 export default function Dashboard() {
   const [cm, setCm] = useState(() => {
@@ -279,7 +279,7 @@ export default function Dashboard() {
     const intangCM = intangRow ? (intangRow[4 + cm] || 0) : 0;
     return [
       { l: "NET SALES YTD", v: F(nsYTD), s: `Mes ${MO[cm-1]}: ${F(c.ns)}`, c: "#185FA5" },
-      { l: "GROSS MARGIN YTD", v: F(ytdTotals.gp), s: nsYTD ? `${P(ytdTotals.gp / nsYTD)} del NS` : "Pre-revenue", c: "#1D9E75" },
+      { l: "GROSS MARGIN YTD", v: nsYTD ? P(ytdTotals.gp / nsYTD) : "N/A", s: c.ns ? `Mes ${MO[cm-1]}: ${P(c.gp / c.ns)}` : "Pre-revenue", c: "#1D9E75" },
       { l: "EBITDA YTD", v: F(ytdTotals.ebitda), s: `Mes ${MO[cm-1]}: ${F(c.ebitda)}`, c: ytdTotals.ebitda < 0 ? "#E24B4A" : "#1D9E75" },
       { l: "INTANGIBLE ASSETS YTD", v: F(intangYTD), s: `Mes ${MO[cm-1]}: ${F(intangCM)}`, c: "#7C3AED" },
     ];
@@ -421,7 +421,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ─────────────────────────────────────────────────────────────────
+    // ───────────��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -644,7 +644,7 @@ export default function Dashboard() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #E4E8F2", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src="data:image/png;base64,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" alt="Saya Biologics" style={{width:42,height:42,borderRadius:10,objectFit:"cover"}} />
-          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Business Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]} · <span style={{background:"#E8F4FF",color:"#185FA5",borderRadius:3,padding:"1px 5px",fontWeight:700,letterSpacing:1}}>MXN</span></div></div>
+          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Business Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]} · <span style={{background:"#E8F4FF",color:"#185FA5",borderRadius:3,padding:"1px 5px",fontWeight:700,letterSpacing:1}}>Montos en MXN</span></div></div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
@@ -668,7 +668,7 @@ export default function Dashboard() {
 {/* */}
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["executive","🎯 Executive KPIs"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"],["next-steps","🗂️ Next Steps"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["ventas","📈 Ventas"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -689,7 +689,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {(() => {
-              const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
+              const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
               const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
   const SEP_STYLE = {padding:"6px 6px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500};
@@ -786,7 +786,7 @@ export default function Dashboard() {
               <thead><tr>{["Línea", "Forecast", "Reales", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
               <tbody>
                 {(() => {
-                  const OPEX_CODE_MAP = {cogs:"COGS",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
+                  const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accomodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
                   const tRows = [];
                   comp.forEach((r, i) => {
                     const isOpex = OPEX_KEY_SET.has(r.k);
@@ -1231,9 +1231,22 @@ export default function Dashboard() {
               return (
                 <div style={kC("#1a1a2e")}>
                   <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>💧</div>
-                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>FLUJO DE CAJA DISPONIBLE</div>
+                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>CASH AVAILABLE</div>
                   <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(flujoCaja)}</div>
                   <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Bancos + Inversiones · {MO[cm-1]}</div>
+                </div>
+              );
+            })()}
+            {(()=>{
+              const empCount=22;
+              const nsYTDe=MO.slice(0,cm).reduce((s,_mo,i)=>{const r=buildPL(fd,CUR_YEAR,i+1,cm,"reales");return s+(r.ns||0);},0);
+              const revEmp=nsYTDe&&empCount?Math.round(nsYTDe/empCount):0;
+              return(
+                <div style={kC("#D97706")}>
+                  <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>👤</div>
+                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>REVENUE POR EMPLEADO</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(revEmp)}</div>
+                  <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR} · {empCount} colaboradores</div>
                 </div>
               );
             })()}
@@ -1296,14 +1309,14 @@ export default function Dashboard() {
                       <Line yAxisId="R" type="monotone" dataKey="GmPct" name="GM% Real" stroke="#1D9E75" strokeWidth={2.5} dot={{r:4,fill:"#1D9E75",stroke:"#fff",strokeWidth:1}} activeDot={{r:5}} connectNulls>
                         <LabelList dataKey="GmPct" position="top" formatter={v=>v!=null?v.toFixed(1)+'%':''} style={{fontSize:7.5,fill:"#1D9E75",fontWeight:700}}/>
                       </Line>
-                      <Line yAxisId="R" type="monotone" dataKey="GmPctF" name="GM% Fcst" stroke="#1D9E75" strokeWidth={1.5} strokeDasharray="4 2" dot={false} connectNulls/>
+
                     </ComposedChart>
                   </ResponsiveContainer>
                   <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap",marginTop:4}}>
                     <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#1E3A8A",display:"inline-block"}}/>Net Sales Reales</span>
                     <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#93C5FD",border:"1px solid #1E40AF",display:"inline-block"}}/>Forecast</span>
                     <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:3,background:"#1D9E75",display:"inline-block",borderRadius:2}}/>Gross Margin % Real</span>
-                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:2,background:"#1D9E75",display:"inline-block",borderRadius:2,opacity:0.55}}/>GM% Forecast</span>
+
                   </div>
                 </div>
                 <div style={{width:152,flexShrink:0,display:"flex",flexDirection:"column",gap:7,paddingTop:38}}>
@@ -1342,9 +1355,9 @@ export default function Dashboard() {
           ];
           const total = 45042818;
           return (
-            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',height:'100%',boxSizing:'border-box'}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',boxSizing:'border-box',height:'100%'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>💊 Inversión en Moléculas (YTD)</div>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Portafolio Investment</div>
                 <button onClick={()=>{const hi="Molecula,Monto,% Total\n"; const ri=molRows.map(r=>[r.mol,r.monto,r.pct+'%'].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
                 <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(total)}</div>
               </div>
@@ -1372,42 +1385,56 @@ export default function Dashboard() {
             </div>
           );
         })()}
-        {/* Pareto por Partner YTD */}
-        <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, height: "100%", boxSizing: "border-box" }}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:11,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:11,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div>
-          <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
-            <div style={{flex:1,minWidth:0}}>
-              {pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}
-              {pareto.slice(0,12).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
-                <div key={i} style={{marginBottom:isE?8:3}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-                    <div style={{width:100,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>15?p.partner.slice(0,15)+"…":p.partner}</div>
-                    <div style={{flex:1,height:12,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
-                    <div style={{width:52,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
-                  </div>
-                  {isE&&<div style={{marginLeft:14,borderLeft:"2px solid #E4E8F2",paddingLeft:5,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-                    <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"72%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:4}}>{F(val)}</span></div>
-                  ))}</div>}
-                </div>
-              );})}
+
+        {/* Expenses by Area de Trabajo */}
+        {(() => {
+          const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[3]));
+          const areaMap = {};
+          realOpex.forEach(r => {
+            const area = (r[10] && r[10] !== "--" && r[10] !== "—") ? r[10] : "Otros";
+            if (!areaMap[area]) areaMap[area] = 0;
+            areaMap[area] += r[9];
+          });
+          let areaRows = Object.entries(areaMap)
+            .map(([area, total]) => ({ area, total }))
+            .filter(r => r.total > 0)
+            .sort((a, b) => b.total - a.total);
+          const grandTotal = areaRows.reduce((s, r) => s + r.total, 0);
+          // Si no hay datos por AreaCode, mostrar estructura con áreas conocidas
+          if (areaRows.length === 0 || (areaRows.length === 1 && areaRows[0].area === "Otros")) {
+            areaRows = ["BD","CA","CO","DG","FI","GE","HR","MA","RE","RH","TA"].map(a => ({ area: a, total: 0 }));
+          }
+          return (
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B',boxSizing:'border-box',height:'100%'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Expenses by Area</div>
+                <button onClick={()=>{const he="Área de Trabajo,Monto,% Total\n"; const re2=areaRows.map(r=>[r.area,r.total.toFixed(2),(grandTotal>0?Math.round(r.total/grandTotal*100):0)+'%'].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="expenses_by_area.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div style={{fontSize:10,fontWeight:800,color:'#F59E0B'}}>TOTAL {F(grandTotal)}</div>
+              </div>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+                <thead><tr>
+                  {['Área de Trabajo','Monto','% Total'].map((h,i) => (
+                    <th key={i} style={{fontSize:8,color:'#8A90A8',fontWeight:600,padding:'3px 5px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {areaRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.total)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{grandTotal>0?Math.round(r.total/grandTotal*100):0}%</td>
+                    </tr>
+                  ))}
+                  <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                    <td style={{padding:'5px 5px'}}>TOTAL</td>
+                    <td style={{padding:'5px 5px',textAlign:'right'}}>{F(grandTotal)}</td>
+                    <td style={{padding:'5px 5px',textAlign:'right',color:'#534AB7'}}>100%</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div style={{flex:1,minWidth:0}}>
-              {paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}
-              {paretoMes.slice(0,12).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
-                <div key={"m"+i} style={{marginBottom:isE?8:3}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
-                    <div style={{width:100,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>15?p.partner.slice(0,15)+"…":p.partner}</div>
-                    <div style={{flex:1,height:12,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
-                    <div style={{width:52,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
-                  </div>
-                  {isE&&<div style={{marginLeft:14,borderLeft:"2px solid #E4E8F2",paddingLeft:5,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
-                    <div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"72%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:4}}>{F(val)}</span></div>
-                  ))}</div>}
-                </div>
-              );})}
-            </div>
-          </div>
-        </div>
+          );
+        })()}
 
       </div>
 
@@ -1422,14 +1449,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div style={{display:'flex',gap:16,marginBottom:16,alignItems:'flex-start'}}>
-        <div style={{flex:1,minWidth:0}}>
-      {/* ===== CAPITAL DE TRABAJO ===== */}
-      <div style={{margin:'24px 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>5</div>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CAPITAL DE TRABAJO</div>
+      {/* ===== ROW: WORKING CAPITAL | INVENTARIOS | CASH FLOW ===== */}
+      <div style={{display:'flex',gap:12,alignItems:'stretch',marginBottom:16}}>
+        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
+      {/* ===== WORKING CAPITAL ===== */}
+      <div style={{margin:'0 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>WORKING CAPITAL</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1.2fr',gap:12,marginBottom:16}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {/* DSO */}
         <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
           <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DSO</div>
@@ -1467,124 +1494,213 @@ export default function Dashboard() {
           <div style={{fontSize:11,fontWeight:700,color:'#FCA5A5'}}>▼ -15 días</div>
         </div>
       </div>
+
+        <div style={{background:'linear-gradient(90deg,#F59E0B,#D97706)',borderRadius:8,padding:'8px 14px',marginBottom:10,display:'flex',alignItems:'center',gap:8,border:'2px dashed #B45309'}}>
+          <span style={{fontSize:16}}>⚠️</span>
+          <div>
+            <div style={{fontWeight:700,color:'#fff',fontSize:10,letterSpacing:0.8}}>📦 PRÓXIMAMENTE — DATOS DUMMY DE PRUEBA</div>
+            <div style={{fontSize:9,color:'#FEF3C7'}}>La información de caducidad por lotes será real una vez conectada al ERP / WMS. Los datos mostrados son ilustrativos.</div>
+          </div>
         </div>
-        <div style={{flex:1,minWidth:0}}>
-      {/* ===== INVENTARIOS ===== */}
-      <div style={{margin:'24px 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>6</div>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
-      </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-        {/* KPIs Inventarios */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
-          {[
-            {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
-            {label:'Días de Inventario',     value:'523 días', bold:false},
-            {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
-            {label:'Días Cartera (DSO)',      value:'60 días',  bold:false},
-            {label:'Proveedores (AP)',        value:'$360,043', bold:false},
-            {label:'Días Proveedores (DPO)', value:'4 días',   bold:false},
-          ].map((k,i)=>(
-            <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<5?'1px solid #F0F2FA':'none'}}>
-              <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
-              <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
-            </div>
-          ))}
-        </div>
-        {/* Barra Valor por Componente */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
-          <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:12}}>Valor por Componente</div>
-          {[
-            {label:'Inventarios',       val:1412425},
-            {label:'Cuentas por Cobrar',val:449048},
-            {label:'Proveedores',       val:360043},
-          ].map((item,i)=>{
-            const maxV=1412425;
-            const w=item.val/maxV*100;
-            const colors=['#1a1a2e','#534AB7','#1D9E75'];
-            return(
-              <div key={i} style={{marginBottom:12}}>
-                <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-                  <span style={{fontSize:9,color:'#8A90A8'}}>{item.label}</span>
-                  <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{F(item.val)}</span>
-                </div>
-                <div style={{height:8,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
-                  <div style={{height:'100%',width:`${w}%`,background:colors[i],borderRadius:4}}/>
-                </div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+          <div>
+            <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:1}}>📦 Caducidad por Lotes · Shelf Life</div>
+            <div style={{fontSize:8,color:'#8A90A8'}}>Vida útil restante por lote · ⚠️ ≤12 meses = destrucción </div>
+          </div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'flex-end'}}>
+            {[['#FECACA','#991B1B','Destrucción (≤12m)'],['#FEF3C7','#92400E','Alerta (12-18m)'],['#D1FAE5','#065F46','OK (>18m)']].map(([bg,tc,l],i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:3,fontSize:8}}>
+                <span style={{width:10,height:10,background:bg,borderRadius:2,border:'1px solid '+tc,display:'inline-block'}}></span>
+                <span style={{color:tc,fontWeight:600}}>{l}</span>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        </div>
+        <div style={{overflowX:'auto'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+          <thead><tr style={{background:'#F8F9FE'}}>
+            {['Molécula','No. Lote','Uds','Fabricación','Caducidad','Días Rest.','Shelf Life','Estado'].map((h,i)=>(
+              <th key={i} style={{padding:'5px 7px',textAlign:i>2?'center':'left',color:'#8A90A8',fontWeight:600,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'}}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {[
+              {mol:'Hyaxum Pro',  lote:'HXP-2025-001', uds:1324, fab:'2024-06-08', fecha:'2027-06-08', sl:36, si:false},
+              {mol:'Hyaxum Pro',  lote:'HXP-2026-SI',  uds:75,   fab:'2024-12-08', fecha:'2027-12-08', sl:36, si:true, siDate:'08-Jun-2026'},
+            ].map((row,i)=>{
+              const totalDias = row.sl * 30;
+              const cad = new Date(row.fecha);
+              const hoy = new Date('2024-07-28');
+              const diasRest = Math.round((cad - hoy) / 86400000);
+              const pctRest = Math.max(0, Math.min(100, Math.round(diasRest / totalDias * 100)));
+              const mesesRest = Math.round(diasRest / 30);
+              const isDestruct = mesesRest <= 12;
+              const isAlerta   = !isDestruct && mesesRest <= 18;
+              const bg = isDestruct ? '#FECACA' : isAlerta ? '#FEF3C7' : '#D1FAE5';
+              const tc = isDestruct ? '#991B1B' : isAlerta ? '#92400E' : '#065F46';
+              const bc = isDestruct ? '#EF4444' : isAlerta ? '#F59E0B' : '#10B981';
+              const est = isDestruct ? '🔴 Destruir' : isAlerta ? '🟡 Alerta' : '🟢 OK';
+              const prevMols=['Hyaxum Pro','Hyaxum Pro'];
+              const isFirst = i===0 || row.mol !== prevMols[i-1];
+              const MCOLS={'Hyaxum Pro':'#534AB7'};
+              const mc = MCOLS[row.mol] || '#8A90A8';
+              const destructLinePct = Math.round(12 / row.sl * 100);
+              return(
+                <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2?'#FAFBFF':'#fff'}}>
+                  <td style={{padding:'5px 7px'}}>
+                    {isFirst && <span style={{background:mc+'18',color:mc,borderRadius:4,padding:'2px 7px',fontWeight:700,fontSize:8,whiteSpace:'nowrap'}}>{row.mol}</span>}
+                  </td>
+                  <td style={{padding:'5px 7px',fontFamily:'monospace',color:'#534AB7',fontSize:8,whiteSpace:'nowrap'}}>{row.lote}{row.si && <span style={{marginLeft:4,background:'#FEF3C7',color:'#92400E',borderRadius:3,padding:'1px 5px',fontSize:7,fontWeight:700}}>SI {row.siDate}</span>}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center',fontWeight:600,color:'#1a1a2e'}}>{row.uds.toLocaleString()}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center',color:'#B0B6C3',fontSize:8}}>{row.fab}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center',color:'#8A90A8',fontSize:8}}>{row.fecha}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center'}}>
+                    <span style={{background:bg,color:tc,borderRadius:4,padding:'2px 8px',fontWeight:700,whiteSpace:'nowrap'}}>{diasRest}d · {mesesRest}m</span>
+                  </td>
+                  <td style={{padding:'5px 10px',minWidth:140}}>
+                    <div style={{display:'flex',alignItems:'center',gap:5}}>
+                      <div style={{flex:1,height:10,background:'#F0F2FA',borderRadius:5,position:'relative',overflow:'visible'}}>
+                        <div style={{width:pctRest+'%',height:'100%',background:bc,borderRadius:5}} />
+                        <div style={{position:'absolute',top:-2,left:destructLinePct+'%',width:2,height:14,background:'#E24B4A',borderRadius:1,zIndex:2}} />
+                      </div>
+                      <span style={{fontSize:8,fontWeight:700,color:tc,minWidth:30,textAlign:'right'}}>{pctRest}%</span>
+                    </div>
+                    <div style={{fontSize:7,color:'#B0B6C3',marginTop:2,textAlign:'center'}}>{row.sl}m vida útil · línea roja=12m</div>
+                  </td>
+                  <td style={{padding:'5px 7px',textAlign:'center',fontSize:9,whiteSpace:'nowrap'}}>{est}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        </div>
+        <div style={{display:'flex',gap:12,marginTop:8,paddingTop:6,borderTop:'1px dashed #E4E8F2',fontSize:8,color:'#8A90A8',flexWrap:'wrap',alignItems:'center'}}>
+          <span>🔴 <b style={{color:'#991B1B'}}>Destrucción</b>: ≤12 meses restantes</span>
+          <span>🟡 <b style={{color:'#92400E'}}>Alerta</b>: 12–18 meses</span>
+          <span>🟢 <b style={{color:'#065F46'}}>OK</b>: &gt;18 meses</span>
+          <span style={{marginLeft:'auto',background:'#FEE2E2',color:'#991B1B',borderRadius:4,padding:'2px 8px',fontWeight:700}}>▎línea roja = límite destrucción (12m)</span>
         </div>
       </div>
+
         </div>
-        <div style={{flex:1,minWidth:0}}>
-      {/* ===== CASH FLOW WATERFALL ===== */}
-      <div style={{margin:'0 0 10px',borderTop:'2px solid #185FA5',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-        <div style={{background:'#1a1a2e',color:'#fff',fontWeight:800,fontSize:11,padding:'3px 10px',borderRadius:4,letterSpacing:0.5}}>7</div>
-        <div>
-          <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CASH FLOW</div>
-          <div style={{fontSize:9,color:'#8A90A8'}}>Montos en MXN</div>
+        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
+      {/* ===== INVENTARIOS ===== */}
+      <div style={{margin:'0 0 10px',borderTop:'2px solid #1D9E75',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>INVENTARIOS</div>
+      </div>
+      {/* KPIs Inventarios */}
+      <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',marginBottom:10}}>
+        {[
+          {label:'Valor Total Inventario', value:'$1.4 M',   bold:true},
+          {label:'Cuentas por Cobrar',     value:'$449,048', bold:false},
+          {label:'Proveedores (AP)',        value:'$360,043', bold:false},
+        ].map((k,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<2?'1px solid #F0F2FA':'none'}}>
+            <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
+            <div style={{fontSize:12,fontWeight:k.bold?800:600,color:k.bold?'#1a1a2e':'#534AB7'}}>{k.value}</div>
+          </div>
+        ))}
+      </div>
+      {/* Grafico Inventario por Molecula */}
+      <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px'}}>
+        <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:2}}>Inventario por Molécula</div>
+        <div style={{fontSize:9,fontWeight:500,color:'#8A90A8',marginBottom:14}}>Valor en MXN · YTD</div>
+        {[
+          {label:'Hyaxum',      val:1412425, active:true},
+          {label:'Euxara',      val:0,       active:false},
+          {label:'Bevaliax',    val:0,       active:false},
+        ].map((item,i)=>{
+          const maxV=1412425;
+          const w=item.active?(item.val/maxV*100):0;
+          const colors=['#1D9E75','#534AB7','#E24B4A'];
+          return(
+            <div key={i} style={{marginBottom:14}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                <span style={{fontSize:9,color: item.active?'#1a1a2e':'#B0B6C3',fontWeight:item.active?600:400}}>{item.label}</span>
+                <span style={{fontSize:10,fontWeight:700,color:item.active?colors[i]:'#B0B6C3'}}>
+                  {item.active?F(item.val):'--'}
+                </span>
+              </div>
+              <div style={{height:8,background:'#f0f2fa',borderRadius:4,overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${w}%`,background:colors[i],borderRadius:4,transition:'width 0.4s'}}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
         </div>
+        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
+      {/* ===== CASH FLOW ===== */}
+      <div style={{margin:'0 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CASH FLOW</div>
       </div>
       {(()=>{
-        if(!cashFlow) return null;
-        const cf = cashFlow;
-        const ytdRows = cf.months.slice(0,cm);
-        const salIni = ytdRows.length>0?ytdRows[0].saldoIni:0;
-        const opex   = ytdRows.reduce((s,r)=>s+(r.opex||0),0);
-        const capex  = ytdRows.reduce((s,r)=>s+(r.capex||0),0);
-        const capTrab= ytdRows.reduce((s,r)=>s+(r.capTrabajo||0),0);
-        const salFin = ytdRows.length>0?ytdRows[ytdRows.length-1].saldoFin:0;
-        const flujoNeto = salFin - salIni;
-        const entradas = ytdRows.reduce((s,r)=>s+Math.max(0,(r.entradas||0)),0);
-        const salidas  = ytdRows.reduce((s,r)=>s+Math.min(0,(r.salidas||-(Math.abs(opex)+Math.abs(capex)+Math.abs(capTrab)))),0);
-        const Fk = v => (v===0||v==null)?'—':(v<0?'-$':'$')+Math.abs(Math.round(v)).toLocaleString('en-US');
-        const bars = [
-          {label:'Saldo Inicial', val:salIni,  color:'#1E3A8A', type:'pos'},
-          {label:'OPEX',          val:opex,    color:'#E24B4A', type:'neg'},
-          {label:'CAPEX',         val:capex,   color:'#E24B4A', type:'neg'},
-          {label:'Cap. Trabajo',  val:capTrab, color:'#E24B4A', type:'neg'},
-          {label:'Saldo Final',   val:salFin,  color:salFin>=0?'#1D9E75':'#E24B4A', type:'final'},
+        const wData=[
+          {name:'Saldo Inicial', value:8529193,  type:'total',    color:'#1E3A8A'},
+          {name:'OPEX',          value:-2815546, type:'decrease', color:'#E24B4A'},
+          {name:'CAPEX',         value:-82862,   type:'decrease', color:'#E24B4A'},
+          {name:'Cap. Trabajo',  value:-945598,  type:'decrease', color:'#E24B4A'},
+          {name:'Saldo Final',   value:4685187,  type:'total',    color:'#1D9E75'},
         ];
-        const maxAbs = Math.max(...bars.map(b=>Math.abs(b.val)),1);
+        const F2=v=>{const a=Math.abs(v);return(v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a).toLocaleString('es-MX'));};
+        let running=0;
+        const bars=wData.map((d,i)=>{
+          if(d.type==='total'){const h=Math.abs(d.value);running=d.value;return{...d,base:0,h};}
+          const base=d.value<0?running+d.value:running;
+          const h=Math.abs(d.value);
+          running+=d.value;
+          return{...d,base,h};
+        });
+        const maxVal=Math.max(...bars.map(b=>b.base+b.h));
+        const CHART_H=180;
+        const toY=v=>(v/maxVal)*CHART_H;
+        const salidas=3844006, flujoNeto=-4690000;
         return(
-          <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px'}}>
-            <div style={{display:'flex',flexDirection:'column',gap:6}}>
-              {bars.map((b,i)=>{
-                const pct = Math.abs(b.val)/maxAbs*80;
-                return(
-                  <div key={i}>
-                    <div style={{display:'flex',justifyContent:'space-between',fontSize:9,color:'#8A90A8',marginBottom:2}}>
-                      <span>{b.label}</span>
-                      <span style={{fontWeight:700,color:b.val<0?'#E24B4A':b.val>0?'#1D9E75':'#8A90A8'}}>{Fk(b.val)}</span>
-                    </div>
-                    <div style={{height:20,background:'#F4F6FB',borderRadius:3,overflow:'hidden'}}>
-                      <div style={{height:'100%',width:`${pct}%`,background:b.color,borderRadius:3}}/>
-                    </div>
+          <div style={{display:'flex',flexDirection:'column',height:'100%',justifyContent:'space-between'}}>
+            <div style={{fontSize:9,color:'#8A90A8',marginBottom:4,fontWeight:500}}>Montos en MXN</div>
+            <div style={{display:'flex',gap:8,flex:1,alignItems:'flex-start'}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',gap:3,height:CHART_H,alignItems:'stretch'}}>
+                  {bars.map((b,i)=>{
+                    const topH  = CHART_H - toY(b.base+b.h);
+                    const barH  = toY(b.h);
+                    const botH  = toY(b.base);
+                    return(
+                      <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',position:'relative'}}>
+                        <div style={{height:topH,flexShrink:0}}/>
+                        <div style={{position:'absolute',top:topH<20?topH+3:Math.max(topH-16,0),fontSize:7,fontWeight:700,color:topH<20?'#fff':b.color,textAlign:'center',width:'120%',left:'-10%',whiteSpace:'nowrap',zIndex:2}}>
+                          {F2(b.value)}
+                        </div>
+                        <div style={{width:'75%',height:barH,background:b.color,borderRadius:'3px 3px 0 0',flexShrink:0}}/>
+                        <div style={{width:'75%',height:botH,background:'transparent',flexShrink:0}}/>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{display:'flex',gap:3,marginTop:4}}>
+                  {bars.map((b,i)=>(
+                    <div key={i} style={{flex:1,fontSize:6.5,color:'#8A90A8',textAlign:'center',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{b.name}</div>
+                  ))}
+                </div>
+              </div>
+              <div style={{width:88,flexShrink:0,display:'flex',flexDirection:'column',gap:5}}>
+                {[
+                  {label:'Entradas',   value:F2(0),         color:'#1D9E75',bg:'#F0FAF6'},
+                  {label:'Salidas',    value:F2(salidas),   color:'#E24B4A',bg:'#FEF2F2'},
+                  {label:'Flujo Neto', value:F2(flujoNeto), color:'#E24B4A',bg:'#FEF2F2'},
+                ].map((k,i)=>(
+                  <div key={i} style={{background:k.bg,borderRadius:7,padding:'5px 7px',borderLeft:'3px solid '+k.color}}>
+                    <div style={{fontSize:7,color:'#8A90A8',marginBottom:1}}>{k.label}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:k.color}}>{k.value}</div>
                   </div>
-                );
-              })}
-            </div>
-            <div style={{display:'flex',justifyContent:'space-between',marginTop:12,paddingTop:8,borderTop:'1px solid #F0F2FA',fontSize:9}}>
-              <div style={{textAlign:'center'}}>
-                <div style={{color:'#8A90A8',marginBottom:2}}>Entradas</div>
-                <div style={{fontWeight:700,color:'#1D9E75'}}>{Fk(entradas)}</div>
-              </div>
-              <div style={{textAlign:'center'}}>
-                <div style={{color:'#8A90A8',marginBottom:2}}>Salidas</div>
-                <div style={{fontWeight:700,color:'#E24B4A'}}>{Fk(salidas||-(Math.abs(opex)+Math.abs(capex)+Math.abs(capTrab)))}</div>
-              </div>
-              <div style={{textAlign:'center'}}>
-                <div style={{color:'#8A90A8',marginBottom:2}}>Flujo Neto</div>
-                <div style={{fontWeight:700,color:flujoNeto>=0?'#1D9E75':'#E24B4A'}}>{Fk(flujoNeto)}</div>
+                ))}
               </div>
             </div>
           </div>
         );
       })()}
-        </div>
       </div>
-
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
@@ -1639,13 +1755,120 @@ export default function Dashboard() {
 
 
 
+
+{/* */}
+{/* */}
+      {/* PIE CHARTS */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
+          <div key={pi} style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e", marginBottom: 4 }}>{p.title}</div>
+            <button onClick={()=>{const hp="Molecula,Gasto\n"; const rp=p.data.map(e=>e.name+","+e.value).join("\n"); const bp=new Blob([hp+rp],{type:"text/csv"}); const ap=document.createElement("a"); ap.href=URL.createObjectURL(bp); ap.download=(p.title||"pie")+".csv"; ap.click();}} style={{fontSize:9,padding:"3px 8px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer",marginLeft:8}}>⬇</button>
+            {p.data.length === 0 ? <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A90A8", fontSize: 10 }}>Sin gastos</div> :
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <ResponsiveContainer width="60%" height={220}><PieChart><Pie data={p.data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={renderLabel} labelLine={false}>{p.data.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={v => F(v)} contentStyle={{ fontSize: 9, borderRadius: 6 }} /></PieChart></ResponsiveContainer>
+                <div style={{ width: "40%", fontSize: 9 }}>{p.data.map((e, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 3 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} /><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span><span style={{ marginLeft: "auto", color: "#8A90A8", flexShrink: 0 }}>{F(e.value)}</span></div>)}</div>
+              </div>}
+          </div>
+        ))}
+      </div>
+{/* */}
+      {/* PARETO */}
+{/* */}
+      {/* AREA × MONTH TABLE */}
+      <div style={s.card}>
+        <div style={s.cardTitle}>Gasto Real por Molécula — Mensual</div>
+        <button onClick={()=>{const ha="Molecula," + ytdM.map(m=>MO[m-1]).join(",") + ",Total YTD\n"; const ra=areaTable.map(row=>[row.mol,...ytdM.map(m=>row.monthly[m]||0),row.total].join(",")).join("\n"); const ba=new Blob([ha+ra],{type:"text/csv"}); const aa=document.createElement("a"); aa.href=URL.createObjectURL(ba); aa.download="gasto_mensual_molecula.csv"; aa.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+        <div style={s.cardSub}>Molécula → Clasificación · Clic para expandir</div>
+        <table style={s.tbl}>
+          <thead><tr>
+            <th style={s.thL}>Molécula</th>
+            {ytdM.map(m => <th key={m} style={s.thR}>{MO[m - 1]}</th>)}
+            <th style={s.thTot}>Total YTD</th>
+          </tr></thead>
+          <tbody>
+            {areaTable.map((row, ri) => {
+              const isExp = expArea[row.mol];
+              const clsEntries = Object.entries(row.cls).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total));
+              const hasDrill = clsEntries.length > 0;
+              const trStyle = { cursor: hasDrill ? "pointer" : "default", background: ri % 2 ? "#fafbfe" : "transparent" };
+              const tdStyle = { ...s.td, fontWeight: 500, color: "#1a1a2e", position: "sticky", left: 0, background: ri % 2 ? "#fafbfe" : "#fff", fontSize: 10 };
+              const arrowStyle = { fontSize: 8, marginRight: 4 };
+              const dotStyle = { display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS[ri % COLORS.length], marginRight: 5, verticalAlign: "middle" };
+              const numTdStyle = (v) => ({ ...s.td, textAlign: "right", fontSize: 10, color: v < 0 ? "#E24B4A" : v === 0 ? "#ccc" : "#1a1a2e" });
+              const totTdStyle = { ...s.td, textAlign: "right", fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: row.total < 0 ? "#E24B4A" : "#1a1a2e" };
+              return (<>
+                <tr key={ri} style={trStyle} onClick={() => hasDrill && toggleArea(row.mol)}>
+                  <td style={tdStyle}>
+                    {hasDrill && <span style={arrowStyle}>{isExp ? "▼" : "▶"}</span>}
+                    <span style={dotStyle} />
+                    {row.mol}
+                  </td>
+                  {ytdM.map(m => <td key={m} style={numTdStyle(row.monthly[m] || 0)}>{(row.monthly[m] || 0) === 0 ? "—" : F(row.monthly[m])}</td>)}
+                  <td style={totTdStyle}>{F(row.total)}</td>
+                </tr>
+                {isExp && clsEntries.map(([cls, cData], ci) => (
+                  <tr key={`{row.mol}|{ci}`} style={{ background: "#f8f9fe" }}>
+                    <td style={{ ...s.td, paddingLeft: 48, fontSize: 8, color: "#534AB7", position: "sticky", left: 0, background: "#f8f9fe" }}>{cls}</td>
+                    {ytdM.map(m => <td key={m} style={{ ...s.td, textAlign: "right", fontSize: 8, color: (cData.monthly[m] || 0) < 0 ? "#E24B4A" : (cData.monthly[m] || 0) === 0 ? "#eee" : "#888" }}>{(cData.monthly[m] || 0) === 0 ? "" : F(cData.monthly[m])}</td>)}
+                    <td style={{ ...s.td, textAlign: "right", fontSize: 8, fontWeight: 500, borderLeft: "2px solid #E4E8F2", color: cData.total < 0 ? "#E24B4A" : "#534AB7" }}>{F(cData.total)}</td>
+                  </tr>
+                ))}
+              </>);
+            })}
+            <tr style={{ borderTop: "2px solid #E4E8F2", background: "#fafbfe" }}>
+              <td style={{ ...s.td, fontWeight: 600, color: "#1a1a2e", position: "sticky", left: 0, background: "#fafbfe" }}>Total</td>
+              {ytdM.map(m => { const t = areaTable.reduce((s, r) => s + (r.monthly[m] || 0), 0); return <td key={m} style={{ ...s.td, textAlign: "right", fontWeight: 500 }}>{F(t)}</td>; })}
+              <td style={{ ...s.td, textAlign: "right", fontWeight: 600, borderLeft: "2px solid #E4E8F2" }}>{F(areaTable.reduce((s, r) => s + r.total, 0))}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+{/* */}
+{/* */}
+{/* */}
+      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12 }}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><div style={{fontWeight:700,fontSize:13,color:"#1E2A3A"}}>Pareto por Partner — YTD {MO[cm-1]} 2026</div><div style={{fontWeight:700,fontSize:13,color:"#534AB7"}}>Pareto por Partner — {MO[cm-1]} 2026</div></div><div style={{display:"flex",gap:16,alignItems:"flex-start"}}><div style={{flex:1,minWidth:0}}>{pareto.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos YTD</div>}{pareto.slice(0,15).map((p,i)=>{const w=maxP?Math.abs(p.total)/maxP*100:0;const isE=expP[p.partner];return(
+<div key={i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#1D9E7566,#1D9E7522)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#1a1a2e",flexShrink:0}}>{F(p.total)}</div>
+{/* */}
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#1a1a2e",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div><div style={{flex:1,minWidth:0}}>{paretoMes.length===0&&<div style={{color:"#B0B6C3",fontSize:11}}>Sin gastos en {MO[cm-1]}</div>}{paretoMes.slice(0,15).map((p,i)=>{const w=maxPMes?Math.abs(p.total)/maxPMes*100:0;const isE=expP[p.partner];return(
+<div key={"m"+i} style={{marginBottom:isE?8:3}}>
+<div style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>toggleP(p.partner)}>
+<div style={{width:120,fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flexShrink:0}} title={p.partner}><span style={{fontSize:7,marginRight:3}}>{isE?"▼":"►"}</span>{p.partner.length>18?p.partner.slice(0,18)+"…":p.partner}</div>
+<div style={{flex:1,height:14,background:"#f0f2fa",borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${w}%`,background:p.total<0?"#FCEBEB":"linear-gradient(90deg,#534AB766,#534AB722)",borderRadius:3}}/></div>
+<div style={{width:58,textAlign:"right",fontSize:9,fontWeight:600,color:p.total<0?"#E24B4A":"#534AB7",flexShrink:0}}>{F(p.total)}</div>
+{/* */}
+</div>
+{isE&&<div style={{marginLeft:16,borderLeft:"2px solid #E4E8F2",paddingLeft:6,marginTop:2}}>{Object.entries(p.items).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([co,val],j)=>(
+<div key={j} style={{display:"flex",justifyContent:"space-between",padding:"1px 0",fontSize:8,color:"#666"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"75%"}}>{co}</span><span style={{fontWeight:500,color:val<0?"#E24B4A":"#534AB7",marginLeft:6}}>{F(val)}</span></div>
+))}</div>}
+</div>
+);})}</div></div>
+      </div>
+{/* */}
+
+
+
+
+
+
+        );
       })()}      </>
       }
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
           <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
-          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
           <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
@@ -1653,7 +1876,7 @@ export default function Dashboard() {
           {/* KPI cards */}
           {(()=>{
             const RATE=0.1151;
-            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':'forecast');
+            const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':yr===CUR_YEAR?'consolidado':'forecast');
             const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
             const inv=annualEBIT.filter(v=>v<0).reduce((s,v)=>s+v,0);
             const npv=annualEBIT.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
@@ -1730,7 +1953,7 @@ export default function Dashboard() {
                       <td style={tdLbl}>{PL_LABELS[k]}</td>
                       {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
                         const isExp = expPnlAnn[yr];
-                        const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "reales" : "forecast");
+                        const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "consolidado" : "forecast");
                         const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
                         const fyNs = allM.reduce((a,m)=>a+bpl(yr,m,modeForYr).ns,0);
                         const fyPct = isPct && fyNs ? allM.reduce((a,m)=>a+bpl(yr,m,modeForYr)[(k==="gmPct"?"gp":k.replace("Pct",""))],0)/fyNs : null;
@@ -1740,8 +1963,8 @@ export default function Dashboard() {
                               {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
-                              const mNum = Number(m); const isReal = view==="reales" || (view==="consolidado" && mNum <= cm);
-                              const mMode = isReal ? "reales" : "forecast"; const v = bpl(yr,m,mMode)[k];
+                              const mNum = Number(m); const mMode = view==="reales" ? "reales" : view==="forecast" ? "forecast" : "consolidado";
+                              const isReal = mMode==="consolidado" ? Number(m)<=cm : mMode==="reales"; const v = bpl(yr,m,mMode)[k];
                               const vNs = bpl(yr,m,mMode).ns;
                               const vPct = isPct && vNs ? bpl(yr,m,mMode)[(k==="gmPct"?"gp":k.replace("Pct",""))]/vNs : null;
                               return <td key={mi} style={{textAlign:"right",padding:"5px 6px",borderBottom:"1px solid #F0F2F8",fontWeight:isBold?600:400,color:k==="netProfit"?"#4C1D95":isReal?"#1E2A3A":"#A0A8B8",background:isReal?"transparent":"#FAFBFE"}}>{isPct ? P(v) : F(v)}</td>;
@@ -1776,6 +1999,301 @@ export default function Dashboard() {
         </div>
       )}
 {/* */}
+      {mainTab === "capex" && (
+        <div style={{padding:"20px"}}>
+          <div style={{maxWidth:520}}>
+          {(() => {
+            const capexRows = [
+              { cat: 'Licencias de Moléculas', monto: 37618124, pct: 87 },
+              { cat: 'Licencias de Software',  monto: 3711387,  pct: 9  },
+              { cat: 'COFEPRIS',               monto: 1650567,  pct: 4  },
+              { cat: 'Equipo de Computo',      monto: 353484,   pct: 1  },
+              { cat: 'Mobiliario y Equipo',    monto: 9036,     pct: 0  },
+            ];
+            const totalCapex = 43342597;
+            return (
+              <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                  <div style={{fontSize:12,fontWeight:700,color:'#1a1a2e'}}>CAPEX</div>
+                  <button onClick={()=>{const hc="Categoria,Monto,% Total\n"; const rc=capexRows.map(r=>[r.cat,r.monto,r.pct+'%'].join(",")).join("\n"); const bc=new Blob([hc+rc],{type:"text/csv"}); const ac=document.createElement("a"); ac.href=URL.createObjectURL(bc); ac.download="capex_categoria.csv"; ac.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                  <div style={{fontSize:12,fontWeight:800,color:'#534AB7'}}>TOTAL {F(totalCapex)}</div>
+                </div>
+                <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+                  <thead><tr>
+                    {['Categoría','Monto','% Total'].map((h,i) => (
+                      <th key={i} style={{fontSize:10,color:'#8A90A8',fontWeight:600,padding:'5px 8px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody>
+                    {capexRows.map((r,i) => (
+                      <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                        <td style={{padding:'6px 8px'}}>{r.cat}</td>
+                        <td style={{padding:'6px 8px',textAlign:'right',fontWeight:600}}>{F(r.monto)}</td>
+                        <td style={{padding:'6px 8px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pct}%</td>
+                      </tr>
+                    ))}
+                    <tr style={{background:'#f0f2fa',fontWeight:700}}>
+                      <td style={{padding:'7px 8px'}}>TOTAL</td>
+                      <td style={{padding:'7px 8px',textAlign:'right'}}>{F(totalCapex)}</td>
+                      <td style={{padding:'7px 8px',textAlign:'right',color:'#534AB7'}}>100%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
+          </div>
+        </div>
+      )}
+      {mainTab === "ventas" && (
+        <div style={{fontFamily:"'DM Mono','Consolas',monospace"}}>
+{/* DUMMY BANNER */}
+          <div style={{background:"linear-gradient(90deg,#F59E0B,#D97706)",borderRadius:8,padding:"10px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:10,border:"2px dashed #B45309"}}>
+            <span style={{fontSize:20}}>⚠️</span>
+            <div>
+              <div style={{fontWeight:700,color:"#fff",fontSize:12,letterSpacing:1}}>VERSIÓN DEMO — NÚMEROS DUMMY DE PRUEBA</div>
+              <div style={{fontSize:10,color:"#FEF3C7"}}>Los datos mostrados en esta pestaña son ilustrativos. No representan cifras reales de la compañía.</div>
+            </div>
+          </div>
+{/* HEADER */}
+          <div style={{background:"linear-gradient(135deg,#1a1a3e 0%,#312e81 50%,#7c3aed 100%)",borderRadius:12,padding:"20px 24px",marginBottom:16,display:"flex",alignItems:"center",gap:16}}>
+            <div style={{background:"rgba(255,255,255,0.15)",borderRadius:10,padding:"10px 14px",fontSize:28}}>📦</div>
+            <div>
+              <div style={{fontSize:18,fontWeight:700,color:"#fff",letterSpacing:0.5}}>Sell-In / Sell-Out — Propuesta Visual · Junio 2026</div>
+              <div style={{fontSize:10,color:"#C4B5FD",marginTop:3}}>Sin comparativa Forecast · Gradiente de Devoluciones % · Por molécula y canal</div>
+            </div>
+          </div>
+{/* KPI STRIP */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:16}}>
+            {[
+              {label:"SELL-IN YTD",value:"$42.3M",sub:"vs Budget $40.1M ↑+5.5%",tc:"#1D9E75",bc:"#D4F0E6",lc:"#085041"},
+              {label:"SELL-OUT YTD",value:"$38.1M",sub:"vs Budget $39.0M ↓-2.3%",tc:"#1D9E75",bc:"#D4F0E6",lc:"#085041"},
+              {label:"NET SALES YTD",value:"$36.5M",sub:"Sell-Out – Devoluciones",tc:"#185FA5",bc:"#DBEAFE",lc:"#1E3A8A"},
+              {label:"DEVOLUCIONES YTD",value:"$1.6M",sub:"4.2% del Sell-Out",tc:"#B45309",bc:"#FEF3C7",lc:"#92400E"},
+              {label:"GAP SELL-IN VS OUT",value:"$4.2M",sub:"Inventario en canal",tc:"#E24B4A",bc:"#FEE2E2",lc:"#991B1B"},
+            ].map((k,i)=>(
+              <div key={i} style={{background:"#fff",border:`2px solid ${k.bc}`,borderRadius:10,padding:"14px 16px"}}>
+                <div style={{fontSize:9,color:"#8A90A8",fontWeight:600,letterSpacing:1,textTransform:"uppercase",marginBottom:4}}>{k.label}</div>
+                <div style={{fontSize:22,fontWeight:700,color:k.tc}}>{k.value}</div>
+                <div style={{fontSize:9,marginTop:4,color:k.lc}}>{k.sub}</div>
+              </div>
+            ))}
+          </div>
+{/* MIDDLE ROW */}
+          <div style={{display:"grid",gridTemplateColumns:"3fr 2fr",gap:12,marginBottom:16}}>
+{/* COMPOSED CHART */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px"}}>
+              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:2}}>Sell-In vs Sell-Out — Mensual (M MXN)</div>
+              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Solo meses reales · Gradiente = % devoluciones · Línea naranja = % Dev mensual</div>
+              <ResponsiveContainer width="100%" height={220}>
+                <ComposedChart data={[
+                  {m:"Ene",SI:8.1,SO:7.5,Dev:8.1},
+                  {m:"Feb",SI:7.8,SO:7.4,Dev:5.3},
+                  {m:"Mar",SI:6.9,SO:6.4,Dev:7.2},
+                  {m:"Abr",SI:9.2,SO:8.5,Dev:7.6},
+                  {m:"May",SI:5.3,SO:4.9,Dev:7.5},
+                  {m:"Jun",SI:5.0,SO:3.4,Dev:6.9},
+                ]} margin={{top:16,right:20,left:0,bottom:0}}>
+                  <XAxis dataKey="m" tick={{fontSize:9}} />
+                  <YAxis yAxisId="left" tick={{fontSize:9}} />
+                  <YAxis yAxisId="right" orientation="right" tick={{fontSize:9}} unit="%" domain={[0,15]} />
+                  <Tooltip />
+                  <Bar yAxisId="left" dataKey="SI" name="Sell-In Real" fill="#312e81" radius={[3,3,0,0]} maxBarSize={28} />
+                  <Bar yAxisId="left" dataKey="SO" name="Sell-Out Real" fill="#7c3aed" opacity={0.7} radius={[3,3,0,0]} maxBarSize={28} />
+                  <Line yAxisId="right" type="monotone" dataKey="Dev" name="% Devoluciones" stroke="#F97316" strokeWidth={2} dot={{r:4,fill:"#F97316"}} />
+                </ComposedChart>
+              </ResponsiveContainer>
+              <div style={{display:"flex",gap:14,marginTop:8,flexWrap:"wrap"}}>
+                {[["#312e81","Sell-In Real"],["#7c3aed","Sell-Out Real"],["#F97316","% Devoluciones"],["#bbf7d0","Gradiente Dev"]].map(([c,l],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:5,fontSize:9,color:"#555"}}>
+                    <span style={{width:12,height:i<2?12:4,background:c,borderRadius:i<2?2:2,display:"inline-block"}}></span>{l}
+                  </div>
+                ))}
+              </div>
+            </div>
+{/* CUMPLIMIENTO GAUGES */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                <span style={{color:"#E24B4A",fontSize:14}}>🎯</span>
+                <span style={{fontSize:11,fontWeight:600,color:"#1a1a2e"}}>Cumplimiento vs Budget</span>
+              </div>
+              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Sell-In y Sell-Out por molécula · YTD Jun 2026</div>
+              {[
+                {mol:"Bevacizumab",si:105,so:97,siV:"+5.5%",soV:"-2.3%",siC:"#185FA5",soC:"#E24B4A"},
+                {mol:"Corelis",si:98,so:103,siV:"-2.1%",soV:"+3.1%",siC:"#E24B4A",soC:"#1D9E75"},
+                {mol:"Euxara",si:102,so:98,siV:"+1.5%",soV:"-1.2%",siC:"#185FA5",soC:"#E24B4A"},
+                {mol:"Hyaxum",si:103,so:101,siV:"+3.0%",soV:"+1.0%",siC:"#1D9E75",soC:"#1D9E75"},
+                {mol:"Certolizumab",si:95,so:96,siV:"-5.0%",soV:"-4.0%",siC:"#E24B4A",soC:"#E24B4A"},
+              ].map((row,i)=>{
+                const SvgGauge=({pct,color,label})=>{
+                  const r=22,circ=2*Math.PI*r;
+                  const fill=Math.min(pct,100)/100*circ;
+                  return(
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                      <svg width={54} height={54} viewBox="0 0 54 54">
+                        <circle cx={27} cy={27} r={r} fill="none" stroke="#E4E8F2" strokeWidth={5}/>
+                        <circle cx={27} cy={27} r={r} fill="none" stroke={color} strokeWidth={5}
+                          strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
+                          transform="rotate(-90 27 27)"/>
+                        <text x={27} y={31} textAnchor="middle" fontSize={11} fontWeight={700} fill={color}>{pct}%</text>
+                      </svg>
+                      <span style={{fontSize:8,color:color,fontWeight:600}}>{label}</span>
+                    </div>
+                  );
+                };
+                return(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<4?"1px solid #F0F2FA":"none"}}>
+                    <SvgGauge pct={row.si} color={row.siC} label={`SI ${row.siV}`}/>
+                    <SvgGauge pct={row.so} color={row.soC} label={`SO ${row.soV}`}/>
+                    <div>
+                      <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>{row.mol}</div>
+                      <div style={{fontSize:8,color:row.siC}}>▲ SI {row.siV}</div>
+                      <div style={{fontSize:8,color:row.soC}}>▲ SO {row.soV}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+{/* BOTTOM ROW */}
+          <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1.2fr",gap:12,marginBottom:16}}>
+{/* TABLA SI vs SO */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>Sell-In vs Sell-Out por Molécula — YTD Junio 2026</div>
+                <button style={{fontSize:8,padding:"3px 8px",background:"#534AB7",color:"#fff",border:"none",borderRadius:4,cursor:"pointer"}}>⬇ CSV</button>
+              </div>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
+                <thead><tr style={{background:"#F8F9FE"}}>
+                  {["Molécula","Sell-In","SO","Dev%","Gap Canal"].map((h,i)=>(
+                    <th key={i} style={{padding:"5px 6px",textAlign:i===0?"left":"right",color:"#8A90A8",fontWeight:600,borderBottom:"2px solid #E4E8F2"}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {[
+                    ["Bevacizumab","$8.4M","$7.7M","8.1%","$0.7M"],
+                    ["Corelis","$7.1M","$6.7M","5.3%","$0.4M"],
+                    ["Euxara","$6.5M","$6.2M","4.8%","$0.3M"],
+                    ["Hyaxum","$4.2M","$4.1M","2.1%","$0.1M"],
+                    ["Certolizumab","$5.8M","$5.4M","7.4%","$0.4M"],
+                    ["Bevalyax","$5.2M","$5.1M","1.9%","$0.1M"],
+                    ["Saytelya","$5.1M","$2.9M","3.2%","$0.2M"],
+                  ].map((row,i)=>{
+                    const devPct=parseFloat(row[3]);
+                    const devC=devPct>=5?"#E24B4A":devPct>=3?"#D97706":"#1D9E75";
+                    return(
+                      <tr key={i} style={{borderBottom:"1px solid #F0F2FA",background:i%2?"#FAFBFF":"#fff"}}>
+                        <td style={{padding:"5px 6px",color:"#1a1a2e",fontWeight:500}}>{row[0]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:"#185FA5",fontWeight:600}}>{row[1]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:"#534AB7",fontWeight:600}}>{row[2]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:devC,fontWeight:700}}>{row[3]}</td>
+                        <td style={{padding:"5px 6px",textAlign:"right",color:"#E24B4A",fontWeight:600}}>{row[4]}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr style={{background:"#EDE9FE",fontWeight:700,borderTop:"2px solid #534AB7"}}>
+                    {["TOTAL","$42.3M","$38.1M","4.2%","$2.2M"].map((v,i)=>(
+                      <td key={i} style={{padding:"6px 6px",textAlign:i===0?"left":"right",color:"#312e81",fontWeight:700}}>{v}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+{/* DEVOLUCIONES % LIST */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>Devoluciones % por Molécula</div>
+                <div style={{display:"flex",gap:0,borderRadius:5,border:"1px solid #E4E8F2",overflow:"hidden"}}>
+                  {["YTD","Jun"].map((t,i)=>(
+                    <span key={i} style={{padding:"2px 8px",fontSize:8,background:i===0?"#534AB7":"#fff",color:i===0?"#fff":"#8A90A8",cursor:"pointer"}}>{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div style={{height:8,borderRadius:4,background:"linear-gradient(90deg,#1D9E75,#D97706,#E24B4A)",marginBottom:8,position:"relative"}}>
+                <span style={{position:"absolute",left:"60%",top:-12,fontSize:7,color:"#D97706"}}>Alerta 5%</span>
+                <span style={{position:"absolute",right:0,top:-12,fontSize:7,color:"#E24B4A"}}>Alto ≥5%</span>
+              </div>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
+                <thead><tr>
+                  {["Molécula","Dev%","Trend"].map((h,i)=>(
+                    <th key={i} style={{padding:"4px 4px",textAlign:i===0?"left":"center",color:"#8A90A8",fontWeight:600,borderBottom:"1px solid #E4E8F2"}}>{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {[
+                    ["Bevacizumab",8.1,"↑"],
+                    ["Corelis",5.3,"→"],
+                    ["Euxara",4.8,"↓"],
+                    ["Hyaxum",2.1,"↓"],
+                    ["Certolizumab",7.4,"↑"],
+                    ["Bevalyax",1.9,"↓"],
+                    ["Saytelya",3.2,"→"],
+                  ].map(([mol,dev,trend],i)=>{
+                    const c=dev>=5?"#E24B4A":dev>=3?"#D97706":"#1D9E75";
+                    const tc=trend==="↑"?"#E24B4A":trend==="↓"?"#1D9E75":"#8A90A8";
+                    return(
+                      <tr key={i} style={{borderBottom:"1px solid #F0F2FA"}}>
+                        <td style={{padding:"5px 4px",color:"#1a1a2e"}}>{mol}</td>
+                        <td style={{padding:"5px 4px",textAlign:"center"}}>
+                          <span style={{background:c+"22",color:c,borderRadius:4,padding:"2px 7px",fontWeight:700}}>{dev}%</span>
+                        </td>
+                        <td style={{padding:"5px 4px",textAlign:"center",color:tc,fontSize:14,fontWeight:700}}>{trend}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+                {[["#E24B4A","≥5% crítico"],["#D97706","3-5% alerta"],["#1D9E75","<3% normal"]].map(([c,l],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8,color:"#555"}}>
+                    <span style={{width:8,height:8,background:c,borderRadius:50,display:"inline-block"}}></span>{l}
+                  </div>
+                ))}
+              </div>
+            </div>
+{/* HEATMAP DEVOLUCIONES */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e",marginBottom:8}}>Heatmap Devoluciones % — Mes × Molécula</div>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
+                <thead><tr style={{background:"#F8F9FE"}}>
+                  <th style={{padding:"4px 5px",textAlign:"left",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Mol</th>
+                  {["Ene","Feb","Mar","Abr","May","Jun"].map((m,i)=>(
+                    <th key={i} style={{padding:"4px 5px",textAlign:"center",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>{m}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {[
+                    {mol:"Beva",vals:[7.9,8.1,7.2,8.5,8.8,6.9]},
+                    {mol:"Corel",vals:[5.1,5.4,4.6,5.0,5.2,5.7]},
+                    {mol:"Euxara",vals:[4.5,4.8,4.3,5.1,4.7,4.8]},
+                    {mol:"Cert",vals:[7.1,7.5,6.9,8.2,7.8,6.8]},
+                    {mol:"Hyaxum",vals:[2.0,2.3,1.9,2.2,2.1,2.4]},
+                  ].map((row,i)=>(
+                    <tr key={i} style={{borderBottom:"1px solid #F0F2FA"}}>
+                      <td style={{padding:"5px 5px",color:"#1a1a2e",fontWeight:600}}>{row.mol}</td>
+                      {row.vals.map((v,j)=>{
+                        const bg=v>=5?"#FECACA":v>=3?"#FEF3C7":"#D1FAE5";
+                        const tc=v>=5?"#991B1B":v>=3?"#92400E":"#065F46";
+                        return(
+                          <td key={j} style={{padding:"5px 5px",textAlign:"center",background:bg,color:tc,fontWeight:600,borderRadius:3}}>{v}%</td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{display:"flex",gap:8,marginTop:8}}>
+                {[["#D1FAE5","#065F46","<3%"],["#FEF3C7","#92400E","3-5%"],["#FECACA","#991B1B",">5%"]].map(([bg,tc,l],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8}}>
+                    <span style={{width:14,height:10,background:bg,borderRadius:2,display:"inline-block",border:`1px solid ${tc}`}}></span>
+                    <span style={{color:tc}}>{l}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
     </div>
   );
