@@ -1693,7 +1693,6 @@ export default function Dashboard() {
           <span style={{marginLeft:'auto',background:'#FEE2E2',color:'#991B1B',borderRadius:4,padding:'2px 8px',fontWeight:700}}>▎línea roja = límite destrucción (12m)</span>
         </div>
       </div>
-      </div>
 
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
