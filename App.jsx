@@ -1482,6 +1482,95 @@ export default function Dashboard() {
         </div>
       </div>
 
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+          <div>
+            <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:1}}>📦 Caducidad por Lotes · Shelf Life</div>
+            <div style={{fontSize:8,color:'#8A90A8'}}>Vida útil restante por lote · ⚠️ ≤12 meses = destrucción</div>
+          </div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'flex-end'}}>
+            {[['#FECACA','#991B1B','Destrucción (≤12m)'],['#FEF3C7','#92400E','Alerta (12-18m)'],['#D1FAE5','#065F46','OK (>18m)']].map(([bg,tc,l],i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:3,fontSize:8}}>
+                <span style={{width:10,height:10,background:bg,borderRadius:2,border:'1px solid '+tc,display:'inline-block'}}></span>
+                <span style={{color:tc,fontWeight:600}}>{l}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{overflowX:'auto'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+          <thead><tr style={{background:'#F8F9FE'}}>
+            {['Molécula','No. Lote','Uds','Fabricación','Caducidad','Días Rest.','Shelf Life','Estado'].map((h,i)=>(
+              <th key={i} style={{padding:'5px 7px',textAlign:i>2?'center':'left',color:'#8A90A8',fontWeight:600,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'}}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {[
+              {mol:'Hyaxum Pro',  lote:'HXP-2025-001', uds:1325, fab:'2024-06-08', fecha:'2027-06-08', sl:36, si:false},
+              {mol:'Hyaxum Pro',  lote:'HXP-2026-SI',  uds:75,   fab:'2024-12-08', fecha:'2027-12-08', sl:36, si:true,  siDate:'08-Jun-2026'},
+              {mol:'Bevacizumab',  lote:'BV-2024-003', uds:420,  fab:'2022-09-30', fecha:'2025-09-30', sl:36},
+              {mol:'Bevacizumab',  lote:'BV-2024-004', uds:310,  fab:'2023-01-15', fecha:'2026-01-15', sl:36},
+              {mol:'Bevacizumab',  lote:'BV-2025-001', uds:900,  fab:'2024-08-22', fecha:'2026-08-22', sl:24},
+              {mol:'Euxara',       lote:'EX-2024-002', uds:180,  fab:'2023-11-05', fecha:'2025-11-05', sl:24},
+              {mol:'Euxara',       lote:'EX-2025-001', uds:540,  fab:'2024-06-30', fecha:'2026-06-30', sl:24},
+              {mol:'Certolizumab', lote:'CT-2024-001', uds:95,   fab:'2023-10-01', fecha:'2025-10-01', sl:24},
+              {mol:'Certolizumab', lote:'CT-2025-001', uds:280,  fab:'2024-04-18', fecha:'2026-04-18', sl:24},
+              {mol:'Bevalyax',     lote:'BL-2025-001', uds:620,  fab:'2024-09-10', fecha:'2027-09-10', sl:36},
+              {mol:'Saytelya',     lote:'SY-2025-001', uds:440,  fab:'2024-07-15', fecha:'2026-07-15', sl:24},
+            ].map((row,i)=>{
+              const totalDias = row.sl * 30;
+              const cad = new Date(row.fecha);
+              const hoy = new Date('2024-07-28');
+              const diasRest = Math.round((cad - hoy) / 86400000);
+              const pctRest = Math.max(0, Math.min(100, Math.round(diasRest / totalDias * 100)));
+              const mesesRest = Math.round(diasRest / 30);
+              const isDestruct = mesesRest <= 12;
+              const isAlerta   = !isDestruct && mesesRest <= 18;
+              const bg = isDestruct ? '#FECACA' : isAlerta ? '#FEF3C7' : '#D1FAE5';
+              const tc = isDestruct ? '#991B1B' : isAlerta ? '#92400E' : '#065F46';
+              const bc = isDestruct ? '#EF4444' : isAlerta ? '#F59E0B' : '#10B981';
+              const est = isDestruct ? '🔴 Destruir' : isAlerta ? '🟡 Alerta' : '🟢 OK';
+              const prevMols=['Hyaxum Pro','Hyaxum Pro','Bevacizumab','Bevacizumab','Bevacizumab','Euxara','Euxara','Certolizumab','Certolizumab','Bevalyax','Saytelya'];
+              const isFirst = i===0 || row.mol !== prevMols[i-1];
+              const MCOLS={'Hyaxum Pro':'#534AB7','Hyaxum':'#534AB7','Bevacizumab':'#185FA5','Euxara':'#1D9E75','Certolizumab':'#D97706','Bevalyax':'#E24B4A','Saytelya':'#7C3AED'};
+              const mc = MCOLS[row.mol] || '#8A90A8';
+              const destructLinePct = Math.round(12 / row.sl * 100);
+              return(
+                <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2?'#FAFBFF':'#fff'}}>
+                  <td style={{padding:'5px 7px'}}>
+                    {isFirst && <span style={{background:mc+'18',color:mc,borderRadius:4,padding:'2px 7px',fontWeight:700,fontSize:8,whiteSpace:'nowrap'}}>{row.mol}</span>}
+                  </td>
+                  <td style={{padding:'5px 7px',fontFamily:'monospace',color:'#534AB7',fontSize:8,whiteSpace:'nowrap'}}>{row.lote}{row.si && <span style={{marginLeft:4,background:'#FEF3C7',color:'#92400E',borderRadius:3,padding:'1px 5px',fontSize:7,fontWeight:700}}>SI ▪ {row.siDate}</span>}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center',fontWeight:600,color:'#1a1a2e'}}>{row.uds.toLocaleString()}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center',color:'#B0B6C3',fontSize:8}}>{row.fab}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center',color:'#8A90A8',fontSize:8}}>{row.fecha}</td>
+                  <td style={{padding:'5px 7px',textAlign:'center'}}>
+                    <span style={{background:bg,color:tc,borderRadius:4,padding:'2px 8px',fontWeight:700,whiteSpace:'nowrap'}}>{diasRest}d · {mesesRest}m</span>
+                  </td>
+                  <td style={{padding:'5px 10px',minWidth:140}}>
+                    <div style={{display:'flex',alignItems:'center',gap:5}}>
+                      <div style={{flex:1,height:10,background:'#F0F2FA',borderRadius:5,position:'relative',overflow:'visible'}}>
+                        <div style={{width:pctRest+'%',height:'100%',background:bc,borderRadius:5}} />
+                        <div style={{position:'absolute',top:-2,left:destructLinePct+'%',width:2,height:14,background:'#E24B4A',borderRadius:1,zIndex:2}} />
+                      </div>
+                      <span style={{fontSize:8,fontWeight:700,color:tc,minWidth:30,textAlign:'right'}}>{pctRest}%</span>
+                    </div>
+                    <div style={{fontSize:7,color:'#B0B6C3',marginTop:2,textAlign:'center'}}>{row.sl}m vida útil · línea roja=12m</div>
+                  </td>
+                  <td style={{padding:'5px 7px',textAlign:'center',fontSize:9,whiteSpace:'nowrap'}}>{est}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        </div>
+        <div style={{display:'flex',gap:12,marginTop:8,paddingTop:6,borderTop:'1px dashed #E4E8F2',fontSize:8,color:'#8A90A8',flexWrap:'wrap',alignItems:'center'}}>
+          <span>🔴 <b style={{color:'#991B1B'}}>Destrucción</b>: ≤12 meses restantes</span>
+          <span>🟡 <b style={{color:'#92400E'}}>Alerta</b>: 12–18 meses</span>
+          <span>🟢 <b style={{color:'#065F46'}}>OK</b>: &gt;18 meses</span>
+          <span style={{marginLeft:'auto',background:'#FEE2E2',color:'#991B1B',borderRadius:4,padding:'2px 8px',fontWeight:700}}>▎línea roja = límite destrucción (12m)</span>
+        </div>
+      </div>
+
         </div>
         <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== INVENTARIOS ===== */}
@@ -1602,98 +1691,6 @@ export default function Dashboard() {
       })()}
         </div>
       </div>
-      {/* ===== CADUCIDAD POR LOTES ===== */}
-      <div style={{width:'100%',background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 20px',marginBottom:16}}>
-<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          <div>
-            <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:1}}>📦 Caducidad por Lotes · Shelf Life</div>
-            <div style={{fontSize:8,color:'#8A90A8'}}>Vida útil restante por lote · ⚠️ ≤12 meses = destrucción · Datos dummy</div>
-          </div>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'flex-end'}}>
-            {[['#FECACA','#991B1B','Destrucción (≤12m)'],['#FEF3C7','#92400E','Alerta (12-18m)'],['#D1FAE5','#065F46','OK (>18m)']].map(([bg,tc,l],i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:3,fontSize:8}}>
-                <span style={{width:10,height:10,background:bg,borderRadius:2,border:'1px solid '+tc,display:'inline-block'}}></span>
-                <span style={{color:tc,fontWeight:600}}>{l}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{overflowX:'auto'}}>
-        <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-          <thead><tr style={{background:'#F8F9FE'}}>
-            {['Molécula','No. Lote','Uds','Fabricación','Caducidad','Días Rest.','Shelf Life','Estado'].map((h,i)=>(
-              <th key={i} style={{padding:'5px 7px',textAlign:i>2?'center':'left',color:'#8A90A8',fontWeight:600,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'}}>{h}</th>
-            ))}
-          </tr></thead>
-          <tbody>
-            {[
-              {mol:'Hyaxum',       lote:'HX-2024-001', uds:1200, fab:'2022-10-15', fecha:'2025-10-15', sl:36},
-              {mol:'Hyaxum',       lote:'HX-2024-002', uds:850,  fab:'2023-03-20', fecha:'2026-03-20', sl:36},
-              {mol:'Hyaxum',       lote:'HX-2025-001', uds:2100, fab:'2023-11-08', fecha:'2026-11-08', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2024-003', uds:420,  fab:'2022-09-30', fecha:'2025-09-30', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2024-004', uds:310,  fab:'2023-01-15', fecha:'2026-01-15', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2025-001', uds:900,  fab:'2024-08-22', fecha:'2026-08-22', sl:24},
-              {mol:'Euxara',       lote:'EX-2024-002', uds:180,  fab:'2023-11-05', fecha:'2025-11-05', sl:24},
-              {mol:'Euxara',       lote:'EX-2025-001', uds:540,  fab:'2024-06-30', fecha:'2026-06-30', sl:24},
-              {mol:'Certolizumab', lote:'CT-2024-001', uds:95,   fab:'2023-10-01', fecha:'2025-10-01', sl:24},
-              {mol:'Certolizumab', lote:'CT-2025-001', uds:280,  fab:'2024-04-18', fecha:'2026-04-18', sl:24},
-              {mol:'Bevalyax',     lote:'BL-2025-001', uds:620,  fab:'2024-09-10', fecha:'2027-09-10', sl:36},
-              {mol:'Saytelya',     lote:'SY-2025-001', uds:440,  fab:'2024-07-15', fecha:'2026-07-15', sl:24},
-            ].map((row,i)=>{
-              const totalDias = row.sl * 30;
-              const cad = new Date(row.fecha);
-              const hoy = new Date('2024-07-28');
-              const diasRest = Math.round((cad - hoy) / 86400000);
-              const pctRest = Math.max(0, Math.min(100, Math.round(diasRest / totalDias * 100)));
-              const mesesRest = Math.round(diasRest / 30);
-              const isDestruct = mesesRest <= 12;
-              const isAlerta   = !isDestruct && mesesRest <= 18;
-              const bg = isDestruct ? '#FECACA' : isAlerta ? '#FEF3C7' : '#D1FAE5';
-              const tc = isDestruct ? '#991B1B' : isAlerta ? '#92400E' : '#065F46';
-              const bc = isDestruct ? '#EF4444' : isAlerta ? '#F59E0B' : '#10B981';
-              const est = isDestruct ? '🔴 Destruir' : isAlerta ? '🟡 Alerta' : '🟢 OK';
-              const prevMols=['Hyaxum','Hyaxum','Hyaxum','Bevacizumab','Bevacizumab','Bevacizumab','Euxara','Euxara','Certolizumab','Certolizumab','Bevalyax','Saytelya'];
-              const isFirst = i===0 || row.mol !== prevMols[i-1];
-              const MCOLS={'Hyaxum':'#534AB7','Bevacizumab':'#185FA5','Euxara':'#1D9E75','Certolizumab':'#D97706','Bevalyax':'#E24B4A','Saytelya':'#7C3AED'};
-              const mc = MCOLS[row.mol] || '#8A90A8';
-              const destructLinePct = Math.round(12 / row.sl * 100);
-              return(
-                <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2?'#FAFBFF':'#fff'}}>
-                  <td style={{padding:'5px 7px'}}>
-                    {isFirst && <span style={{background:mc+'18',color:mc,borderRadius:4,padding:'2px 7px',fontWeight:700,fontSize:8,whiteSpace:'nowrap'}}>{row.mol}</span>}
-                  </td>
-                  <td style={{padding:'5px 7px',fontFamily:'monospace',color:'#534AB7',fontSize:8,whiteSpace:'nowrap'}}>{row.lote}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center',fontWeight:600,color:'#1a1a2e'}}>{row.uds.toLocaleString()}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center',color:'#B0B6C3',fontSize:8}}>{row.fab}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center',color:'#8A90A8',fontSize:8}}>{row.fecha}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center'}}>
-                    <span style={{background:bg,color:tc,borderRadius:4,padding:'2px 8px',fontWeight:700,whiteSpace:'nowrap'}}>{diasRest}d · {mesesRest}m</span>
-                  </td>
-                  <td style={{padding:'5px 10px',minWidth:140}}>
-                    <div style={{display:'flex',alignItems:'center',gap:5}}>
-                      <div style={{flex:1,height:10,background:'#F0F2FA',borderRadius:5,position:'relative',overflow:'visible'}}>
-                        <div style={{width:pctRest+'%',height:'100%',background:bc,borderRadius:5}} />
-                        <div style={{position:'absolute',top:-2,left:destructLinePct+'%',width:2,height:14,background:'#E24B4A',borderRadius:1,zIndex:2}} />
-                      </div>
-                      <span style={{fontSize:8,fontWeight:700,color:tc,minWidth:30,textAlign:'right'}}>{pctRest}%</span>
-                    </div>
-                    <div style={{fontSize:7,color:'#B0B6C3',marginTop:2,textAlign:'center'}}>{row.sl}m vida útil · línea roja=12m</div>
-                  </td>
-                  <td style={{padding:'5px 7px',textAlign:'center',fontSize:9,whiteSpace:'nowrap'}}>{est}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        </div>
-        <div style={{display:'flex',gap:12,marginTop:8,paddingTop:6,borderTop:'1px dashed #E4E8F2',fontSize:8,color:'#8A90A8',flexWrap:'wrap',alignItems:'center'}}>
-          <span>🔴 <b style={{color:'#991B1B'}}>Destrucción</b>: ≤12 meses restantes</span>
-          <span>🟡 <b style={{color:'#92400E'}}>Alerta</b>: 12–18 meses</span>
-          <span>🟢 <b style={{color:'#065F46'}}>OK</b>: &gt;18 meses</span>
-          <span style={{marginLeft:'auto',background:'#FEE2E2',color:'#991B1B',borderRadius:4,padding:'2px 8px',fontWeight:700}}>▎línea roja = límite destrucción (12m)</span>
-        </div>
-      </div>
-
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
