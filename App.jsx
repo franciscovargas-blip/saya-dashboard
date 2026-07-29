@@ -1505,8 +1505,8 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {[
-              {mol:'Hyaxum Pro',  lote:'HXP-2025-001', uds:1325, fab:'2024-06-08', fecha:'2027-06-08', sl:36, si:false},
-              {mol:'Hyaxum Pro',  lote:'HXP-2026-SI',  uds:75,   fab:'2024-12-08', fecha:'2027-12-08', sl:36, si:true,  siDate:'08-Jun-2026'},
+              {mol:'Hyaxum Pro',  lote:'HXP-2025-001', uds:1324, fab:'2024-06-08', fecha:'2027-06-08', sl:36, si:false},
+              {mol:'Hyaxum Pro',  lote:'HXP-2026-SI',  uds:75,   fab:'2024-12-08', fecha:'2027-12-08', sl:36, si:true, siDate:'08-Jun-2026'},
               {mol:'Bevacizumab',  lote:'BV-2024-003', uds:420,  fab:'2022-09-30', fecha:'2025-09-30', sl:36},
               {mol:'Bevacizumab',  lote:'BV-2024-004', uds:310,  fab:'2023-01-15', fecha:'2026-01-15', sl:36},
               {mol:'Bevacizumab',  lote:'BV-2025-001', uds:900,  fab:'2024-08-22', fecha:'2026-08-22', sl:24},
@@ -1531,7 +1531,7 @@ export default function Dashboard() {
               const est = isDestruct ? '🔴 Destruir' : isAlerta ? '🟡 Alerta' : '🟢 OK';
               const prevMols=['Hyaxum Pro','Hyaxum Pro','Bevacizumab','Bevacizumab','Bevacizumab','Euxara','Euxara','Certolizumab','Certolizumab','Bevalyax','Saytelya'];
               const isFirst = i===0 || row.mol !== prevMols[i-1];
-              const MCOLS={'Hyaxum Pro':'#534AB7','Hyaxum':'#534AB7','Bevacizumab':'#185FA5','Euxara':'#1D9E75','Certolizumab':'#D97706','Bevalyax':'#E24B4A','Saytelya':'#7C3AED'};
+              const MCOLS={'Hyaxum Pro':'#534AB7','Bevacizumab':'#185FA5','Euxara':'#1D9E75','Certolizumab':'#D97706','Bevalyax':'#E24B4A','Saytelya':'#7C3AED'};
               const mc = MCOLS[row.mol] || '#8A90A8';
               const destructLinePct = Math.round(12 / row.sl * 100);
               return(
@@ -1539,7 +1539,7 @@ export default function Dashboard() {
                   <td style={{padding:'5px 7px'}}>
                     {isFirst && <span style={{background:mc+'18',color:mc,borderRadius:4,padding:'2px 7px',fontWeight:700,fontSize:8,whiteSpace:'nowrap'}}>{row.mol}</span>}
                   </td>
-                  <td style={{padding:'5px 7px',fontFamily:'monospace',color:'#534AB7',fontSize:8,whiteSpace:'nowrap'}}>{row.lote}{row.si && <span style={{marginLeft:4,background:'#FEF3C7',color:'#92400E',borderRadius:3,padding:'1px 5px',fontSize:7,fontWeight:700}}>SI ▪ {row.siDate}</span>}</td>
+                  <td style={{padding:'5px 7px',fontFamily:'monospace',color:'#534AB7',fontSize:8,whiteSpace:'nowrap'}}>{row.lote}{row.si && <span style={{marginLeft:4,background:'#FEF3C7',color:'#92400E',borderRadius:3,padding:'1px 5px',fontSize:7,fontWeight:700}}>SI {row.siDate}</span>}</td>
                   <td style={{padding:'5px 7px',textAlign:'center',fontWeight:600,color:'#1a1a2e'}}>{row.uds.toLocaleString()}</td>
                   <td style={{padding:'5px 7px',textAlign:'center',color:'#B0B6C3',fontSize:8}}>{row.fab}</td>
                   <td style={{padding:'5px 7px',textAlign:'center',color:'#8A90A8',fontSize:8}}>{row.fecha}</td>
@@ -1689,7 +1689,6 @@ export default function Dashboard() {
           </div>
         );
       })()}
-        </div>
       </div>
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
