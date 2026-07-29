@@ -99,7 +99,6 @@ const B_OPEN={"100-01-000":7156777.21,"101-00-000":0.0,"101-01-000":0.0,"102-00-
 
 
 
-
 const B=[["","Activos",0,"Activos",0,37855684.35,24103172.51,3568617.62,-8929701.68,-2329167.93,-2332352.12,0,0,0,0,0,0],["100-01-000","Activo A Corto Plazo",1,"Activos",0,4002239.78,23240700.85,-2581386.67,-9190741.78,-2964120.07,-2222372.69,0,0,0,0,0,0],["102-00-000","Bancos",2,"Activos",0,792830.69,-575501.64,18306.89,89295.21,-94420.17,-2658.17,0,0,0,0,0,0],["102-01-000","Bancos Nacionales",3,"Activos",0,792830.69,-575501.64,18306.89,89295.21,-94420.17,-2658.17,0,0,0,0,0,0],["102-01-001","Bbva Mxn 0124438019",4,"Activos",0,363921.66,-183084.68,25585.48,90260.36,-92759.17,-2940.6,0,0,0,0,0,0],["102-01-002","Bbva Usd 0124438108",4,"Activos",0,428909.03,-392416.96,-7278.59,-965.15,-1661.0,282.43,0,0,0,0,0,0],["102-01-000","Bancos Nacionales",3,"Activos",1,792830.69,-575501.64,18306.89,89295.21,-94420.17,-2658.17,0,0,0,0,0,0],["102-00-000","Bancos",2,"Activos",1,792830.69,-575501.64,18306.89,89295.21,-94420.17,-2658.17,0,0,0,0,0,0],["103-00-000","Inversiones",2,"Activos",0,744869.23,23630883.89,-2938770.0,-9459342.29,-3678958.95,-3841347.71,0,0,0,0,0,0],["103-01-000","Inversiones Temporales",3,"Activos",0,744869.23,23630883.89,-2938770.0,-9459342.29,-3678958.95,-3841347.71,0,0,0,0,0,0],["103-01-001","Bbva Fondo De Inversion",4,"Activos",0,744869.23,23630883.89,-2938770.0,-9459342.29,-3678958.95,-3841347.71,0,0,0,0,0,0],["103-01-000","Inversiones Temporales",3,"Activos",1,744869.23,23630883.89,-2938770.0,-9459342.29,-3678958.95,-3841347.71,0,0,0,0,0,0],["103-00-000","Inversiones",2,"Activos",1,744869.23,23630883.89,-2938770.0,-9459342.29,-3678958.95,-3841347.71,0,0,0,0,0,0],["109-00-000","Pagos Anticipados",2,"Activos",0,88524.13,-14533.91,16619.42,-28783.11,-1963.75,32196.09,0,0,0,0,0,0],["109-01-000","Seg Y Fianzas Pagados X Anticipado Nal",3,"Activos",0,88524.13,-14533.91,-14533.91,-14533.91,4939.78,-14533.91,0,0,0,0,0,0],["109-01-001","Seguros y Fianzas Nacionales",4,"Activos",0,88524.13,-14533.91,-14533.91,-14533.91,4939.78,-14533.91,0,0,0,0,0,0],["109-01-000","Seg Y Fianzas Pagados X Anticipado Nal",3,"Activos",1,88524.13,-14533.91,-14533.91,-14533.91,4939.78,-14533.91,0,0,0,0,0,0],["109-23-000","Otros Pagos Anticipados",3,"Activos",0,0.0,0.0,31153.33,-14249.2,-6903.53,46730.0,0,0,0,0,0,0],["109-23-001","Xperbit (Auditorias Trismetrales)",4,"Activos",0,0,0,31153.33,-15576.67,-15576.66,46729.99,0,0,0,0,0,0],["109-23-002","Garantia Extendida de Disposiitivos Electronicos",4,"Activos",0,0,0,0,1327.47,1323.14,0.0,0,0,0,0,0,0],["109-23-003","Negobit (Servicio Focalizacion de informacion anual)",4,"Activos",0,0,0,0,0,7350.0,0.0,0,0,0,0,0,0],["109-23-000","Otros Pagos Anticipados",3,"Activos",1,0.0,0.0,31153.33,-14249.2,-6903.53,46730.0,0,0,0,0,0,0],["109-00-000","Pagos Anticipados",2,"Activos",1,88524.13,-14533.91,16619.42,-28783.11,-1963.75,32196.09,0,0,0,0,0,0],["113-00-000","Impuestos A Favor",2,"Activos",0,1760727.38,108279.47,201573.45,237662.0,170421.81,353779.03,0,0,0,0,0,0],["113-01-000","Iva A Favor",3,"Activos",0,1760727.38,108279.47,201573.45,237662.0,170421.81,353779.03,0,0,0,0,0,0],["113-01-001","Iva A Favor Enero 2025",4,"Activos",0,39200.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-002","Iva A Favor Febrero 2025",4,"Activos",0,3378.38,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-003","Iva A Favor Marzo 2025",4,"Activos",0,210070.23,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-004","Iva A Favor Abril 2025",4,"Activos",0,83119.94,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-005","Iva A Favor Mayo 2025",4,"Activos",0,52563.55,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-006","Iva A Favor Junio 2025",4,"Activos",0,79587.15,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-007","Iva A Favor Julio 2025",4,"Activos",0,78596.35,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-008","Iva A Favor Agosto 2025",4,"Activos",0,139914.29,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-009","Iva A Favor Septiembre 2025",4,"Activos",0,205760.17,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-010","IVA A Favor Octubre 2025",4,"Activos",0,393385.65,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-011","IVA A Favor Noviembre 2025",4,"Activos",0,177170.49,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-012","Iva a Favor Diciembre 2025",4,"Activos",0,226991.92,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-013","Iva A Favor Enero 2026",4,"Activos",0,70989.26,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-014","Iva a Favor Febrero 2026",4,"Activos",0,0,108279.47,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-015","Iva A Favor Marzo 2026",4,"Activos",0,0,0,201573.45,0.0,0.0,0.0,0,0,0,0,0,0],["113-01-016","Iva A Favor Abril 2026",4,"Activos",0,0,0,0,237662.0,0.0,0.0,0,0,0,0,0,0],["113-01-017","Iva a Favor Mayo 2026",4,"Activos",0,0,0,0,0,170421.81,0.0,0,0,0,0,0,0],["113-01-000","Iva A Favor",3,"Activos",1,1760727.38,108279.47,201573.45,237662.0,170421.81,353779.03,0,0,0,0,0,0],["113-00-000","Impuestos A Favor",2,"Activos",1,1760727.38,108279.47,201573.45,237662.0,170421.81,353779.03,0,0,0,0,0,0],["115-00-000","Inventario",2,"Activos",0,0.0,0.0,0.0,347186.0,783933.77,578892.94,0,0,0,0,0,0],["115-01-000","Inventario",3,"Activos",0,0.0,0.0,0.0,347186.0,783933.77,578892.94,0,0,0,0,0,0],["115-01-002","Inventario Transito",4,"Activos",0,0,0,0,347186.0,783933.77,-833531.77,0,0,0,0,0,0],["115-01-000","Inventario",3,"Activos",1,0.0,0.0,0.0,347186.0,783933.77,578892.94,0,0,0,0,0,0],["115-00-000","Inventario",2,"Activos",1,0.0,0.0,0.0,347186.0,783933.77,578892.94,0,0,0,0,0,0],["119-00-000","Impuestos Acreditables Por Pagar",2,"Activos",0,60575.82,-21249.68,5579.23,-28107.81,29085.92,3574.98,0,0,0,0,0,0],["119-01-000","Iva Pendiente De Pago",3,"Activos",0,60575.82,-21249.68,5579.23,-28107.81,29085.92,3574.98,0,0,0,0,0,0],["119-01-001","Iva acreditable pendiente 16%",4,"Activos",0,60575.82,-21249.68,5579.23,-28107.81,29085.92,3574.98,0,0,0,0,0,0],["119-01-000","Iva Pendiente De Pago",3,"Activos",1,60575.82,-21249.68,5579.23,-28107.81,29085.92,3574.98,0,0,0,0,0,0],["119-00-000","Impuestos Acreditables Por Pagar",2,"Activos",1,60575.82,-21249.68,5579.23,-28107.81,29085.92,3574.98,0,0,0,0,0,0],["120-00-000","Anticipo A Proveedores",2,"Activos",0,554712.53,-1578.68,26895.88,-194324.34,-159142.79,239548.76,0,0,0,0,0,0],["120-01-000","Anticipo A Proveedores Nacional",3,"Activos",0,1920.0,-1678.0,-242.0,0.0,0.0,237142.04,0,0,0,0,0,0],["120-01-000","Anticipo A Proveedores Nacional",3,"Activos",1,1920.0,-1678.0,-242.0,0.0,0.0,237142.04,0,0,0,0,0,0],["120-02-000","Anticipo A Proveedores Extranjero",3,"Activos",0,552792.53,99.32,27137.88,-194324.34,-159142.79,2406.72,0,0,0,0,0,0],["120-02-001","Anticipo A Proveedores Extranjero",4,"Activos",0,552792.53,99.32,27137.88,-194324.34,-159142.79,2406.72,0,0,0,0,0,0],["120-02-000","Anticipo A Proveedores Extranjero",3,"Activos",1,552792.53,99.32,27137.88,-194324.34,-159142.79,2406.72,0,0,0,0,0,0],["120-00-000","Anticipo A Proveedores",2,"Activos",1,554712.53,-1578.68,26895.88,-194324.34,-159142.79,239548.76,0,0,0,0,0,0],["121-00-000","Otros Activos A Corto Plazo",2,"Activos",0,0.0,114401.4,88408.46,-154327.44,-13075.91,-35406.51,0,0,0,0,0,0],["121-01-000","Otros Activos A Corto Plazo",3,"Activos",0,0.0,114401.4,88408.46,-154327.44,-13075.91,-35406.51,0,0,0,0,0,0],["121-01-001","Gastos por Comprobar de Funcionarios y Empleados",4,"Activos",0,0,114401.4,88408.46,-154327.44,-13075.91,-35406.51,0,0,0,0,0,0],["121-01-000","Otros Activos A Corto Plazo",3,"Activos",1,0.0,114401.4,88408.46,-154327.44,-13075.91,-35406.51,0,0,0,0,0,0],["121-00-000","Otros Activos A Corto Plazo",2,"Activos",1,0.0,114401.4,88408.46,-154327.44,-13075.91,-35406.51,0,0,0,0,0,0],["100-01-000","Activo A Corto Plazo",1,"Activos",1,4002239.78,23240700.85,-2581386.67,-9190741.78,-2964120.07,-2222372.69,0,0,0,0,0,0],["100-02-000","Activo A Largo Plazo",1,"Activos",0,33853444.57,862471.66,6150004.29,261040.1,634952.14,-109979.43,0,0,0,0,0,0],["155-00-000","Mobiliario Y Equipo De Oficina",2,"Activos",0,5761.2,3275.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["155-01-000","Mobiliario Y Equipo De Oficina",3,"Activos",0,5761.2,3275.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["155-01-001","Mobiliario Y Equipo De Oficina",4,"Activos",0,5761.2,3275.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["155-01-000","Mobiliario Y Equipo De Oficina",3,"Activos",1,5761.2,3275.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["155-00-000","Mobiliario Y Equipo De Oficina",2,"Activos",1,5761.2,3275.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["156-00-000","Equipo De Cómputo",2,"Activos",0,145131.87,0.0,22540.52,30999.15,105484.98,49327.28,0,0,0,0,0,0],["156-01-000","Equipo De Cómputo",3,"Activos",0,145131.87,0.0,22540.52,30999.15,105484.98,49327.28,0,0,0,0,0,0],["156-01-001","Equipo De Cómputo",4,"Activos",0,145131.87,0.0,22540.52,30999.15,105484.98,49327.28,0,0,0,0,0,0],["156-01-000","Equipo De Cómputo",3,"Activos",1,145131.87,0.0,22540.52,30999.15,105484.98,49327.28,0,0,0,0,0,0],["156-00-000","Equipo De Cómputo",2,"Activos",1,145131.87,0.0,22540.52,30999.15,105484.98,49327.28,0,0,0,0,0,0],["176-00-000","Activos Intangibles Empresariales",2,"Activos",0,34727553.23,1013189.56,6242765.83,341245.96,663559.01,-7388.4,0,0,0,0,0,0],["176-01-000","Activos Intangibles",3,"Activos",0,34727553.23,1013189.56,6242765.83,341245.96,663559.01,-7388.4,0,0,0,0,0,0],["176-01-001","Activos Intangibles",4,"Activos",0,34727553.23,1013189.56,6242765.83,341245.96,663559.01,-7388.4,0,0,0,0,0,0],["176-01-000","Activos Intangibles",3,"Activos",1,34727553.23,1013189.56,6242765.83,341245.96,663559.01,-7388.4,0,0,0,0,0,0],["176-00-000","Activos Intangibles Empresariales",2,"Activos",1,34727553.23,1013189.56,6242765.83,341245.96,663559.01,-7388.4,0,0,0,0,0,0],["184-00-000","Depósitos En Garantía",2,"Activos",0,93400.0,0.0,0.0,7546.46,0.0,0.0,0,0,0,0,0,0],["184-03-000","Otros Depósitos En Garantía",3,"Activos",0,93400.0,0.0,0.0,7546.46,0.0,0.0,0,0,0,0,0,0],["184-03-001","Cooworking Chapultepec",4,"Activos",0,93400.0,0.0,0.0,6248.46,0.0,0.0,0,0,0,0,0,0],["184-03-002","Radiomovil Dipsa",4,"Activos",0,0,0,0,1298.0,0.0,0.0,0,0,0,0,0,0],["184-03-000","Otros Depósitos En Garantía",3,"Activos",1,93400.0,0.0,0.0,7546.46,0.0,0.0,0,0,0,0,0,0],["184-00-000","Depósitos En Garantía",2,"Activos",1,93400.0,0.0,0.0,7546.46,0.0,0.0,0,0,0,0,0,0],["100-02-000","Activo A Largo Plazo",1,"Activos",1,33853444.57,862471.66,6150004.29,261040.1,634952.14,-109979.43,0,0,0,0,0,0],["","Total Activos",0,"Activos",1,37855684.35,24103172.51,3568617.62,-8929701.68,-2329167.93,-2332352.12,0,0,0,0,0,0],["","Pasivos",0,"Pasivos",0,1098099.1,147444.68,6192534.35,-6387483.2,408893.22,307387.91,0,0,0,0,0,0],["200-01-000","Pasivo A Corto Plazo",1,"Pasivos",0,1098099.1,147444.68,6192534.35,-6387483.2,408893.22,307387.91,0,0,0,0,0,0],["201-00-000","Proveedores",2,"Pasivos",0,440999.0,-79674.37,6392219.44,-6465992.77,321273.72,-248782.18,0,0,0,0,0,0],["201-01-000","Proveedores Nacionales",3,"Pasivos",0,440999.0,-164230.24,51914.14,-214724.6,218896.97,27187.57,0,0,0,0,0,0],["201-01-001","Proveedores Nacionales Sector Privado",4,"Pasivos",0,440999.0,-164230.24,51914.14,-214724.6,218896.97,27187.57,0,0,0,0,0,0],["201-01-000","Proveedores Nacionales",3,"Pasivos",1,440999.0,-164230.24,51914.14,-214724.6,218896.97,27187.57,0,0,0,0,0,0],["201-02-000","Proveedores Extranjeros",3,"Pasivos",0,0.0,84555.87,6340305.3,-6251268.17,102376.75,-275969.75,0,0,0,0,0,0],["201-02-001","Proveedores Extranjeros Sector Privado",4,"Pasivos",0,0,84555.87,6340305.3,-6251268.17,102376.75,-275969.75,0,0,0,0,0,0],["201-02-000","Proveedores Extranjeros",3,"Pasivos",1,0.0,84555.87,6340305.3,-6251268.17,102376.75,-275969.75,0,0,0,0,0,0],["201-00-000","Proveedores",2,"Pasivos",1,440999.0,-79674.37,6392219.44,-6465992.77,321273.72,-248782.18,0,0,0,0,0,0],["205-00-000","Acreedores Diversos A Corto Plazo",2,"Pasivos",0,179038.62,194698.92,-196377.54,-83288.25,95973.0,156478.48,0,0,0,0,0,0],["205-06-000","Otros Acreedores Diversos A Corto Plazo",3,"Pasivos",0,179038.62,194698.92,-196377.54,-83288.25,95973.0,156478.48,0,0,0,0,0,0],["205-06-001","Tarjeta Clara",4,"Pasivos",0,179038.62,194698.92,-196377.54,-83288.25,95973.0,156478.48,0,0,0,0,0,0],["205-06-000","Otros Acreedores Diversos A Corto Plazo",3,"Pasivos",1,179038.62,194698.92,-196377.54,-83288.25,95973.0,156478.48,0,0,0,0,0,0],["205-00-000","Acreedores Diversos A Corto Plazo",2,"Pasivos",1,179038.62,194698.92,-196377.54,-83288.25,95973.0,156478.48,0,0,0,0,0,0],["210-00-000","Provisión De Sueldos Y Salarios",2,"Pasivos",0,63755.53,16990.53,39168.33,40916.17,38330.69,47172.72,0,0,0,0,0,0],["210-03-000","Provisión De Aguinaldo Por Pagar",3,"Pasivos",0,29606.74,27149.86,31497.15,32990.54,38028.65,42158.76,0,0,0,0,0,0],["210-03-001","Provisión De Aguinaldo Por Pagar",4,"Pasivos",0,29606.74,27149.86,31497.15,32990.54,38028.65,42158.76,0,0,0,0,0,0],["210-03-000","Provisión De Aguinaldo Por Pagar",3,"Pasivos",1,29606.74,27149.86,31497.15,32990.54,38028.65,42158.76,0,0,0,0,0,0],["210-08-000","Provision De Prima Vacacional",3,"Pasivos",0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["210-08-000","Provision De Prima Vacacional",3,"Pasivos",1,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["210-08-001","Provision De Prima Vacacional",4,"Pasivos",0,34148.79,-10159.33,7671.18,7925.63,302.04,5013.96,0,0,0,0,0,0],["210-00-000","Provisión De Sueldos Y Salarios",2,"Pasivos",1,63755.53,16990.53,39168.33,40916.17,38330.69,47172.72,0,0,0,0,0,0],["211-00-000","Provisión De Contribuciones Segsocial X Pagar",2,"Pasivos",0,134510.78,81985.15,-60968.39,113002.35,-83595.01,132234.78,0,0,0,0,0,0],["211-01-000","Provisión De Imss Patronal Por Pagar",3,"Pasivos",0,44491.02,-2534.34,9316.83,2813.64,6989.5,2886.34,0,0,0,0,0,0],["211-01-001","Provisión De Imss Patronal Por Pagar",4,"Pasivos",0,44491.02,-2534.34,9316.83,2813.64,6989.5,2886.34,0,0,0,0,0,0],["211-01-000","Provisión De Imss Patronal Por Pagar",3,"Pasivos",1,44491.02,-2534.34,9316.83,2813.64,6989.5,2886.34,0,0,0,0,0,0],["211-02-000","Provisión De SAR Por Pagar",3,"Pasivos",0,59006.25,55400.94,-46070.62,72226.62,-59376.45,84785.47,0,0,0,0,0,0],["211-02-001","Provisión De SAR Por Pagar",4,"Pasivos",0,59006.25,55400.94,-46070.62,72226.62,-59376.45,84785.47,0,0,0,0,0,0],["211-02-000","Provisión De SAR Por Pagar",3,"Pasivos",1,59006.25,55400.94,-46070.62,72226.62,-59376.45,84785.47,0,0,0,0,0,0],["211-03-000","Provisión De Infonavit Por Pagar",3,"Pasivos",0,31013.51,29118.55,-24214.6,37962.09,-31208.06,44562.97,0,0,0,0,0,0],["211-03-001","Provisión De Infonavit Por Pagar",4,"Pasivos",0,31013.51,29118.55,-24214.6,37962.09,-31208.06,44562.97,0,0,0,0,0,0],["211-03-000","Provisión De Infonavit Por Pagar",3,"Pasivos",1,31013.51,29118.55,-24214.6,37962.09,-31208.06,44562.97,0,0,0,0,0,0],["211-00-000","Provisión De Contribuciones Segsocial X Pagar",2,"Pasivos",1,134510.78,81985.15,-60968.39,113002.35,-83595.01,132234.78,0,0,0,0,0,0],["212-00-000","Provisión De Imoto Estatal S Nómina X Pagar",2,"Pasivos",0,29285.05,-6569.62,1184.73,1293.83,3924.24,13542.25,0,0,0,0,0,0],["212-01-000","Provisión De Imoto Estatal S Nómina X Pagar",3,"Pasivos",0,29285.05,-6569.62,1184.73,1293.83,3924.24,13542.25,0,0,0,0,0,0],["212-01-001","3% Impuesto Estatal Sobre Nómina Por Pagar",4,"Pasivos",0,29285.05,-6569.62,1184.73,1293.83,3924.24,13542.25,0,0,0,0,0,0],["212-01-000","Provisión De Imoto Estatal S Nómina X Pagar",3,"Pasivos",1,29285.05,-6569.62,1184.73,1293.83,3924.24,13542.25,0,0,0,0,0,0],["212-00-000","Provisión De Imoto Estatal S Nómina X Pagar",2,"Pasivos",1,29285.05,-6569.62,1184.73,1293.83,3924.24,13542.25,0,0,0,0,0,0],["216-00-000","Impuestos Retenidos",2,"Pasivos",0,250510.12,-68331.66,25653.51,-1473.66,41045.71,144804.22,0,0,0,0,0,0],["216-02-000","IImpuestos Ret de ISR x Sueldos y salarios",3,"Pasivos",0,233723.07,-74400.36,8066.61,5807.45,28713.41,138866.22,0,0,0,0,0,0],["216-02-001","Impuestos Ret de ISR por Sueldos y salarios",4,"Pasivos",0,233723.07,-74400.36,8066.61,5807.45,28713.41,138866.22,0,0,0,0,0,0],["216-02-000","IImpuestos Ret de ISR x Sueldos y salarios",3,"Pasivos",1,233723.07,-74400.36,8066.61,5807.45,28713.41,138866.22,0,0,0,0,0,0],["216-04-000","Impuestos Ret De Isr X Servicios Prof",3,"Pasivos",0,0.0,72.75,10092.17,-8842.92,6208.87,-4618.27,0,0,0,0,0,0],["216-04-001","Impuestos Retenido por Servicios Profesional 10%",4,"Pasivos",0,0.0,72.75,10092.17,-8842.92,6208.87,-4618.27,0,0,0,0,0,0],["216-04-000","Impuestos Ret De Isr X Servicios Prof",3,"Pasivos",1,0.0,72.75,10092.17,-8842.92,6208.87,-4618.27,0,0,0,0,0,0],["216-09-000","Infonavit retenido a colaboradores",3,"Pasivos",0,0.0,0.0,0.0,1801.35,5049.25,4871.85,0,0,0,0,0,0],["216-09-001","Infonavit retenido empleados",4,"Pasivos",0,0,0,0,1801.35,5049.25,4871.85,0,0,0,0,0,0],["216-09-000","Infonavit retenido a colaboradores",3,"Pasivos",1,0.0,0.0,0.0,1801.35,5049.25,4871.85,0,0,0,0,0,0],["216-10-000","Impuestos Retenidos De Iva",3,"Pasivos",0,0.0,77.17,10766.91,-9434.77,6625.2,-4927.16,0,0,0,0,0,0],["216-10-003","Retención Iva por Honorarios 10.66%",4,"Pasivos",0,0.0,77.17,10766.91,-9434.77,6625.2,-4927.16,0,0,0,0,0,0],["216-10-000","Impuestos Retenidos De Iva",3,"Pasivos",1,0.0,77.17,10766.91,-9434.77,6625.2,-4927.16,0,0,0,0,0,0],["216-11-000","Retenciones De Imss A Los Trabaj",3,"Pasivos",0,16764.4,5940.82,-3272.18,9195.23,-5552.34,10611.58,0,0,0,0,0,0],["216-11-001","Retenciones De Imss Obrero",4,"Pasivos",0,16764.4,5940.82,-3272.18,9195.23,-5552.34,10611.58,0,0,0,0,0,0],["216-11-000","Retenciones De Imss A Los Trabaj",3,"Pasivos",1,16764.4,5940.82,-3272.18,9195.23,-5552.34,10611.58,0,0,0,0,0,0],["216-13-000","RESICO",3,"Pasivos",0,23.61,-23.0,0.0,0.0,1.32,0.0,0,0,0,0,0,0],["216-13-001","RESICO 1.25%",4,"Pasivos",0,23.61,-23.0,0.0,0.0,1.32,0.0,0,0,0,0,0,0],["216-13-000","RESICO",3,"Pasivos",1,23.61,-23.0,0.0,0.0,1.32,0.0,0,0,0,0,0,0],["216-00-000","Impuestos Retenidos",2,"Pasivos",1,250510.12,-68331.66,25653.51,-1473.66,41045.71,144804.22,0,0,0,0,0,0],["217-00-000","Impuestos por Retener",2,"Pasivos",0,0.0,8345.73,-8345.73,8059.13,-8059.13,0.0,0,0,0,0,0,0],["217-01-000","Impuestos por Retener",3,"Pasivos",0,0.0,8345.73,-8345.73,8059.13,-8059.13,0.0,0,0,0,0,0,0],["217-01-000","Impuestos por Retener",3,"Pasivos",1,0.0,8345.73,-8345.73,8059.13,-8059.13,0.0,0,0,0,0,0,0],["217-00-000","Impuestos por Retener",2,"Pasivos",1,0.0,8345.73,-8345.73,8059.13,-8059.13,0.0,0,0,0,0,0,0],["200-01-000","Pasivo A Corto Plazo",1,"Pasivos",1,1098099.1,147444.68,6192534.35,-6387483.2,408893.22,307387.91,0,0,0,0,0,0],["","Total Pasivos",0,"Pasivos",1,1098099.1,147444.68,6192534.35,-6387483.2,408893.22,307387.91,0,0,0,0,0,0],["","Capital Contable",0,"Capital",0,36757585.25,23955804.63,-2623728.57,-2541712.89,-2737842.34,-2640229.15,0,0,0,0,0,0],["300-01-000","Capital Social Fijo",1,"Capital",0,61518268.08,25958163.85,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-00-000","Capital Social",2,"Capital",0,61518268.08,25958163.85,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-01-000","Capital Fijo",3,"Capital",0,50000.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-01-001","Alejandro Gome Capital Fijo",4,"Capital",0,500.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-01-002","Gome Gomez Capital Fijo",4,"Capital",0,500.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-01-003","Elysian LLC Capital Fijo",4,"Capital",0,49000.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-01-000","Capital Fijo",3,"Capital",1,50000.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-02-000","Capital Variable",3,"Capital",0,61468268.08,25958163.85,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-02-001","Elysian LLc Capital Variable",4,"Capital",0,61468268.08,25958163.85,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-02-000","Capital Variable",3,"Capital",1,61468268.08,25958163.85,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["301-00-000","Capital Social",2,"Capital",1,61518268.08,25958163.85,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["300-01-000","Capital Social Fijo",1,"Capital",1,61518268.08,25958163.85,0.0,0.0,0.0,0.0,0,0,0,0,0,0],["","Período ganancias",1,"Capital",0,-24760682.83,-2002359.22,-2623728.57,-2541712.89,-2737842.34,-2640229.15,0,0,0,0,0,0],["","Total Capital Contable",0,"Capital",1,36757585.25,23955804.63,-2623728.57,-2541712.89,-2737842.34,-2640229.15,0,0,0,0,0,0]];
 const bVal=(row,month)=>{let s=0;for(let m=0;m<month;m++)s+=(row[5+m]||0);return s;};
 const Fn=v=>{if(!v||v===0)return"—";const n=v<0,a=Math.abs(v);const s="$"+Math.round(a).toLocaleString("en-US");return n?"-"+s:s};
@@ -1483,103 +1482,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-        <div style={{background:'linear-gradient(90deg,#F59E0B,#D97706)',borderRadius:8,padding:'8px 14px',marginBottom:10,display:'flex',alignItems:'center',gap:8,border:'2px dashed #B45309'}}>
-          <span style={{fontSize:16}}>⚠️</span>
-          <div>
-            <div style={{fontWeight:700,color:'#fff',fontSize:10,letterSpacing:0.8}}>📦 PRÓXIMAMENTE — DATOS DUMMY DE PRUEBA</div>
-            <div style={{fontSize:9,color:'#FEF3C7'}}>La información de caducidad por lotes será real una vez conectada al ERP / WMS. Los datos mostrados son ilustrativos.</div>
-          </div>
-        </div>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          <div>
-            <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:1}}>📦 Caducidad por Lotes · Shelf Life</div>
-            <div style={{fontSize:8,color:'#8A90A8'}}>Vida útil restante por lote · ⚠️ ≤12 meses = destrucción · Datos dummy</div>
-          </div>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'flex-end'}}>
-            {[['#FECACA','#991B1B','Destrucción (≤12m)'],['#FEF3C7','#92400E','Alerta (12-18m)'],['#D1FAE5','#065F46','OK (>18m)']].map(([bg,tc,l],i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:3,fontSize:8}}>
-                <span style={{width:10,height:10,background:bg,borderRadius:2,border:'1px solid '+tc,display:'inline-block'}}></span>
-                <span style={{color:tc,fontWeight:600}}>{l}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{overflowX:'auto'}}>
-        <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-          <thead><tr style={{background:'#F8F9FE'}}>
-            {['Molécula','No. Lote','Uds','Fabricación','Caducidad','Días Rest.','Shelf Life','Estado'].map((h,i)=>(
-              <th key={i} style={{padding:'5px 7px',textAlign:i>2?'center':'left',color:'#8A90A8',fontWeight:600,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'}}>{h}</th>
-            ))}
-          </tr></thead>
-          <tbody>
-            {[
-              {mol:'Hyaxum',       lote:'HX-2024-001', uds:1200, fab:'2022-10-15', fecha:'2025-10-15', sl:36},
-              {mol:'Hyaxum',       lote:'HX-2024-002', uds:850,  fab:'2023-03-20', fecha:'2026-03-20', sl:36},
-              {mol:'Hyaxum',       lote:'HX-2025-001', uds:2100, fab:'2023-11-08', fecha:'2026-11-08', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2024-003', uds:420,  fab:'2022-09-30', fecha:'2025-09-30', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2024-004', uds:310,  fab:'2023-01-15', fecha:'2026-01-15', sl:36},
-              {mol:'Bevacizumab',  lote:'BV-2025-001', uds:900,  fab:'2024-08-22', fecha:'2026-08-22', sl:24},
-              {mol:'Euxara',       lote:'EX-2024-002', uds:180,  fab:'2023-11-05', fecha:'2025-11-05', sl:24},
-              {mol:'Euxara',       lote:'EX-2025-001', uds:540,  fab:'2024-06-30', fecha:'2026-06-30', sl:24},
-              {mol:'Certolizumab', lote:'CT-2024-001', uds:95,   fab:'2023-10-01', fecha:'2025-10-01', sl:24},
-              {mol:'Certolizumab', lote:'CT-2025-001', uds:280,  fab:'2024-04-18', fecha:'2026-04-18', sl:24},
-              {mol:'Bevalyax',     lote:'BL-2025-001', uds:620,  fab:'2024-09-10', fecha:'2027-09-10', sl:36},
-              {mol:'Saytelya',     lote:'SY-2025-001', uds:440,  fab:'2024-07-15', fecha:'2026-07-15', sl:24},
-            ].map((row,i)=>{
-              const totalDias = row.sl * 30;
-              const cad = new Date(row.fecha);
-              const hoy = new Date('2024-07-28');
-              const diasRest = Math.round((cad - hoy) / 86400000);
-              const pctRest = Math.max(0, Math.min(100, Math.round(diasRest / totalDias * 100)));
-              const mesesRest = Math.round(diasRest / 30);
-              const isDestruct = mesesRest <= 12;
-              const isAlerta   = !isDestruct && mesesRest <= 18;
-              const bg = isDestruct ? '#FECACA' : isAlerta ? '#FEF3C7' : '#D1FAE5';
-              const tc = isDestruct ? '#991B1B' : isAlerta ? '#92400E' : '#065F46';
-              const bc = isDestruct ? '#EF4444' : isAlerta ? '#F59E0B' : '#10B981';
-              const est = isDestruct ? '🔴 Destruir' : isAlerta ? '🟡 Alerta' : '🟢 OK';
-              const prevMols=['Hyaxum','Hyaxum','Hyaxum','Bevacizumab','Bevacizumab','Bevacizumab','Euxara','Euxara','Certolizumab','Certolizumab','Bevalyax','Saytelya'];
-              const isFirst = i===0 || row.mol !== prevMols[i-1];
-              const MCOLS={'Hyaxum':'#534AB7','Bevacizumab':'#185FA5','Euxara':'#1D9E75','Certolizumab':'#D97706','Bevalyax':'#E24B4A','Saytelya':'#7C3AED'};
-              const mc = MCOLS[row.mol] || '#8A90A8';
-              const destructLinePct = Math.round(12 / row.sl * 100);
-              return(
-                <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2?'#FAFBFF':'#fff'}}>
-                  <td style={{padding:'5px 7px'}}>
-                    {isFirst && <span style={{background:mc+'18',color:mc,borderRadius:4,padding:'2px 7px',fontWeight:700,fontSize:8,whiteSpace:'nowrap'}}>{row.mol}</span>}
-                  </td>
-                  <td style={{padding:'5px 7px',fontFamily:'monospace',color:'#534AB7',fontSize:8,whiteSpace:'nowrap'}}>{row.lote}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center',fontWeight:600,color:'#1a1a2e'}}>{row.uds.toLocaleString()}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center',color:'#B0B6C3',fontSize:8}}>{row.fab}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center',color:'#8A90A8',fontSize:8}}>{row.fecha}</td>
-                  <td style={{padding:'5px 7px',textAlign:'center'}}>
-                    <span style={{background:bg,color:tc,borderRadius:4,padding:'2px 8px',fontWeight:700,whiteSpace:'nowrap'}}>{diasRest}d · {mesesRest}m</span>
-                  </td>
-                  <td style={{padding:'5px 10px',minWidth:140}}>
-                    <div style={{display:'flex',alignItems:'center',gap:5}}>
-                      <div style={{flex:1,height:10,background:'#F0F2FA',borderRadius:5,position:'relative',overflow:'visible'}}>
-                        <div style={{width:pctRest+'%',height:'100%',background:bc,borderRadius:5}} />
-                        <div style={{position:'absolute',top:-2,left:destructLinePct+'%',width:2,height:14,background:'#E24B4A',borderRadius:1,zIndex:2}} />
-                      </div>
-                      <span style={{fontSize:8,fontWeight:700,color:tc,minWidth:30,textAlign:'right'}}>{pctRest}%</span>
-                    </div>
-                    <div style={{fontSize:7,color:'#B0B6C3',marginTop:2,textAlign:'center'}}>{row.sl}m vida útil · línea roja=12m</div>
-                  </td>
-                  <td style={{padding:'5px 7px',textAlign:'center',fontSize:9,whiteSpace:'nowrap'}}>{est}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        </div>
-        <div style={{display:'flex',gap:12,marginTop:8,paddingTop:6,borderTop:'1px dashed #E4E8F2',fontSize:8,color:'#8A90A8',flexWrap:'wrap',alignItems:'center'}}>
-          <span>🔴 <b style={{color:'#991B1B'}}>Destrucción</b>: ≤12 meses restantes</span>
-          <span>🟡 <b style={{color:'#92400E'}}>Alerta</b>: 12–18 meses</span>
-          <span>🟢 <b style={{color:'#065F46'}}>OK</b>: &gt;18 meses</span>
-          <span style={{marginLeft:'auto',background:'#FEE2E2',color:'#991B1B',borderRadius:4,padding:'2px 8px',fontWeight:700}}>▎línea roja = límite destrucción (12m)</span>
-        </div>
-      </div>
-
         </div>
         <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
       {/* ===== INVENTARIOS ===== */}
@@ -2054,245 +1956,179 @@ export default function Dashboard() {
               <div style={{fontSize:10,color:"#FEF3C7"}}>Los datos mostrados en esta pestaña son ilustrativos. No representan cifras reales de la compañía.</div>
             </div>
           </div>
-{/* HEADER */}
-          <div style={{background:"linear-gradient(135deg,#1a1a3e 0%,#312e81 50%,#7c3aed 100%)",borderRadius:12,padding:"20px 24px",marginBottom:16,display:"flex",alignItems:"center",gap:16}}>
-            <div style={{background:"rgba(255,255,255,0.15)",borderRadius:10,padding:"10px 14px",fontSize:28}}>📦</div>
-            <div>
-              <div style={{fontSize:18,fontWeight:700,color:"#fff",letterSpacing:0.5}}>Sell-In / Sell-Out — Propuesta Visual · Junio 2026</div>
-              <div style={{fontSize:10,color:"#C4B5FD",marginTop:3}}>Sin comparativa Forecast · Gradiente de Devoluciones % · Por molécula y canal</div>
-            </div>
-          </div>
 {/* KPI STRIP */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:16}}>
             {[
-              {label:"SELL-IN YTD",value:"$42.3M",sub:"vs Budget $40.1M ↑+5.5%",tc:"#1D9E75",bc:"#D4F0E6",lc:"#085041"},
-              {label:"SELL-OUT YTD",value:"$38.1M",sub:"vs Budget $39.0M ↓-2.3%",tc:"#1D9E75",bc:"#D4F0E6",lc:"#085041"},
-              {label:"NET SALES YTD",value:"$36.5M",sub:"Sell-Out – Devoluciones",tc:"#185FA5",bc:"#DBEAFE",lc:"#1E3A8A"},
-              {label:"DEVOLUCIONES YTD",value:"$1.6M",sub:"4.2% del Sell-Out",tc:"#B45309",bc:"#FEF3C7",lc:"#92400E"},
-              {label:"GAP SELL-IN VS OUT",value:"$4.2M",sub:"Inventario en canal",tc:"#E24B4A",bc:"#FEE2E2",lc:"#991B1B"},
+              {label:"Ventas Netas YTD",value:"$124.3M",sub:"+18% vs Budget",color:"#1D9E75",bg:"#D4F0E6",icon:"📈"},
+              {label:"Gross Margin YTD",value:"68.2%",sub:"+2.1pp vs Budget",color:"#534AB7",bg:"#EDE9FE",icon:"💎"},
+              {label:"Unidades Vendidas",value:"48,320",sub:"+12% vs LY",color:"#185FA5",bg:"#DBEAFE",icon:"📦"},
+              {label:"Clientes Activos",value:"312",sub:"+24 nuevos",color:"#D85A30",bg:"#FEE2E2",icon:"🏥"},
+              {label:"Top Molécula",value:"Hyaxum",sub:"42% de Ventas",color:"#BA7517",bg:"#FEF3C7",icon:"⭐"},
             ].map((k,i)=>(
-              <div key={i} style={{background:"#fff",border:`2px solid ${k.bc}`,borderRadius:10,padding:"14px 16px"}}>
-                <div style={{fontSize:9,color:"#8A90A8",fontWeight:600,letterSpacing:1,textTransform:"uppercase",marginBottom:4}}>{k.label}</div>
-                <div style={{fontSize:22,fontWeight:700,color:k.tc}}>{k.value}</div>
-                <div style={{fontSize:9,marginTop:4,color:k.lc}}>{k.sub}</div>
+              <div key={i} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
+                <div style={{fontSize:18,marginBottom:4}}>{k.icon}</div>
+                <div style={{fontSize:9,color:"#8A90A8",marginBottom:2}}>{k.label}</div>
+                <div style={{fontSize:16,fontWeight:700,color:k.color}}>{k.value}</div>
+                <div style={{fontSize:9,marginTop:3,color:k.color,background:k.bg,borderRadius:4,padding:"2px 6px",display:"inline-block"}}>{k.sub}</div>
               </div>
             ))}
           </div>
-{/* MIDDLE ROW */}
-          <div style={{display:"grid",gridTemplateColumns:"3fr 2fr",gap:12,marginBottom:16}}>
-{/* COMPOSED CHART */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px"}}>
-              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:2}}>Sell-In vs Sell-Out — Mensual (M MXN)</div>
-              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Solo meses reales · Gradiente = % devoluciones · Línea naranja = % Dev mensual</div>
-              <ResponsiveContainer width="100%" height={220}>
+{/* CHARTS ROW */}
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:12,marginBottom:16}}>
+{/* BAR CHART Ventas por Mes */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
+              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:2}}>Ventas Netas Mensuales (M MXN)</div>
+              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Real vs Forecast · 2026</div>
+              <ResponsiveContainer width="100%" height={180}>
                 <ComposedChart data={[
-                  {m:"Ene",SI:8.1,SO:7.5,Dev:8.1},
-                  {m:"Feb",SI:7.8,SO:7.4,Dev:5.3},
-                  {m:"Mar",SI:6.9,SO:6.4,Dev:7.2},
-                  {m:"Abr",SI:9.2,SO:8.5,Dev:7.6},
-                  {m:"May",SI:5.3,SO:4.9,Dev:7.5},
-                  {m:"Jun",SI:5.0,SO:3.4,Dev:6.9},
-                ]} margin={{top:16,right:20,left:0,bottom:0}}>
+                  {m:"Ene",Real:18.2,Forecast:17.5,GM:66},
+                  {m:"Feb",Real:21.4,Forecast:20.0,GM:67},
+                  {m:"Mar",Real:19.8,Forecast:21.0,GM:68},
+                  {m:"Abr",Real:22.1,Forecast:21.5,GM:68},
+                  {m:"May",Real:20.5,Forecast:22.0,GM:69},
+                  {m:"Jun",Real:22.3,Forecast:22.8,GM:69},
+                  {m:"Jul",Real:null,Forecast:24.0,GM:null},
+                  {m:"Ago",Real:null,Forecast:25.2,GM:null},
+                  {m:"Sep",Real:null,Forecast:26.1,GM:null},
+                  {m:"Oct",Real:null,Forecast:26.8,GM:null},
+                  {m:"Nov",Real:null,Forecast:27.5,GM:null},
+                  {m:"Dic",Real:null,Forecast:28.3,GM:null},
+                ]} margin={{top:4,right:16,left:0,bottom:0}}>
                   <XAxis dataKey="m" tick={{fontSize:9}} />
-                  <YAxis yAxisId="left" tick={{fontSize:9}} />
-                  <YAxis yAxisId="right" orientation="right" tick={{fontSize:9}} unit="%" domain={[0,15]} />
-                  <Tooltip />
-                  <Bar yAxisId="left" dataKey="SI" name="Sell-In Real" fill="#312e81" radius={[3,3,0,0]} maxBarSize={28} />
-                  <Bar yAxisId="left" dataKey="SO" name="Sell-Out Real" fill="#7c3aed" opacity={0.7} radius={[3,3,0,0]} maxBarSize={28} />
-                  <Line yAxisId="right" type="monotone" dataKey="Dev" name="% Devoluciones" stroke="#F97316" strokeWidth={2} dot={{r:4,fill:"#F97316"}} />
+                  <YAxis tick={{fontSize:9}} />
+                  <Tooltip formatter={(v)=>v?`$${v}M`:"—"} />
+                  <Bar dataKey="Real" fill="#1D9E75" radius={[3,3,0,0]} maxBarSize={22} />
+                  <Bar dataKey="Forecast" fill="#185FA5" opacity={0.5} radius={[3,3,0,0]} maxBarSize={22} />
+                  <Line type="monotone" dataKey="GM" stroke="#D85A30" strokeWidth={2} dot={false} yAxisId={0} />
                 </ComposedChart>
               </ResponsiveContainer>
-              <div style={{display:"flex",gap:14,marginTop:8,flexWrap:"wrap"}}>
-                {[["#312e81","Sell-In Real"],["#7c3aed","Sell-Out Real"],["#F97316","% Devoluciones"],["#bbf7d0","Gradiente Dev"]].map(([c,l],i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:5,fontSize:9,color:"#555"}}>
-                    <span style={{width:12,height:i<2?12:4,background:c,borderRadius:i<2?2:2,display:"inline-block"}}></span>{l}
+              <div style={{display:"flex",gap:12,marginTop:6}}>
+                {[{c:"#1D9E75",l:"Real"},{c:"#185FA5",l:"Forecast"},{c:"#D85A30",l:"GM% Tendencia"}].map((lg,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:9,color:"#555"}}>
+                    <span style={{width:10,height:10,background:lg.c,borderRadius:2,display:"inline-block"}}></span>{lg.l}
                   </div>
                 ))}
               </div>
             </div>
-{/* CUMPLIMIENTO GAUGES */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"14px 16px"}}>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                <span style={{color:"#E24B4A",fontSize:14}}>🎯</span>
-                <span style={{fontSize:11,fontWeight:600,color:"#1a1a2e"}}>Cumplimiento vs Budget</span>
-              </div>
-              <div style={{fontSize:9,color:"#8A90A8",marginBottom:10}}>Sell-In y Sell-Out por molécula · YTD Jun 2026</div>
-              {[
-                {mol:"Bevacizumab",si:105,so:97,siV:"+5.5%",soV:"-2.3%",siC:"#185FA5",soC:"#E24B4A"},
-                {mol:"Corelis",si:98,so:103,siV:"-2.1%",soV:"+3.1%",siC:"#E24B4A",soC:"#1D9E75"},
-                {mol:"Euxara",si:102,so:98,siV:"+1.5%",soV:"-1.2%",siC:"#185FA5",soC:"#E24B4A"},
-                {mol:"Hyaxum",si:103,so:101,siV:"+3.0%",soV:"+1.0%",siC:"#1D9E75",soC:"#1D9E75"},
-                {mol:"Certolizumab",si:95,so:96,siV:"-5.0%",soV:"-4.0%",siC:"#E24B4A",soC:"#E24B4A"},
-              ].map((row,i)=>{
-                const SvgGauge=({pct,color,label})=>{
-                  const r=22,circ=2*Math.PI*r;
-                  const fill=Math.min(pct,100)/100*circ;
-                  return(
-                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                      <svg width={54} height={54} viewBox="0 0 54 54">
-                        <circle cx={27} cy={27} r={r} fill="none" stroke="#E4E8F2" strokeWidth={5}/>
-                        <circle cx={27} cy={27} r={r} fill="none" stroke={color} strokeWidth={5}
-                          strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
-                          transform="rotate(-90 27 27)"/>
-                        <text x={27} y={31} textAnchor="middle" fontSize={11} fontWeight={700} fill={color}>{pct}%</text>
-                      </svg>
-                      <span style={{fontSize:8,color:color,fontWeight:600}}>{label}</span>
-                    </div>
-                  );
-                };
-                return(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<4?"1px solid #F0F2FA":"none"}}>
-                    <SvgGauge pct={row.si} color={row.siC} label={`SI ${row.siV}`}/>
-                    <SvgGauge pct={row.so} color={row.soC} label={`SO ${row.soV}`}/>
-                    <div>
-                      <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>{row.mol}</div>
-                      <div style={{fontSize:8,color:row.siC}}>▲ SI {row.siV}</div>
-                      <div style={{fontSize:8,color:row.soC}}>▲ SO {row.soV}</div>
-                    </div>
+{/* PIE Ventas por Molécula */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12}}>
+              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:2}}>Mix por Molécula</div>
+              <div style={{fontSize:9,color:"#8A90A8",marginBottom:6}}>% Ventas YTD</div>
+              <ResponsiveContainer width="100%" height={150}>
+                <PieChart>
+                  <Pie data={[
+                    {name:"Hyaxum",value:42},
+                    {name:"Bevacizumab",value:28},
+                    {name:"Euxara",value:15},
+                    {name:"Certolizumab",value:10},
+                    {name:"Otros",value:5},
+                  ]} dataKey="value" cx="50%" cy="50%" outerRadius={60} innerRadius={30} paddingAngle={2}>
+                    {["#1D9E75","#534AB7","#D85A30","#185FA5","#8A90A8"].map((c,i)=>(
+                      <Cell key={i} fill={c} />
+                    ))}
+                    <LabelList dataKey="value" position="outside" formatter={(v)=>`${v}%`} style={{fontSize:8}} />
+                  </Pie>
+                  <Tooltip formatter={(v)=>`${v}%`} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:4}}>
+                {[["Hyaxum","#1D9E75"],["Bevacizumab","#534AB7"],["Euxara","#D85A30"],["Certolizumab","#185FA5"],["Otros","#8A90A8"]].map(([n,c],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8,color:"#555"}}>
+                    <span style={{width:8,height:8,background:c,borderRadius:2,display:"inline-block"}}></span>{n}
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </div>
 {/* BOTTOM ROW */}
-          <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr 1.2fr",gap:12,marginBottom:16}}>
-{/* TABLA SI vs SO */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>Sell-In vs Sell-Out por Molécula — YTD Junio 2026</div>
-                <button style={{fontSize:8,padding:"3px 8px",background:"#534AB7",color:"#fff",border:"none",borderRadius:4,cursor:"pointer"}}>⬇ CSV</button>
-              </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+{/* Tabla por área */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
+              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:6}}>Desglose por Área Terapéutica</div>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
                 <thead><tr style={{background:"#F8F9FE"}}>
-                  {["Molécula","Sell-In","SO","Dev%","Gap Canal"].map((h,i)=>(
-                    <th key={i} style={{padding:"5px 6px",textAlign:i===0?"left":"right",color:"#8A90A8",fontWeight:600,borderBottom:"2px solid #E4E8F2"}}>{h}</th>
+                  {["Área","Molécula","Real YTD","Fcst YTD","Var %","GM%"].map((h,i)=>(
+                    <th key={i} style={{padding:"5px 6px",textAlign:i>1?"right":"left",color:"#8A90A8",fontWeight:600,borderBottom:"1px solid #E4E8F2"}}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
                   {[
-                    ["Bevacizumab","$8.4M","$7.7M","8.1%","$0.7M"],
-                    ["Corelis","$7.1M","$6.7M","5.3%","$0.4M"],
-                    ["Euxara","$6.5M","$6.2M","4.8%","$0.3M"],
-                    ["Hyaxum","$4.2M","$4.1M","2.1%","$0.1M"],
-                    ["Certolizumab","$5.8M","$5.4M","7.4%","$0.4M"],
-                    ["Bevalyax","$5.2M","$5.1M","1.9%","$0.1M"],
-                    ["Saytelya","$5.1M","$2.9M","3.2%","$0.2M"],
-                  ].map((row,i)=>{
-                    const devPct=parseFloat(row[3]);
-                    const devC=devPct>=5?"#E24B4A":devPct>=3?"#D97706":"#1D9E75";
-                    return(
-                      <tr key={i} style={{borderBottom:"1px solid #F0F2FA",background:i%2?"#FAFBFF":"#fff"}}>
-                        <td style={{padding:"5px 6px",color:"#1a1a2e",fontWeight:500}}>{row[0]}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right",color:"#185FA5",fontWeight:600}}>{row[1]}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right",color:"#534AB7",fontWeight:600}}>{row[2]}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right",color:devC,fontWeight:700}}>{row[3]}</td>
-                        <td style={{padding:"5px 6px",textAlign:"right",color:"#E24B4A",fontWeight:600}}>{row[4]}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr style={{background:"#EDE9FE",fontWeight:700,borderTop:"2px solid #534AB7"}}>
-                    {["TOTAL","$42.3M","$38.1M","4.2%","$2.2M"].map((v,i)=>(
-                      <td key={i} style={{padding:"6px 6px",textAlign:i===0?"left":"right",color:"#312e81",fontWeight:700}}>{v}</td>
-                    ))}
-                  </tr>
+                    ["SAOS","Hyaxum","$52.2M","$48.0M","+8.7%","74%","#1D9E75"],
+                    ["ONHE","Bevacizumab","$34.8M","$36.0M","-3.3%","61%","#E24B4A"],
+                    ["SAOS","Euxara","$18.6M","$17.5M","+6.3%","70%","#1D9E75"],
+                    ["INMU","Certolizumab","$12.4M","$11.8M","+5.1%","65%","#1D9E75"],
+                    ["CAME","Ezetimiba","$6.3M","$7.0M","-10%","58%","#E24B4A"],
+                  ].map(([area,mol,real,fcst,vr,gm,vc],i)=>(
+                    <tr key={i} style={{borderBottom:"1px solid #F0F2FA",background:i%2?"#FAFBFF":"#fff"}}>
+                      <td style={{padding:"5px 6px"}}><span style={{background:"#EDE9FE",color:"#534AB7",borderRadius:4,padding:"1px 5px",fontWeight:600}}>{area}</span></td>
+                      <td style={{padding:"5px 6px",color:"#1a1a2e"}}>{mol}</td>
+                      <td style={{padding:"5px 6px",textAlign:"right",fontWeight:600,color:"#1a1a2e"}}>{real}</td>
+                      <td style={{padding:"5px 6px",textAlign:"right",color:"#8A90A8"}}>{fcst}</td>
+                      <td style={{padding:"5px 6px",textAlign:"right",color:vc,fontWeight:600}}>{vr}</td>
+                      <td style={{padding:"5px 6px",textAlign:"right",color:"#185FA5"}}>{gm}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-{/* DEVOLUCIONES % LIST */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e"}}>Devoluciones % por Molécula</div>
-                <div style={{display:"flex",gap:0,borderRadius:5,border:"1px solid #E4E8F2",overflow:"hidden"}}>
-                  {["YTD","Jun"].map((t,i)=>(
-                    <span key={i} style={{padding:"2px 8px",fontSize:8,background:i===0?"#534AB7":"#fff",color:i===0?"#fff":"#8A90A8",cursor:"pointer"}}>{t}</span>
-                  ))}
-                </div>
-              </div>
-              <div style={{height:8,borderRadius:4,background:"linear-gradient(90deg,#1D9E75,#D97706,#E24B4A)",marginBottom:8,position:"relative"}}>
-                <span style={{position:"absolute",left:"60%",top:-12,fontSize:7,color:"#D97706"}}>Alerta 5%</span>
-                <span style={{position:"absolute",right:0,top:-12,fontSize:7,color:"#E24B4A"}}>Alto ≥5%</span>
-              </div>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
-                <thead><tr>
-                  {["Molécula","Dev%","Trend"].map((h,i)=>(
-                    <th key={i} style={{padding:"4px 4px",textAlign:i===0?"left":"center",color:"#8A90A8",fontWeight:600,borderBottom:"1px solid #E4E8F2"}}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {[
-                    ["Bevacizumab",8.1,"↑"],
-                    ["Corelis",5.3,"→"],
-                    ["Euxara",4.8,"↓"],
-                    ["Hyaxum",2.1,"↓"],
-                    ["Certolizumab",7.4,"↑"],
-                    ["Bevalyax",1.9,"↓"],
-                    ["Saytelya",3.2,"→"],
-                  ].map(([mol,dev,trend],i)=>{
-                    const c=dev>=5?"#E24B4A":dev>=3?"#D97706":"#1D9E75";
-                    const tc=trend==="↑"?"#E24B4A":trend==="↓"?"#1D9E75":"#8A90A8";
-                    return(
-                      <tr key={i} style={{borderBottom:"1px solid #F0F2FA"}}>
-                        <td style={{padding:"5px 4px",color:"#1a1a2e"}}>{mol}</td>
-                        <td style={{padding:"5px 4px",textAlign:"center"}}>
-                          <span style={{background:c+"22",color:c,borderRadius:4,padding:"2px 7px",fontWeight:700}}>{dev}%</span>
-                        </td>
-                        <td style={{padding:"5px 4px",textAlign:"center",color:tc,fontSize:14,fontWeight:700}}>{trend}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
-                {[["#E24B4A","≥5% crítico"],["#D97706","3-5% alerta"],["#1D9E75","<3% normal"]].map(([c,l],i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8,color:"#555"}}>
-                    <span style={{width:8,height:8,background:c,borderRadius:50,display:"inline-block"}}></span>{l}
-                  </div>
-                ))}
-              </div>
-            </div>
-{/* HEATMAP DEVOLUCIONES */}
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"12px 14px"}}>
-              <div style={{fontSize:10,fontWeight:600,color:"#1a1a2e",marginBottom:8}}>Heatmap Devoluciones % — Mes × Molécula</div>
+{/* Heatmap por mes/producto */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,overflowX:"auto"}}>
+              <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:6}}>Heatmap Ventas — Unidades por Mes</div>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
                 <thead><tr style={{background:"#F8F9FE"}}>
-                  <th style={{padding:"4px 5px",textAlign:"left",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Mol</th>
-                  {["Ene","Feb","Mar","Abr","May","Jun"].map((m,i)=>(
-                    <th key={i} style={{padding:"4px 5px",textAlign:"center",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>{m}</th>
+                  <th style={{padding:"4px 6px",textAlign:"left",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>Molécula</th>
+                  {["E","F","M","A","M","J"].map((m,i)=>(
+                    <th key={i} style={{padding:"4px 6px",textAlign:"center",color:"#8A90A8",borderBottom:"1px solid #E4E8F2"}}>{m}</th>
                   ))}
                 </tr></thead>
                 <tbody>
                   {[
-                    {mol:"Beva",vals:[7.9,8.1,7.2,8.5,8.8,6.9]},
-                    {mol:"Corel",vals:[5.1,5.4,4.6,5.0,5.2,5.7]},
-                    {mol:"Euxara",vals:[4.5,4.8,4.3,5.1,4.7,4.8]},
-                    {mol:"Cert",vals:[7.1,7.5,6.9,8.2,7.8,6.8]},
-                    {mol:"Hyaxum",vals:[2.0,2.3,1.9,2.2,2.1,2.4]},
+                    {mol:"Hyaxum",vals:[820,950,870,1100,980,1050],max:1100},
+                    {mol:"Bevacizumab",vals:[430,390,460,420,480,510],max:510},
+                    {mol:"Euxara",vals:[210,240,200,290,260,310],max:310},
+                    {mol:"Certolizumab",vals:[85,100,95,120,110,130],max:130},
+                    {mol:"Ezetimiba",vals:[1200,980,1100,1050,900,800],max:1200},
                   ].map((row,i)=>(
                     <tr key={i} style={{borderBottom:"1px solid #F0F2FA"}}>
-                      <td style={{padding:"5px 5px",color:"#1a1a2e",fontWeight:600}}>{row.mol}</td>
+                      <td style={{padding:"4px 6px",color:"#1a1a2e",fontWeight:500}}>{row.mol}</td>
                       {row.vals.map((v,j)=>{
-                        const bg=v>=5?"#FECACA":v>=3?"#FEF3C7":"#D1FAE5";
-                        const tc=v>=5?"#991B1B":v>=3?"#92400E":"#065F46";
-                        return(
-                          <td key={j} style={{padding:"5px 5px",textAlign:"center",background:bg,color:tc,fontWeight:600,borderRadius:3}}>{v}%</td>
-                        );
+                        const pct=v/row.max;
+                        const bg=`rgba(83,74,183,${(pct*0.7+0.05).toFixed(2)})`;
+                        return <td key={j} style={{padding:"4px 6px",textAlign:"center",background:bg,color:pct>0.5?"#fff":"#534AB7",fontWeight:pct>0.6?700:400,borderRadius:3}}>{v>=1000?(v/1000).toFixed(1)+"K":v}</td>;
                       })}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div style={{display:"flex",gap:8,marginTop:8}}>
-                {[["#D1FAE5","#065F46","<3%"],["#FEF3C7","#92400E","3-5%"],["#FECACA","#991B1B",">5%"]].map(([bg,tc,l],i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:3,fontSize:8}}>
-                    <span style={{width:14,height:10,background:bg,borderRadius:2,display:"inline-block",border:`1px solid ${tc}`}}></span>
-                    <span style={{color:tc}}>{l}</span>
+              <div style={{fontSize:8,color:"#B0B6C3",marginTop:8}}>Ene–Jun 2026 · Unidades vendidas (dummy)</div>
+            </div>
+          </div>
+{/* BOTTOM KPI: Top Clientes */}
+          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:12,marginBottom:16}}>
+            <div style={{fontSize:11,fontWeight:600,color:"#1a1a2e",marginBottom:8}}>🏆 Top 5 Clientes — Ventas YTD</div>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+              {[
+                {name:"IMSS",val:"$38.2M",pct:31,color:"#534AB7"},
+                {name:"ISSSTE",val:"$24.5M",pct:20,color:"#1D9E75"},
+                {name:"Secretaría de Salud",val:"$18.7M",pct:15,color:"#185FA5"},
+                {name:"Hospital Ángeles",val:"$12.3M",pct:10,color:"#D85A30"},
+                {name:"Farmacias SB",val:"$8.9M",pct:7,color:"#BA7517"},
+              ].map((c,i)=>(
+                <div key={i} style={{flex:1,minWidth:120}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                    <span style={{fontSize:9,color:"#1a1a2e",fontWeight:500}}>{c.name}</span>
+                    <span style={{fontSize:9,color:c.color,fontWeight:700}}>{c.val}</span>
                   </div>
-                ))}
-              </div>
+                  <div style={{background:"#F0F2FA",borderRadius:4,height:6}}>
+                    <div style={{width:`${c.pct}%`,background:c.color,borderRadius:4,height:6}}></div>
+                  </div>
+                  <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>{c.pct}% del total</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      )}}
+      )}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
     </div>
   );
