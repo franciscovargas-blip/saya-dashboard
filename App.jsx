@@ -1386,32 +1386,28 @@ export default function Dashboard() {
           );
         })()}
 
-        {/* Expenses by Area de Trabajo */}
+        {/* OPEX by Area de Trabajo */}
         {(() => {
-          const OPEX_CLS_NAME = {sw:'Salaries & Wages',sm:'Sales & Marketing',ta:'Travel & Accommodation',pf:'Professional Fees',of:'Office Expense',reg:'Regulatory',sh:'Software & Hardware',mob:'Mobility',qual:'Quality',ops:'Operations',oth:'Others'};
           const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[3]));
           const areaMap = {};
           realOpex.forEach(r => {
             const area = (r[10] && r[10] !== "--" && r[10] !== "—") ? r[10] : "Otros";
-            if (!areaMap[area]) areaMap[area] = { total: 0, cls: {} };
-            areaMap[area].total += r[9];
-            const cls = r[6] || 'oth';
-            if (!areaMap[area].cls[cls]) areaMap[area].cls[cls] = 0;
-            areaMap[area].cls[cls] += r[9];
+            if (!areaMap[area]) areaMap[area] = 0;
+            areaMap[area] += r[9];
           });
           let areaRows = Object.entries(areaMap)
-            .map(([area, d]) => ({ area, total: d.total, cls: d.cls }))
+            .map(([area, total]) => ({ area, total }))
             .filter(r => r.total > 0)
             .sort((a, b) => b.total - a.total).filter(r => r.area !== 'Otros');
           const grandTotal = areaRows.reduce((s, r) => s + r.total, 0);
           // Si no hay datos por AreaCode, mostrar estructura con áreas conocidas
           if (areaRows.length === 0 || (areaRows.length === 1 && areaRows[0].area === "Otros")) {
-            areaRows = ["BD","CA","CO","DG","FI","GE","HR","MA","RE","RH","TA"].map(a => ({ area: a, total: 0, cls: {} }));
+            areaRows = ["BD","CA","CO","DG","FI","GE","HR","MA","RE","RH","TA"].map(a => ({ area: a, total: 0 }));
           }
           return (
             <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B',boxSizing:'border-box',height:'100%'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Expenses by Area</div>
+                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>OPEX by Area</div>
                 <button onClick={()=>{const he="Área de Trabajo,Monto,% Total\n"; const re2=areaRows.map(r=>[r.area,r.total.toFixed(2),(grandTotal>0?Math.round(r.total/grandTotal*100):0)+'%'].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="expenses_by_area.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
                 <div style={{fontSize:10,fontWeight:800,color:'#F59E0B'}}>TOTAL {F(grandTotal)}</div>
               </div>
@@ -1422,33 +1418,13 @@ export default function Dashboard() {
                   ))}
                 </tr></thead>
                 <tbody>
-                  {areaRows.map((r,i) => {
-                    const isExpanded = !!expArea['ax_'+r.area];
-                    const clsRows = Object.entries(r.cls||{})
-                      .filter(([,v])=>v>0)
-                      .sort(([,a],[,b])=>b-a);
-                    return (
-                      <React.Fragment key={i}>
-                        <tr
-                          onClick={()=>setExpArea(prev=>({...prev,['ax_'+r.area]:!prev['ax_'+r.area]}))}
-                          style={{background:i%2===0?'#fff':'#fafbfe',cursor:'pointer'}}
-                        >
-                          <td style={{padding:'4px 5px',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                            <span style={{marginRight:4,fontSize:8,color:'#534AB7'}}>{isExpanded?'▼':'▶'}</span>{r.area}
-                          </td>
-                          <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.total)}</td>
-                          <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{grandTotal>0?Math.round(r.total/grandTotal*100):0}%</td>
-                        </tr>
-                        {isExpanded && clsRows.map(([cls,val],j)=>(
-                          <tr key={'sub_'+j} style={{background:'#f5f6ff'}}>
-                            <td style={{padding:'3px 5px 3px 18px',color:'#534AB7',fontSize:8}}>{OPEX_CLS_NAME[cls]||cls}</td>
-                            <td style={{padding:'3px 5px',textAlign:'right',fontSize:8,color:'#1a1a2e',fontWeight:500}}>{F(val)}</td>
-                            <td style={{padding:'3px 5px',textAlign:'right',fontSize:8,color:'#8A90A8'}}>{r.total>0?Math.round(val/r.total*100):0}%</td>
-                          </tr>
-                        ))}
-                      </React.Fragment>
-                    );
-                  })}
+                  {areaRows.map((r,i) => (
+                    <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
+                      <td style={{padding:'4px 5px',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.area}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.total)}</td>
+                      <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{grandTotal>0?Math.round(r.total/grandTotal*100):0}%</td>
+                    </tr>
+                  ))}
                   <tr style={{background:'#f0f2fa',fontWeight:700}}>
                     <td style={{padding:'5px 5px'}}>TOTAL</td>
                     <td style={{padding:'5px 5px',textAlign:'right'}}>{F(grandTotal)}</td>
@@ -1533,7 +1509,7 @@ export default function Dashboard() {
           {label:'Valor Total del Inventario',      value:'$1.4 M',  bold:true},
           {label:'Días de Inventario',               value:'--',      bold:false},
           {label:'Rotación (Últimos 12 Meses)',       value:'--',      bold:false},
-          {label:'% Próximo a Caducar',              value:'5.3%',    bold:false},
+          {label:'% Próximo a Caducar',              value:'--',      bold:false},
         ].map((k,i,arr)=>(
           <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:i<arr.length-1?'1px solid #F0F2FA':'none'}}>
             <div style={{fontSize:10,color:'#8A90A8'}}>{k.label}</div>
