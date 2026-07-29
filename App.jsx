@@ -1438,65 +1438,8 @@ export default function Dashboard() {
 
       </div>
 
-      {/* ===== ANÁLISIS EJECUTIVO PHARMA + TABLA ÁREA ===== */}
-
-      <div style={{margin:'24px 0 8px',borderTop:'2px dashed #E4E8F2',paddingTop:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:-0.3}}>
-          📊 Análisis Ejecutivo Pharma
-        </div>
-        <div style={{fontSize:10,color:'#8A90A8'}}>
-          Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}
-        </div>
-      </div>
-
-      {/* ===== ROW: WORKING CAPITAL | INVENTARIOS | CASH FLOW ===== */}
-      <div style={{display:'flex',gap:12,alignItems:'stretch',marginBottom:16}}>
-        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
-      {/* ===== WORKING CAPITAL ===== */}
-      <div style={{margin:'0 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
-                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>WORKING CAPITAL</div>
-      </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-        {/* DSO */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DSO</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cobranza)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>60</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -3 días</div>
-        </div>
-        {/* DPO */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DPO</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Proveedores)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>4</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#E24B4A'}}>▲ +2 días</div>
-        </div>
-        {/* DIO */}
-        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DIO</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Inventarios)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>523</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -14 días</div>
-        </div>
-        {/* CCC */}
-        <div style={{background:'#1a1a2e',borderRadius:10,padding:'16px',textAlign:'center'}}>
-          <div style={{fontSize:11,fontWeight:700,color:'#A78BFA'}}>CCC</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cycle Cash Conversion)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#fff',lineHeight:1}}>579</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#FCA5A5'}}>▼ -15 días</div>
-        </div>
-      </div>
-
       {/* ===== CADUCIDAD POR LOTES ===== */}
-      <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',marginTop:10}}>
+      <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',marginTop:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
           <div>
             <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:1}}>📦 Caducidad por Lotes · Shelf Life</div>
@@ -1566,6 +1509,12 @@ export default function Dashboard() {
                   </tr>
                 );
               })}
+              <tr>
+                <td colSpan={8} style={{padding:'6px 10px',background:'#FFF7ED',borderTop:'1px dashed #FCD34D'}}>
+                  <span style={{fontSize:8,color:'#92400E',fontWeight:700}}>⚠️ Movimiento registrado: </span>
+                  <span style={{fontSize:8,color:'#92400E'}}>1 pieza del lote HXP-2026-SI fue enviada a muestras de laboratorio. Saldo anterior: 76 uds → Saldo actual: 75 uds.</span>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1576,6 +1525,65 @@ export default function Dashboard() {
           <span style={{marginLeft:'auto',background:'#FEE2E2',color:'#991B1B',borderRadius:4,padding:'2px 8px',fontWeight:700}}>| línea roja = límite destrucción (12m)</span>
         </div>
       </div>
+
+      {/* ===== ANÁLISIS EJECUTIVO PHARMA + TABLA ÁREA ===== */}
+
+      <div style={{margin:'24px 0 8px',borderTop:'2px dashed #E4E8F2',paddingTop:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:-0.3}}>
+          📊 Análisis Ejecutivo Pharma
+        </div>
+        <div style={{fontSize:10,color:'#8A90A8'}}>
+          Datos SAP · YTD {MO[cm-1]} {CUR_YEAR}
+        </div>
+      </div>
+
+      {/* ===== ROW: WORKING CAPITAL | INVENTARIOS | CASH FLOW ===== */}
+      <div style={{display:'flex',gap:12,alignItems:'stretch',marginBottom:16}}>
+        <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
+      {/* ===== WORKING CAPITAL ===== */}
+      <div style={{margin:'0 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
+                <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>WORKING CAPITAL</div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+        {/* DSO */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DSO</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cobranza)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>60</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -3 días</div>
+        </div>
+        {/* DPO */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DPO</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Proveedores)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>4</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#E24B4A'}}>▲ +2 días</div>
+        </div>
+        {/* DIO */}
+        <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DIO</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Inventarios)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>523</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -14 días</div>
+        </div>
+        {/* CCC */}
+        <div style={{background:'#1a1a2e',borderRadius:10,padding:'16px',textAlign:'center'}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#A78BFA'}}>CCC</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cycle Cash Conversion)</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#fff',lineHeight:1}}>579</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
+          <div style={{fontSize:11,fontWeight:700,color:'#FCA5A5'}}>▼ -15 días</div>
+        </div>
+      </div>
+
+
 
         </div>
         <div style={{flex:1,minWidth:0,background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 12px'}}>
