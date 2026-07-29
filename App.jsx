@@ -168,6 +168,35 @@ const PCT_KEYS = new Set(["gmPct","totOpexPct","ebitdaPct","ebitPct","netProfitP
 const BOLD_KEYS = new Set(["ns","gp","totOpex","ebitda","ebit","totFin","netProfit"]);
 const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"]);
 {/* */}
+function LoginGate({ children }) {
+  const [input, setInput] = React.useState('');
+  const [authed, setAuthed] = React.useState(false);
+  const [error, setError] = React.useState(false);
+  if (authed) return children;
+  return (
+    <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Inter,sans-serif'}}>
+      <div style={{background:'rgba(255,255,255,0.05)',backdropFilter:'blur(16px)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:20,padding:'48px 40px',width:340,boxShadow:'0 24px 64px rgba(0,0,0,0.4)',textAlign:'center'}}>
+        <div style={{fontSize:42,marginBottom:12}}>🏅</div>
+        <div style={{fontSize:22,fontWeight:800,color:'#fff',marginBottom:4,letterSpacing:-0.5}}>Saya Biologics</div>
+        <div style={{fontSize:12,color:'rgba(255,255,255,0.5)',marginBottom:32,letterSpacing:1}}>BUSINESS INTELLIGENCE</div>
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={input}
+          onChange={e=>{setInput(e.target.value);setError(false);}}
+          onKeyDown={e=>{if(e.key==='Enter'){if(input==='SayaIntelligence*2314'){setAuthed(true);}else{setError(true);}}}}
+          style={{width:'100%',padding:'12px 16px',borderRadius:10,border:error?'1.5px solid #f87171':'1.5px solid rgba(255,255,255,0.15)',background:'rgba(255,255,255,0.08)',color:'#fff',fontSize:14,outline:'none',boxSizing:'border-box',marginBottom:error?8:16}}
+        />
+        {error && <div style={{color:'#f87171',fontSize:11,marginBottom:12}}>Contraseña incorrecta</div>}
+        <button
+          onClick={()=>{if(input==='SayaIntelligence*2314'){setAuthed(true);}else{setError(true);}}}
+          style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:'linear-gradient(90deg,#534AB7,#7C3AED)',color:'#fff',fontWeight:700,fontSize:14,cursor:'pointer',letterSpacing:0.3}}
+        >Ingresar</button>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [cm, setCm] = useState(() => {
     const realesMonths = D.filter(r=>r[1]==="Reales"&&r[2]===CUR_YEAR).map(r=>r[3]).filter(Number.isFinite);
@@ -639,6 +668,7 @@ export default function Dashboard() {
   };
 {/* */}
   return (
+    <LoginGate>
     <div style={{ fontFamily: "'DM Mono','Consolas',monospace", minHeight: "100vh" }}>
       {/* HEADER */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #E4E8F2", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
@@ -1560,7 +1590,7 @@ export default function Dashboard() {
       <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',marginBottom:10}}>
         {[
           {label:'Valor Total del Inventario',      value:'$1.4 M',  bold:true},
-          {label:'Días de Inventario',               value:'523',     bold:false},
+          {label:'Días de Inventario',               value:'--',      bold:false},
           {label:'Rotación (Últimos 12 Meses)',       value:'--',      bold:false},
           {label:'% Próximo a Caducar',              value:'--',    bold:false},
         ].map((k,i,arr)=>(
@@ -2354,6 +2384,7 @@ export default function Dashboard() {
       )}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
     </div>
+    </LoginGate>
   );
 }
 {/* */}
