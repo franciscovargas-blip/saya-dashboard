@@ -106,7 +106,8 @@ const Fn=v=>{if(!v||v===0)return"—";const n=v<0,a=Math.abs(v);const s="$"+Math
 {/* */}
 const F=v=>{if(!v||v===0)return"—";const n=v<0,a=Math.abs(v);const s="$"+Math.round(a).toLocaleString("en-US");return n?"-"+s:s};
 const P=v=>(!isFinite(v)||isNaN(v)||v===0)?"—":`${(v*100).toFixed(1)}%`;
-const gV=(d,pl,or,yr,m)=>d.filter(r=>r[0]===pl&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
+const normPL = (pl) => pl === "GP0001" ? "Operations" : pl === "AS Manual" ? "Others" : pl;
+const gV=(d,pl,or,yr,m)=>d.filter(r=>normPL(r[0])===pl&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
 const gVms=(d,pl,or,yr,ms)=>ms.reduce((s,m)=>s+gV(d,pl,or,yr,m),0);
 const mols=[...new Set(D.map(r=>mapMol(r[4])))].sort();
 const molsModelos=[...new Set(D.map(r=>r[4]).filter(m=>m&&m!=="--"&&m!=="—"))].sort();
@@ -351,8 +352,8 @@ export default function Dashboard() {
   // Pies
 {/* */}
   // Pareto
-  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
-  const paretoMes = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && r[3] === cm); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const paretoMes = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && r[3] === cm); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
   const maxPMes = paretoMes.length ? Math.abs(paretoMes[0].total) : 1;
 {/* */}
 {/* */}
@@ -374,7 +375,7 @@ export default function Dashboard() {
 {/* */}
   // ═══ AREA × MONTH TABLE ═══
   const areaTable = useMemo(() => {
-    const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[3]));
+    const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3]));
     // Agrupar directamente por Molécula (sin nivel de Área Terapéutica)
     const molMap = {};
     realOpex.forEach(r => {
@@ -384,7 +385,7 @@ export default function Dashboard() {
       molMap[mol].monthly[r[3]] = (molMap[mol].monthly[r[3]] || 0) + r[9];
       molMap[mol].total += r[9];
       // Sub-group by Clasificación
-      const cls = r[6] || "—";
+      const cls = r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—");
       if (!molMap[mol].cls[cls]) molMap[mol].cls[cls] = { monthly: {}, total: 0 };
       ytdM.forEach(m => { if (!molMap[mol].cls[cls].monthly[m]) molMap[mol].cls[cls].monthly[m] = 0; });
       molMap[mol].cls[cls].monthly[r[3]] = (molMap[mol].cls[cls].monthly[r[3]] || 0) + r[9];
@@ -409,7 +410,7 @@ export default function Dashboard() {
 {/* */}
   // ═══ AREA DE TRABAJO × MONTH TABLE ═══
   const plLineTable = useMemo(() => {
-    const realOpex2 = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[3]));
+    const realOpex2 = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3]));
     const atNames = [...new Set(realOpex2.map(r => r[10] || "—"))].filter(a => a !== "—").sort();
     return atNames.map(at => {
       const atRows = realOpex2.filter(r => (r[10] || "—") === at);
@@ -418,7 +419,7 @@ export default function Dashboard() {
       const total = Object.values(monthly).reduce((s, v) => s + v, 0);
       const clsMap = {};
       atRows.forEach(r => {
-        const cls = r[6] || "—";
+        const cls = r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—");
         if (!clsMap[cls]) clsMap[cls] = { monthly: {}, total: 0 };
         ytdM.forEach(m => { if (!clsMap[cls].monthly[m]) clsMap[cls].monthly[m] = 0; });
         clsMap[cls].monthly[r[3]] = (clsMap[cls].monthly[r[3]] || 0) + r[9];
@@ -764,14 +765,14 @@ export default function Dashboard() {
                 );
                 // Drill-down for OpEx rows
                 if (isOpex && expOpex[k] && code) {
-                  const codeData = fd.filter(r => r[0] === code);
+                  const codeData = fd.filter(r => normPL(r[0]) === code);
                   // Group by Clasificacion — Reales ≤ cm, Forecast > cm
                   const clsMap = {};
                   codeData.forEach(r => {
                     const m = r[3], origen = r[1];
                     if (m <= cm && origen !== "Reales") return;
                     if (m > cm && origen !== "Forecast") return;
-                    const cls = r[6] || "—";
+                    const cls = r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—");
                     if (!clsMap[cls]) clsMap[cls] = { items: {}, m: Array(12).fill(0) };
                     clsMap[cls].m[m - 1] += r[9];
                     const com = r[7] || "—";
@@ -1448,7 +1449,7 @@ export default function Dashboard() {
 
         {/* Expenses by Work Area */}
         {(() => {
-          const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(r[0]) && ytdM.includes(r[3]));
+          const realOpex = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3]));
           const areaMap = {};
           realOpex.forEach(r => {
             const rawArea = (r[10] && r[10] !== "--" && r[10] !== "—") ? r[10] : "Otros";
