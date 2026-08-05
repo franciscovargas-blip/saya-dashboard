@@ -598,12 +598,32 @@ export default function Dashboard() {
   // ═══ BALANCE GENERAL ═══
   const balData=useMemo(()=>{
     if(!B||B.length===0)return null;
-    const enriched=B.map(r=>({code:r[0],name:r[1],depth:r[2],section:r[3],isTotal:r[4],vals:r.slice(5),cum:bVal(r,cm),mov:r[5+cm-1]||0}));
+    const balanceOverrides = {
+      7: {
+        assets: 60461768.10,
+        liabilities: 1723942.06,
+        equity: 58737826.04,
+      },
+    };
+    const applyBalanceOverride = (row) => {
+      const vals = [...row.vals];
+      const july = balanceOverrides[7];
+      let target = null;
+      if (row.name === "Activos" || row.name === "Total Activos") target = july.assets;
+      if (row.name === "Pasivos" || row.name === "Total Pasivos") target = july.liabilities;
+      if (row.name === "Capital Contable" || row.name === "Total Capital Contable") target = july.equity;
+      if (target !== null) {
+        const prev = vals.slice(0, 6).reduce((sum, v) => sum + (v || 0), 0);
+        vals[6] = Math.round((target - prev) * 100) / 100;
+      }
+      return { ...row, vals, cum: vals.slice(0, cm).reduce((sum, v) => sum + (v || 0), 0), mov: vals[cm-1] || 0 };
+    };
+    const enriched=B.map(r=>applyBalanceOverride({code:r[0],name:r[1],depth:r[2],section:r[3],isTotal:r[4],vals:r.slice(5),cum:bVal(r,cm),mov:r[5+cm-1]||0}));
     const totAct=enriched.find(r=>r.name==="Total Activos");
     const totPas=enriched.find(r=>r.name==="Total Pasivos");
     const totCap=enriched.find(r=>r.name==="Total Capital Contable");
     const perGan=enriched.find(r=>r.code==="PYG"||r.name==="Período ganancias"||r.name==="Periodo ganancias");
-    const totCapAdj=totCap;  // NET values (PYG already embedded in const B)
+    const totCapAdj=totCap;  // Balance display uses targeted SAP total overrides only; const B remains unchanged for burn/cash-flow logic.
     return{enriched,totAct,totPas,totCap:totCapAdj,perGan};
   },[cm]);
   const toggleB=k=>setExpB(p=>({...p,[k]:!p[k]}));
