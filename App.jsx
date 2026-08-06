@@ -106,6 +106,15 @@ const Fn=v=>{if(!v||v===0)return"—";const n=v<0,a=Math.abs(v);const s="$"+Math
 {/* */}
 const F=v=>{if(!v||v===0)return"—";const n=v<0,a=Math.abs(v);const s="$"+Math.round(a).toLocaleString("en-US");return n?"-"+s:s};
 const P=v=>(!isFinite(v)||isNaN(v)||v===0)?"—":`${(v*100).toFixed(1)}%`;
+
+const AUX_DATA={"Portafolio Investment":[{"name":"Hyaxum","values":{"2025":1673637.33,"2026-01":19958.010000000002,"2026-02":240820.31,"2026-03":308195.52,"2026-04":685800.0199999999,"2026-05":1354801.23,"2026-06":186444.40999999997,"2026-07":1260029.85}},{"name":"Euxara","values":{"2025":8934263.56,"2026-01":150000.0,"2026-02":45202.98,"2026-03":6285671.49,"2026-04":11614.66,"2026-05":488874.6699999999,"2026-06":168369.57999999993,"2026-07":31855.190000000002}},{"name":"Bevalyax","values":{"2025":3568718.85,"2026-01":0.0,"2026-02":40382.52,"2026-03":0.0,"2026-04":0.0,"2026-05":0.0,"2026-06":0.0,"2026-07":499.67}},{"name":"Corelis","values":{"2025":17658416.0,"2026-01":0.0,"2026-02":0.0,"2026-03":0.0,"2026-04":0.0,"2026-05":-7703.13,"2026-06":0.0,"2026-07":0.0}},{"name":"Neutorum","values":{"2025":1240621.0,"2026-01":0.0,"2026-02":0.0,"2026-03":0.0,"2026-04":0.0,"2026-05":4524.12,"2026-06":1277.62,"2026-07":1296.44}},{"name":"Saytelya","values":{"2025":1311705.0,"2026-01":0.0,"2026-02":0.0,"2026-03":0.0,"2026-04":0.0,"2026-05":0.0,"2026-06":0.0,"2026-07":35000.0}},{"name":"Sitagliptina y Merformina","values":{"2025":311792.25,"2026-01":0.0,"2026-02":0.0,"2026-03":0.0,"2026-04":111012.0,"2026-05":1890.29,"2026-06":0.0,"2026-07":70000.0}},{"name":"Acido Micofenolico","values":{"2025":133625.25,"2026-01":0.0,"2026-02":0.0,"2026-03":0.0,"2026-04":111012.0,"2026-05":1890.29,"2026-06":0.0,"2026-07":35000.0}}],"CAPEX":[{"name":"Equipo de Computo","values":{"2025":124060.32,"2026-01":21071.55,"2026-03":22540.52,"2026-04":30999.15,"2026-05":105484.97,"2026-06":49327.28,"2026-07":15085.34}},{"name":"Mobiliario y Equipo","values":{"2025":5761.2,"2026-02":3275.0}},{"name":"Activo Fijo","values":{"2025":129821.52,"2026-01":21071.55,"2026-02":3275.0,"2026-03":22540.52,"2026-04":30999.15,"2026-05":105484.97,"2026-06":49327.28,"2026-07":15085.34,"2026-08":0.0,"2026-09":0.0,"2026-10":0.0,"2026-11":0.0,"2026-12":0.0,"2027-01":0.0,"2027-02":0.0,"2027-03":0.0,"2027-04":0.0,"2027-05":0.0,"2027-06":0.0,"2027-07":0.0,"2027-08":0.0,"2027-09":0.0,"2027-10":0.0,"2027-11":0.0,"2027-12":0.0,"2028-01":0.0}},{"name":"Licencias de Software","values":{"2025":2039981.4000000001,"2026-01":47481.05,"2026-02":928830.1799999999,"2026-03":105043.20000000001,"2026-04":1863.01,"2026-05":554653.1300000001,"2026-06":33534.72,"2026-07":276398.65}},{"name":"COFEPRIS","values":{"2025":1428543.0,"2026-01":0.0,"2026-02":0.0,"2026-03":0.0,"2026-04":222024.0,"2026-05":0.0,"2026-06":0.0}},{"name":"Licencias de Moléculas","values":{"2025":31389453.5,"2026-01":0.0,"2026-02":0.0,"2026-03":6228670.0,"2026-04":0.0,"2026-05":0.0,"2026-06":0.0}},{"name":"Intangibles","values":{"2025":34857977.9,"2026-01":47481.05,"2026-02":928830.1799999999,"2026-03":6333713.2,"2026-04":223887.01,"2026-05":554653.1300000001,"2026-06":33534.72,"2026-07":276398.65,"2026-08":0.0,"2026-09":0.0,"2026-10":0.0,"2026-11":0.0,"2026-12":0.0,"2027-01":0.0,"2027-02":0.0,"2027-03":0.0,"2027-04":0.0,"2027-05":0.0,"2027-06":0.0,"2027-07":0.0,"2027-08":0.0,"2027-09":0.0,"2027-10":0.0,"2027-11":0.0,"2027-12":0.0,"2028-01":0.0}}],"Cash Flow":[{"name":"Saldo Inicial","values":{"2026-06":8529192.86,"2026-07":3739588.8699999996}},{"name":"Ingresos","values":{}},{"name":"OPEX","values":{"2026-06":-2815545.85,"2026-07":-2872901.9200000004}},{"name":"CAPEX","values":{"2026-06":-82862.0,"2026-07":-291483.99000000005}},{"name":"Capital de Trabajo","values":{"2026-06":-945598.07,"2026-07":-91030.0}},{"name":"Cuentas por cobrar","values":{"2026-06":0.0,"2026-07":0.0}},{"name":"Inventarios","values":{"2026-06":-633048.07,"2026-07":-970857.0}},{"name":"Cuentas por pagar","values":{"2026-06":-312550.0,"2026-07":879827.0}},{"name":"Aportaciones de Capital","values":{"2026-07":11874017.0}},{"name":"Saldo Final","values":{"2025":0.0,"2026-01":0.0,"2026-02":0.0,"2026-03":0.0,"2026-04":0.0,"2026-05":0.0,"2026-06":4685186.9399999995,"2026-07":12358189.959999999,"2026-08":0.0,"2026-09":0.0,"2026-10":0.0,"2026-11":0.0,"2026-12":0.0,"2027-01":0.0,"2027-02":0.0,"2027-03":0.0,"2027-04":0.0,"2027-05":0.0,"2027-06":0.0,"2027-07":0.0,"2027-08":0.0,"2027-09":0.0,"2027-10":0.0,"2027-11":0.0,"2027-12":0.0,"2028-01":0.0}}],"Working Capital":[{"name":"Inventarios","values":{"2026-05":779376.64,"2026-06":1412424.71,"2026-07":1404957.21}},{"name":"Dias Inventario","values":{"2026-06":522.6315701836332,"2026-07":521.2499916744516}},{"name":"Cuentas por Cobrar","values":{"2026-06":449047.9,"2026-07":449047.9}},{"name":"Dias Cartera","values":{"2026-06":60.0,"2026-07":60.0}},{"name":"Proveedores","values":{"2026-06":360042.84,"2026-07":585866.0}},{"name":"Dias Proveedores","values":{"2026-06":3.836302363891535,"2026-07":7.226156677694216}}]};
+const auxMonthKey=(yr,m)=>`${yr}-${String(m).padStart(2,"0")}`;
+const auxValue=(sheet,name,key)=>((AUX_DATA[sheet]||[]).find(r=>r.name===name)?.values?.[key])||0;
+const auxPeriodsThrough=(yr,m)=>["2025",...Array.from({length:m},(_,i)=>auxMonthKey(yr,i+1))];
+const auxCum=(sheet,name,yr,m)=>auxPeriodsThrough(yr,m).reduce((sum,k)=>sum+auxValue(sheet,name,k),0);
+const auxRowsCum=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,monto:auxPeriodsThrough(yr,m).reduce((sum,k)=>sum+(r.values?.[k]||0),0)}));
+const auxMonthRows=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,value:r.values?.[auxMonthKey(yr,m)]||0}));
+
 const normPL = (pl) => pl === "GP0001" ? "Operations" : pl === "AS Manual" ? "Others" : pl;
 const gV=(d,pl,or,yr,m)=>d.filter(r=>normPL(r[0])===pl&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
 const gVms=(d,pl,or,yr,ms)=>ms.reduce((s,m)=>s+gV(d,pl,or,yr,m),0);
@@ -1404,22 +1413,18 @@ export default function Dashboard() {
 
         {/* Inversion en Moleculas */}
         {(() => {
-          const molRows = [
-            { mol: 'Corelis',                   monto: 17650713, pct: 39 },
-            { mol: 'Euxara',                    monto: 16083997, pct: 36 },
-            { mol: 'Hyaxum',                    monto: 4469657,  pct: 10 },
-            { mol: 'Bevalyax',                  monto: 3609101,  pct: 8  },
-            { mol: 'Saytelya',                  monto: 1311705,  pct: 3  },
-            { mol: 'Neutorum',                  monto: 1246423,  pct: 3  },
-            { mol: 'Sitagliptina y Merformina', monto: 424695,   pct: 1  },
-            { mol: 'Acido Micofenolico',        monto: 246528,   pct: 1  },
-          ];
-          const total = 45042818;
+          const periods = auxPeriodsThrough(CUR_YEAR, cm);
+          const molRows = auxRowsCum('Portafolio Investment', CUR_YEAR, cm)
+            .filter(r => Math.abs(r.monto) > 0.5)
+            .sort((a,b)=>Math.abs(b.monto)-Math.abs(a.monto))
+            .map(r => ({ mol: r.name, monto: r.monto, pct: 0 }));
+          const total = molRows.reduce((sum,r)=>sum+r.monto,0);
+          molRows.forEach(r => { r.pct = total ? Math.round(r.monto / total * 100) : 0; });
           return (
             <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #1D9E75',boxSizing:'border-box',height:'100%'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Portafolio Investment</div>
-                <button onClick={()=>{const hi="Molecule,Monto,% Total\n"; const ri=molRows.map(r=>[r.mol,r.monto,r.pct+'%'].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <div><div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Portafolio Investment</div><div style={{fontSize:8,color:'#8A90A8'}}>Historical data through current filtered month · {MO[cm-1]} {CUR_YEAR}</div></div>
+                <button onClick={()=>{const hi="Molecule,Amount,% Total\n"; const ri=molRows.map(r=>[r.mol,r.monto,r.pct+'%'].join(",")).join("\n"); const bi=new Blob([hi+ri],{type:"text/csv"}); const ai=document.createElement("a"); ai.href=URL.createObjectURL(bi); ai.download="inversion_moleculas.csv"; ai.click();}} style={{fontSize:9,padding:"4px 10px",background:"#1D9E75",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
                 <div style={{fontSize:10,fontWeight:800,color:'#1D9E75'}}>TOTAL {F(total)}</div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
@@ -1562,44 +1567,57 @@ export default function Dashboard() {
       <div style={{margin:'0 0 10px',borderTop:'2px solid #534AB7',paddingTop:16,display:'flex',alignItems:'center',gap:10}}>
                 <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>WORKING CAPITAL</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+      {(()=>{
+        const wcVal = (name, offset=0) => auxValue('Working Capital', name, auxMonthKey(CUR_YEAR, Math.max(1, cm+offset)));
+        const dso = wcVal('Dias Cartera');
+        const dpo = wcVal('Dias Proveedores');
+        const dio = wcVal('Dias Inventario');
+        const ccc = dio + dso - dpo;
+        const dsoPrev = wcVal('Dias Cartera', -1);
+        const dpoPrev = wcVal('Dias Proveedores', -1);
+        const dioPrev = wcVal('Dias Inventario', -1);
+        const cccPrev = dioPrev + dsoPrev - dpoPrev;
+        const delta = (v,p) => p ? Math.round(v-p) : 0;
+        const deltaText = (v,p) => { const d=delta(v,p); return (d<0?'▼ ':'▲ +') + d + ' days'; };
+        const deltaColor = (d, goodDown=true) => d===0?'#8A90A8':((d<0)===goodDown?'#1D9E75':'#E24B4A');
+        return <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {/* DSO */}
         <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
           <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DSO</div>
           <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cobranza)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>60</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -3 días</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>{Math.round(dso)||'--'}</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>days</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs previous month</div>
+          <div style={{fontSize:11,fontWeight:700,color:deltaColor(delta(dso,dsoPrev),true)}}>{deltaText(dso,dsoPrev)}</div>
         </div>
         {/* DPO */}
         <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
           <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DPO</div>
           <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Proveedores)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>4</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#E24B4A'}}>▲ +2 días</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>{Math.round(dpo)||'--'}</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>days</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs previous month</div>
+          <div style={{fontSize:11,fontWeight:700,color:deltaColor(delta(dpo,dpoPrev),false)}}>{deltaText(dpo,dpoPrev)}</div>
         </div>
         {/* DIO */}
         <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'16px',textAlign:'center'}}>
           <div style={{fontSize:11,fontWeight:700,color:'#534AB7'}}>DIO</div>
           <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Inventarios)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>523</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#1D9E75'}}>▼ -14 días</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#1a1a2e',lineHeight:1}}>{Math.round(dio)||'--'}</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>days</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs previous month</div>
+          <div style={{fontSize:11,fontWeight:700,color:deltaColor(delta(dio,dioPrev),true)}}>{deltaText(dio,dioPrev)}</div>
         </div>
         {/* CCC */}
         <div style={{background:'#1a1a2e',borderRadius:10,padding:'16px',textAlign:'center'}}>
           <div style={{fontSize:11,fontWeight:700,color:'#A78BFA'}}>CCC</div>
           <div style={{fontSize:9,color:'#8A90A8',marginBottom:10}}>(Cash Conversion Cycle)</div>
-          <div style={{fontSize:36,fontWeight:900,color:'#fff',lineHeight:1}}>579</div>
-          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>días</div>
-          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs mes anterior</div>
-          <div style={{fontSize:11,fontWeight:700,color:'#FCA5A5'}}>▼ -15 días</div>
+          <div style={{fontSize:36,fontWeight:900,color:'#fff',lineHeight:1}}>{Math.round(ccc)||'--'}</div>
+          <div style={{fontSize:11,color:'#8A90A8',marginTop:4,marginBottom:12}}>days</div>
+          <div style={{fontSize:9,color:'#8A90A8',marginBottom:4}}>vs previous month</div>
+          <div style={{fontSize:11,fontWeight:700,color:deltaColor(delta(ccc,cccPrev),true)}}>{deltaText(ccc,cccPrev)}</div>
         </div>
-      </div>
+      </div>})()}
 
 
 
@@ -1658,13 +1676,16 @@ export default function Dashboard() {
                 <div style={{fontSize:13,fontWeight:800,color:'#1a1a2e',letterSpacing:0.2}}>CASH FLOW</div>
       </div>
       {(()=>{
+        const cfRows = auxMonthRows('Cash Flow', CUR_YEAR, cm);
+        const cfVal = name => cfRows.find(r=>r.name===name)?.value || 0;
         const wData=[
-          {name:'Saldo Inicial', value:8529193,  type:'total',    color:'#1E3A8A'},
-          {name:'OPEX',          value:-2815546, type:'decrease', color:'#E24B4A'},
-          {name:'CAPEX',         value:-82862,   type:'decrease', color:'#E24B4A'},
-          {name:'Cap. Trabajo',  value:-945598,  type:'decrease', color:'#E24B4A'},
-          {name:'Saldo Final',   value:4685187,  type:'total',    color:'#1D9E75'},
-        ];
+          {name:'Starting Cash', value:cfVal('Saldo Inicial'),  type:'total',    color:'#1E3A8A'},
+          {name:'OPEX',          value:cfVal('OPEX'),           type:'decrease', color:'#E24B4A'},
+          {name:'CAPEX',         value:cfVal('CAPEX'),          type:'decrease', color:'#E24B4A'},
+          {name:'Working Capital', value:cfVal('Capital de Trabajo'), type:cfVal('Capital de Trabajo')>=0?'increase':'decrease', color:cfVal('Capital de Trabajo')>=0?'#1D9E75':'#E24B4A'},
+          {name:'Capital Contributions', value:cfVal('Aportaciones de Capital'), type:cfVal('Aportaciones de Capital')>=0?'increase':'decrease', color:cfVal('Aportaciones de Capital')>=0?'#1D9E75':'#E24B4A'},
+          {name:'Ending Cash',   value:cfVal('Saldo Final'),    type:'total',    color:'#1D9E75'},
+        ].filter(d=>d.type==='total'||Math.abs(d.value)>0.5);
         const F2=v=>{const a=Math.abs(v);return(v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?Math.round(a/1e3)+'K':Math.round(a).toLocaleString('es-MX'));};
         let running=0;
         const bars=wData.map((d,i)=>{
@@ -1677,10 +1698,10 @@ export default function Dashboard() {
         const maxVal=Math.max(...bars.map(b=>b.base+b.h));
         const CHART_H=180;
         const toY=v=>(v/maxVal)*CHART_H;
-        const salidas=3844006, flujoNeto=-4690000;
+        const salidas=Math.abs(wData.filter(d=>d.type!=='total'&&d.value<0).reduce((sum,d)=>sum+d.value,0)), flujoNeto=cfVal('Saldo Final')-cfVal('Saldo Inicial');
         return(
           <div style={{display:'flex',flexDirection:'column',height:'100%',justifyContent:'space-between'}}>
-            <div style={{fontSize:9,color:'#8A90A8',marginBottom:4,fontWeight:500}}>Amounts in MXN</div>
+            <div style={{fontSize:9,color:'#8A90A8',marginBottom:4,fontWeight:500}}>Amounts in MXN · {MO[cm-1]} {CUR_YEAR}</div>
             <div style={{display:'flex',gap:8,flex:1,alignItems:'flex-start'}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:'flex',gap:3,height:CHART_H,alignItems:'stretch'}}>
@@ -2114,24 +2135,22 @@ export default function Dashboard() {
         <div style={{padding:"20px"}}>
           <div style={{maxWidth:520}}>
           {(() => {
-            const capexRows = [
-              { cat: 'Molecule Licenses', monto: 37618124, pct: 87 },
-              { cat: 'Licencias de Software',  monto: 3711387,  pct: 9  },
-              { cat: 'COFEPRIS',               monto: 1650567,  pct: 4  },
-              { cat: 'Equipo de Computo',      monto: 353484,   pct: 1  },
-              { cat: 'Mobiliario y Equipo',    monto: 9036,     pct: 0  },
-            ];
-            const totalCapex = 43342597;
+            const capexRows = auxRowsCum('CAPEX', CUR_YEAR, cm)
+              .filter(r => !['Activo Fijo','Intangibles'].includes(r.name) && Math.abs(r.monto) > 0.5)
+              .sort((a,b)=>Math.abs(b.monto)-Math.abs(a.monto))
+              .map(r => ({ cat: r.name === 'Licencias de Moléculas' ? 'Molecule Licenses' : r.name, monto: r.monto, pct: 0 }));
+            const totalCapex = capexRows.reduce((sum,r)=>sum+r.monto,0);
+            capexRows.forEach(r => { r.pct = totalCapex ? Math.round(r.monto / totalCapex * 100) : 0; });
             return (
               <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                  <div style={{fontSize:12,fontWeight:700,color:'#1a1a2e'}}>CAPEX</div>
-                  <button onClick={()=>{const hc="Categoria,Monto,% Total\n"; const rc=capexRows.map(r=>[r.cat,r.monto,r.pct+'%'].join(",")).join("\n"); const bc=new Blob([hc+rc],{type:"text/csv"}); const ac=document.createElement("a"); ac.href=URL.createObjectURL(bc); ac.download="capex_categoria.csv"; ac.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                  <div><div style={{fontSize:12,fontWeight:700,color:'#1a1a2e'}}>CAPEX</div><div style={{fontSize:9,color:'#8A90A8'}}>Historical data through current filtered month · {MO[cm-1]} {CUR_YEAR}</div></div>
+                  <button onClick={()=>{const hc="Category,Amount,% Total\n"; const rc=capexRows.map(r=>[r.cat,r.monto,r.pct+'%'].join(",")).join("\n"); const bc=new Blob([hc+rc],{type:"text/csv"}); const ac=document.createElement("a"); ac.href=URL.createObjectURL(bc); ac.download="capex_categoria.csv"; ac.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
                   <div style={{fontSize:12,fontWeight:800,color:'#534AB7'}}>TOTAL {F(totalCapex)}</div>
                 </div>
                 <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
                   <thead><tr>
-                    {['Categoría','Monto','% Total'].map((h,i) => (
+                    {['Category','Amount','% Total'].map((h,i) => (
                       <th key={i} style={{fontSize:10,color:'#8A90A8',fontWeight:600,padding:'5px 8px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
                     ))}
                   </tr></thead>
