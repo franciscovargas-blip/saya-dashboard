@@ -613,6 +613,8 @@ export default function Dashboard() {
         assets: 60461768.10,
         liabilities: 1723942.06,
         equity: 58737826.04,
+        capitalSocialFijo: 99350449.33,
+        periodoGanancias: -40612623.29,
       },
     };
     const applyBalanceOverride = (row) => {
@@ -622,6 +624,8 @@ export default function Dashboard() {
       if (row.name === "Activos" || row.name === "Total Activos") target = july.assets;
       if (row.name === "Pasivos" || row.name === "Total Pasivos") target = july.liabilities;
       if (row.name === "Capital Contable" || row.name === "Total Capital Contable") target = july.equity;
+      if (row.name === "Capital Social Fijo") target = july.capitalSocialFijo;
+      if (row.name === "Período ganancias" || row.name === "Periodo ganancias") target = july.periodoGanancias;
       if (target !== null) {
         const prev = vals.slice(0, 6).reduce((sum, v) => sum + (v || 0), 0);
         vals[6] = Math.round((target - prev) * 100) / 100;
