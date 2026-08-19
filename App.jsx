@@ -115,7 +115,7 @@ const auxCum=(sheet,name,yr,m)=>auxPeriodsThrough(yr,m).reduce((sum,k)=>sum+auxV
 const auxRowsCum=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,monto:auxPeriodsThrough(yr,m).reduce((sum,k)=>sum+(r.values?.[k]||0),0)}));
 const auxMonthRows=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,value:r.values?.[auxMonthKey(yr,m)]||0}));
 
-const normPL = (pl) => pl === "GP0001" ? "Operations" : pl === "AS Manual" ? "Others" : pl;
+const normPL = (pl) => pl === "GP0001" ? "Operations" : pl === "AS Manual" ? "Others" : pl === "Travel & Accomodation" ? "Travel & Accommodation" : pl;
 const gV=(d,pl,or,yr,m)=>d.filter(r=>normPL(r[0])===pl&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
 const gVms=(d,pl,or,yr,ms)=>ms.reduce((s,m)=>s+gV(d,pl,or,yr,m),0);
 const mols=[...new Set(D.map(r=>mapMol(r[4])))].sort();
@@ -243,7 +243,7 @@ export default function Dashboard() {
   // Fast index for Summary O(1) lookups instead of O(7756) filter per call
   const _didx = React.useMemo(() => {
     const idx = {};
-    D.forEach(r => { const k = r[0]+'|'+r[1]+'|'+r[2]+'|'+r[3]; idx[k] = (idx[k]||0) + (r[9]||0); });
+    D.forEach(r => { const k = normPL(r[0])+'|'+r[1]+'|'+r[2]+'|'+r[3]; idx[k] = (idx[k]||0) + (r[9]||0); });
     return idx;
   }, []);
   const _bplC = React.useRef({});
@@ -251,7 +251,7 @@ export default function Dashboard() {
   const bpl = (yr, m, mode) => {
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
-    const gVf = (pl, tp) => (fd !== D ? fd.filter(r=>r[0]===pl&&r[1]===tp&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0) : (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0));
+    const gVf = (pl, tp) => (fd !== D ? fd.filter(r=>normPL(r[0])===pl&&r[1]===tp&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0) : (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0));
     const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; return m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"); };
     const getOpex = getPL;
     const ns=getPL("Net Sales"),cogs=getPL("COGS"),gp=ns-cogs,gmPct=ns?gp/ns:0;
@@ -873,20 +873,20 @@ export default function Dashboard() {
                     // Drill-down for OpEx in comparison tables
                     if (isOpex && isExp && code) {
                       const codeData = fd.filter(row => {
-                        if (row[0] !== code || !t.months.includes(row[2])) return false;
-                        const m = row[2], origen = row[1];
+                        if (normPL(row[0]) !== code || !t.months.includes(row[3])) return false;
+                        const m = row[3], origen = row[1];
                         if (m <= cm && origen !== "Reales") return false;
                         if (m > cm && origen !== "Forecast") return false;
                         return true;
                       });
                       const clsMap = {};
                       codeData.forEach(row => {
-                        const cls = row[5] || "—";
+                        const cls = row[6] || "—";
                         if (!clsMap[cls]) clsMap[cls] = { total: 0, items: {} };
-                        clsMap[cls].total += row[8];
-                        const com = row[6] || "—";
-                        if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { total: 0, partner: row[7] };
-                        clsMap[cls].items[com].total += row[8];
+                        clsMap[cls].total += row[9];
+                        const com = row[7] || "—";
+                        if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { total: 0, partner: row[8] };
+                        clsMap[cls].items[com].total += row[9];
                       });
                       const clsExpKey = expKey + "-cls";
                       Object.entries(clsMap).filter(([c]) => c !== "—").sort((a, b) => Math.abs(b[1].total) - Math.abs(a[1].total)).forEach(([cls, data]) => {
