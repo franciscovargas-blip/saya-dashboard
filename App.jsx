@@ -116,21 +116,7 @@ const auxRowsCum=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,monto
 const auxMonthRows=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,value:r.values?.[auxMonthKey(yr,m)]||0}));
 
 const normPL = (pl) => pl === "GP0001" ? "Operations" : pl === "AS Manual" ? "Others" : pl;
-const gV=(d,pl,or,yr,m)=>{
-  const rows=d.filter(r=>normPL(r[0])===pl&&r[1]===or&&r[2]===yr&&r[3]===m);
-  // Avoid double-counting Travel rows when a source/export contains both spellings
-  // of the same record: "Accommodation" and "Accomodation".
-  if (pl === "Travel & Accommodation") {
-    const seen = new Set();
-    return rows.reduce((sum,r)=>{
-      const key = [r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9],r[10]].join("|");
-      if (seen.has(key)) return sum;
-      seen.add(key);
-      return sum + (r[9]||0);
-    },0);
-  }
-  return rows.reduce((s,r)=>s+r[9],0);
-};
+const gV=(d,pl,or,yr,m)=>d.filter(r=>normPL(r[0])===pl&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
 const gVms=(d,pl,or,yr,ms)=>ms.reduce((s,m)=>s+gV(d,pl,or,yr,m),0);
 const mols=[...new Set(D.map(r=>mapMol(r[4])))].sort();
 const molsModelos=[...new Set(D.map(r=>r[4]).filter(m=>m&&m!=="--"&&m!=="—"))].sort();
