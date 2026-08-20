@@ -127,10 +127,7 @@ function buildPL(fd, yr, m, cm, mode) {
   const getVal = (pl) => {
     if (mode === "forecast") return gV(fd, pl, "Forecast", yr, m);
     if (mode === "reales") return m <= cm ? gV(fd, pl, "Reales", yr, m) : 0;
-    if (m <= cm) {
-      const realVal = gV(fd, pl, "Reales", yr, m);
-      return realVal !== 0 ? realVal : gV(fd, pl, "Forecast", yr, m);
-    }
+    if (m <= cm) return gV(fd, pl, "Reales", yr, m);
     return gV(fd, pl, "Forecast", yr, m);
   };
   const firstNonZero = (...vals) => vals.find(v => v !== 0) || 0;
@@ -139,6 +136,8 @@ function buildPL(fd, yr, m, cm, mode) {
     if (name === "depr") return 312632.57;
     if (name === "fi") return -14457;
     if (name === "fe") return 122614;
+    if (name === "ns") return 0;
+    if (name === "cogs") return 0;
     return current;
   };
   const salesIn = firstNonZero(getVal("Sales (Sell In)"), getVal("Sales (Sell In) Contable"), getVal("Net Sales"));
@@ -278,7 +277,7 @@ export default function Dashboard() {
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
     const gVf = (pl, tp) => (fd !== D ? fd.filter(r=>r[0]===pl&&r[1]===tp&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0) : (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0));
-    const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; if(m<=cm){const realVal=gVf(pl,"Reales"); return realVal!==0?realVal:gVf(pl,"Forecast");} return gVf(pl,"Forecast"); };
+    const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; return m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"); };
     const getOpex = getPL;
     const ns=getPL("Net Sales"),cogs=getPL("COGS"),gp=ns-cogs,gmPct=ns?gp/ns:0;
     const sw=getOpex("Salaries & Wages"),sm=getOpex("Sales & Marketing"),ta=getOpex("Travel & Accommodation"),pf=getOpex("Professional Fees"),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=getOpex("Software & Hardware"),mob=getOpex("Mobility");
