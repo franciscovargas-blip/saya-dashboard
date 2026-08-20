@@ -406,7 +406,7 @@ export default function Dashboard() {
       molMap[mol].monthly[r[3]] = (molMap[mol].monthly[r[3]] || 0) + r[9];
       molMap[mol].total += r[9];
       // Sub-group by Clasificación
-      const cls = k === "depr" ? normPL(r[0]).replace(" Contable", "") : (r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—"));
+      const cls = r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—");
       if (!molMap[mol].cls[cls]) molMap[mol].cls[cls] = { monthly: {}, total: 0 };
       ytdM.forEach(m => { if (!molMap[mol].cls[cls].monthly[m]) molMap[mol].cls[cls].monthly[m] = 0; });
       molMap[mol].cls[cls].monthly[r[3]] = (molMap[mol].cls[cls].monthly[r[3]] || 0) + r[9];
@@ -440,7 +440,7 @@ export default function Dashboard() {
       const total = Object.values(monthly).reduce((s, v) => s + v, 0);
       const clsMap = {};
       atRows.forEach(r => {
-        const cls = k === "depr" ? normPL(r[0]).replace(" Contable", "") : (r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—"));
+        const cls = r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—");
         if (!clsMap[cls]) clsMap[cls] = { monthly: {}, total: 0 };
         ytdM.forEach(m => { if (!clsMap[cls].monthly[m]) clsMap[cls].monthly[m] = 0; });
         clsMap[cls].monthly[r[3]] = (clsMap[cls].monthly[r[3]] || 0) + r[9];
@@ -798,7 +798,7 @@ export default function Dashboard() {
                     const m = r[3], origen = r[1];
                     if (m <= cm && origen !== "Reales") return;
                     if (m > cm && origen !== "Forecast") return;
-                    const cls = k === "depr" ? normPL(r[0]).replace(" Contable", "") : (r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—"));
+                    const cls = r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—");
                     if (!clsMap[cls]) clsMap[cls] = { items: {}, m: Array(12).fill(0) };
                     clsMap[cls].m[m - 1] += r[9];
                     const com = r[7] || "—";
