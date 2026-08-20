@@ -814,27 +814,31 @@ export default function Dashboard() {
                     const m = r[3], origen = r[1];
                     if (m <= cm && origen !== "Reales") return;
                     if (m > cm && origen !== "Forecast") return;
-                    const cls = r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—");
+                    const cls = k === "depr"
+                      ? (normPL(r[0]) === "Depreciation & Amortization" ? "Depreciation" : normPL(r[0]).replace(" Contable", ""))
+                      : (r[0] === "GP0001" ? (r[6] && r[6] !== "--" ? r[6] : "Operations") : (r[6] || "—"));
                     if (!clsMap[cls]) clsMap[cls] = { items: {}, m: Array(12).fill(0) };
                     clsMap[cls].m[m - 1] += r[9];
-                    const com = r[7] || "—";
-                    if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { m: Array(12).fill(0), p: r[8] };
-                    clsMap[cls].items[com].m[m - 1] += r[9];
+                    if (k !== "depr") {
+                      const com = r[7] || "—";
+                      if (!clsMap[cls].items[com]) clsMap[cls].items[com] = { m: Array(12).fill(0), p: r[8] };
+                      clsMap[cls].items[com].m[m - 1] += r[9];
+                    }
                   });
                   Object.entries(clsMap).filter(([c]) => c !== "—").forEach(([cls, data]) => {
                     const clsKey = k + "|" + cls;
                     const clsExp = expOpex[clsKey];
                     const clsTotal = data.m.reduce((s, v) => s + v, 0);
                     tableRows.push(
-                      <tr key={"cls-" + clsKey} style={{ background: "#fafcff", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); toggleOx(clsKey); }}>
+                      <tr key={"cls-" + clsKey} style={{ background: "#fafcff", cursor: k === "depr" ? "default" : "pointer" }} onClick={(e) => { e.stopPropagation(); if (k !== "depr") toggleOx(clsKey); }}>
                         <td style={{ ...td, paddingLeft: 32, fontSize: 9, color: "#185FA5", position: "sticky", left: 0, background: "#fafcff" }}>
-                          <span style={{ fontSize: 7, marginRight: 3 }}>{clsExp ? "▼" : "▶"}</span>{cls}
+                          {k !== "depr" && <span style={{ fontSize: 7, marginRight: 3 }}>{clsExp ? "▼" : "▶"}</span>}{cls}
                         </td>
                         {data.m.map((v, mi) => <td key={mi} style={{ ...td, textAlign: "right", fontSize: 9, color: v < 0 ? "#E24B4A" : v === 0 ? "#ddd" : "#666" }}>{v === 0 ? "" : F(v)}</td>)}
                         <td style={{ ...td, textAlign: "right", fontSize: 9, fontWeight: 500, borderLeft: "2px solid #E4E8F2" }}>{F(clsTotal)}</td>
                       </tr>
                     );
-                    if (clsExp) {
+                    if (clsExp && k !== "depr") {
                       Object.entries(data.items).forEach(([com, cd]) => {
                         const comTotal = cd.m.reduce((s, v) => s + v, 0);
                         tableRows.push(
