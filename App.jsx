@@ -127,7 +127,10 @@ function buildPL(fd, yr, m, cm, mode) {
   const getVal = (pl) => {
     if (mode === "forecast") return gV(fd, pl, "Forecast", yr, m);
     if (mode === "reales") return m <= cm ? gV(fd, pl, "Reales", yr, m) : 0;
-    if (m <= cm) return gV(fd, pl, "Reales", yr, m);
+    if (m <= cm) {
+      const realVal = gV(fd, pl, "Reales", yr, m);
+      return realVal !== 0 ? realVal : gV(fd, pl, "Forecast", yr, m);
+    }
     return gV(fd, pl, "Forecast", yr, m);
   };
   const firstNonZero = (...vals) => vals.find(v => v !== 0) || 0;
@@ -275,29 +278,15 @@ export default function Dashboard() {
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
     const gVf = (pl, tp) => (fd !== D ? fd.filter(r=>r[0]===pl&&r[1]===tp&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0) : (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0));
-    const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; return m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"); };
+    const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; if(m<=cm){const realVal=gVf(pl,"Reales"); return realVal!==0?realVal:gVf(pl,"Forecast");} return gVf(pl,"Forecast"); };
     const getOpex = getPL;
-    const firstNonZero = (...vals) => vals.find(v => v !== 0) || 0;
-    const salesIn = firstNonZero(getPL("Sales (Sell In)"), getPL("Sales (Sell In) Contable"), getPL("Net Sales"));
-    const salesDiscount = getPL("Sales Discount (Gross to Net)");
-    const salesDiscountPct = salesIn ? salesDiscount / salesIn : 0;
-    const salesReturns = getPL("Sales Returns");
-    const salesReturnsPct = salesIn ? salesReturns / salesIn : 0;
-    const ns = salesIn - salesDiscount - salesReturns;
-    const cogsComponents = firstNonZero(getPL("Cost per Volume"), getPL("Cost per Volume Contable")) + firstNonZero(getPL("Import Tax Cost"), getPL("Import Tax Cost Contable")) + firstNonZero(getPL("Logistic Cost Ambient"), getPL("Logistic Cost Ambient Contable")) + firstNonZero(getPL("Product WareHouse"), getPL("Product WareHouse Contable"));
-    const cogs = cogsComponents || getPL("COGS");
-    const gp=ns-cogs,gmPct=ns?gp/ns:0;
-    const sw=getOpex("Salaries & Wages"),sm=firstNonZero(getOpex("Sales & Marketing"),getOpex("Sales &Marketing")),ta=firstNonZero(getOpex("Travel & Accommodation"),getOpex("Travel & Accomodation")),pf=firstNonZero(getOpex("Professional Fees"),getOpex("Professional Services")),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=firstNonZero(getOpex("Software & Hardware"),getOpex("IT (Software-Hardware)")),mob=getOpex("Mobility");
-    const qual=getOpex("Quality"),ops=getOpex("Operations"),oth=getOpex("Others");
-    const totOpex=mode==="forecast"?(sw+sm+ta+pf+of_+ops+oth+qual):(sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth),totOpexPct=ns?totOpex/ns:0,ebitda=(getPL("EBITDA")||gp-totOpex),ebitdaPct=ns?ebitda/ns:0;
-    const deprRaw = mode === "forecast" ? (firstNonZero(getPL("Up-Fronts"),getPL("Up-Fronts Contable")) + firstNonZero(getPL("Hardware"),getPL("Hardware Contable")) + firstNonZero(getPL("Software"),getPL("Software Contable")) + firstNonZero(getPL("Regulatory"),getPL("Regulatory Contable")) + firstNonZero(getPL("Depreciation"),getPL("Depreciation & Amortization"))) : firstNonZero(getPL("Depreciation & Amortization"), getPL("Depreciation"));
-    const depr = (mode !== "forecast" && yr === 2026 && m === 7 && deprRaw === 0) ? 312632.57 : deprRaw;
-    const deprPct=ns?depr/ns:0, ebit=ebitda-depr, ebitPct=ns?ebit/ns:0;
-    const fiRaw=getOpex("Financial Income"), feRaw=getOpex("Financial Expense");
-    const fi=(mode !== "forecast" && yr === 2026 && m === 7 && fiRaw === 0) ? -14457 : fiRaw;
-    const fe=(mode !== "forecast" && yr === 2026 && m === 7 && feRaw === 0) ? 122614 : feRaw;
-    const totFin=fi+fe,netProfit=ebit-totFin,netProfitPct=ns?netProfit/ns:0;
-    const result={salesIn,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,reg,sh,mob,qual,ops,oth,totOpex,totOpexPct,ebitda,ebitdaPct,depr,deprPct,ebit,ebitPct,fi,fe,totFin,netProfit,netProfitPct};
+    const ns=getPL("Net Sales"),cogs=getPL("COGS"),gp=ns-cogs,gmPct=ns?gp/ns:0;
+    const sw=getOpex("Salaries & Wages"),sm=getOpex("Sales & Marketing"),ta=getOpex("Travel & Accommodation"),pf=getOpex("Professional Fees"),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=getOpex("Software & Hardware"),mob=getOpex("Mobility");
+    const qual=mode==="reales"?0:gVf("Quality","Forecast"),ops=getOpex("Operations"),oth=getOpex("Others");
+    const totOpex=sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth,totOpexPct=ns?totOpex/ns:0,ebitda=gp-totOpex,ebitdaPct=ns?ebitda/ns:0;
+    const depr=getOpex("Depreciation & Amortization"),ebit=ebitda-depr,ebitPct=ns?ebit/ns:0;
+    const fi=getOpex("Financial Income"),fe=getOpex("Financial Expense"),totFin=fi+fe,netProfit=ebit-totFin,netProfitPct=ns?netProfit/ns:0;
+    const result={ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,reg,sh,mob,qual,ops,oth,totOpex,totOpexPct,ebitda,ebitdaPct,depr,ebit,ebitPct,fi,fe,totFin,netProfit,netProfitPct};
     _bplC.current[k] = result;
     return result;
   };
