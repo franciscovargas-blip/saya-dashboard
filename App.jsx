@@ -185,7 +185,7 @@ function buildPL(fd, yr, m, cm, mode) {
   return { marketGrowth, marketVolume, marketPenPct, refPrice, priceRetail, varRefPct, salesIn, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
 }
 {/* */}
-const PL_KEYS = ["marketGrowth","marketVolume","marketPenPct","refPrice","priceRetail","varRefPct","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","ops","oth","qual","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
+const PL_KEYS = ["salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","ops","oth","qual","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
 const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Market Volume <Saya>",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",ops:"Operations",oth:"Others",qual:"Quality",totOpex:"Total Expenses",totOpexPct:"% Total Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
@@ -769,14 +769,17 @@ export default function Dashboard() {
               const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",qual:"Quality",ops:"Operations",oth:"Others",depr:"Amortization and depreciation"};
               const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
-  const SEP_STYLE = {padding:"6px 6px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500};
+  const SEP_STYLE = {padding:"9px 8px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"};
 {/* */}
               PL_KEYS.forEach((k) => {
                 const isPct = PCT_KEYS.has(k);
                 const isBold = BOLD_KEYS.has(k);
                 const isOpex = OPEX_KEY_SET.has(k);
                 const code = OPEX_CODE_MAP[k];
+                if (k === "salesIn") tableRows.push(<tr key="sales-sep"><td colSpan={14} style={SEP_STYLE}>Net Sales</td></tr>);
+                if (k === "cogs") tableRows.push(<tr key="gross-sep"><td colSpan={14} style={SEP_STYLE}>Gross Profit</td></tr>);
                 if (k === "sw") tableRows.push(<tr key="opex-sep"><td colSpan={14} style={SEP_STYLE}>Operating Expenses</td></tr>);
+                if (k === "ebitda") tableRows.push(<tr key="ebitda-sep"><td colSpan={14} style={SEP_STYLE}>EBITDA & EBIT</td></tr>);
                 if (k === "depr") tableRows.push(<tr key="amort-sep"><td colSpan={14} style={SEP_STYLE}>Amortization & depreciation</td></tr>);
                 /* fin-sep removed */
                 tableRows.push(
@@ -2094,14 +2097,14 @@ export default function Dashboard() {
                 const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:14,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
                 return (
                   <React.Fragment key={k}>
-                    {k==="sw" && (
-                      <tr key="sep-sw">
-                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Operating Expenses</td>
+                    {[ ["salesIn","Net Sales"], ["cogs","Gross Profit"], ["sw","Operating Expenses"], ["ebitda","EBITDA & EBIT"] ].filter(([kk])=>k===kk).map(([kk,label])=>(
+                      <tr key={"sep-"+kk}>
+                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>{label}</td>
                       </tr>
-                    )}
+                    ))}
                     {k==="depr" && (
                       <tr key="sep-depr">
-                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"5px 10px 2px",fontSize:9,color:"#8A90A8",letterSpacing:1,textTransform:"uppercase",borderBottom:"1px solid #E4E8F2",fontWeight:500,background:"#FAFBFE"}}>Amortization & depreciation</td>
+                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>Amortization & depreciation</td>
                       </tr>
                     )}
                     <tr style={rowStyle}>
