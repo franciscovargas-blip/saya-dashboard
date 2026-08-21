@@ -814,6 +814,9 @@ export default function Dashboard() {
         const money = n => F(Number(n||0));
         const readiness = c => { const fields=["Regulatory Status","Partner","Product Status","Channel","Reference Price","Saya Price Retail","Supply Cost"]; const filled=fields.filter(k=>valOf(c,[k])!=="--").length; return Math.round(filled/fields.length*100); };
         const uniq = arr => [...new Set(arr.filter(x=>x && x!=="--"))].sort();
+        const therapeuticForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; return fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[5] || "--"); };
+        const typeForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; return fieldForMol(x,["Type"], x.rows[0]?.[6] || x.rows[0]?.[5] || "--"); };
+        const partnerForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; const fromD = x.rows.find(r=>r[8] && r[8]!=="--")?.[8]; return fromD || fieldForMol(x,["Partner"], "--"); };
         const filterDefs = [
           ["Therapeutic Area", uniq(molInfo.map(x=>fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[5] || "--")))],
           ["Partner", uniq(molInfo.map(x=>partnerForMol(x.mol)))],
@@ -839,9 +842,6 @@ export default function Dashboard() {
         };
         const filteredMolInfo = molInfo.filter(matchesFilter);
         const filteredMolSet = new Set(filteredMolInfo.map(x=>x.mol));
-        const therapeuticForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; return fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[5] || "--"); };
-        const typeForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; return fieldForMol(x,["Type"], x.rows[0]?.[6] || x.rows[0]?.[5] || "--"); };
-        const partnerForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; const fromD = x.rows.find(r=>r[8] && r[8]!=="--")?.[8]; return fromD || fieldForMol(x,["Partner"], "--"); };
         const fNetRows = netRows.filter(r=>filteredMolSet.has(r[4]));
         const fAreaShare = by(r=>therapeuticForMol(r[4]), fNetRows);
         const fMoleculeShare = by(r=>r[4], fNetRows);
