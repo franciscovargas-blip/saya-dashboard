@@ -780,11 +780,29 @@ export default function Dashboard() {
         const catalog = (typeof CATALOG !== "undefined" ? CATALOG : []);
         const inputs = (typeof INPUTS !== "undefined" ? INPUTS : []);
         const colors = ["#6414C8","#00A878","#F59E0B","#FF0050","#6366F1","#94A3B8"];
-        const valOf = (o, keys) => { for (const k of keys) if (o && o[k] !== undefined && String(o[k]).trim() !== "") return o[k]; return "--"; };
+        const cleanKey = v => String(v || "").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9%]+/g,' ').trim();
+        const keyAliases = {
+          'brand name':['brand','brandname','nombre comercial'],
+          'therapeutic area':['area terapeutica','area','portfolio','therapeutic area portfolio'],
+          'registration number':['registration','registro sanitario','numero de registro'],
+          'product status':['status producto','product status'],
+          'partner status':['status partner','partner status'],
+          'regulatory status':['regulatory','status regulatorio'],
+          'release date':['release_date','launch date','fecha lanzamiento','lanzamiento'],
+          'reference price':['reference price player x','precio referencia'],
+          'saya price retail':['price retail saya','price retail','precio saya retail'],
+          'gross to net':['gross to net','sales discount gross to net'],
+          'discount to distributor':['discount to distibuitor','discount distributor'],
+          'lead time months':['lead time'],
+          'npv 11 51%':['npv','npv 11.51'],
+          'tir':['irr']
+        };
+        const keyMatches = (actual, wanted) => { const a=cleanKey(actual), w=cleanKey(wanted); const aliases=(keyAliases[w]||[]).map(cleanKey); return a===w || aliases.includes(a) || a.replace(/ /g,'')===w.replace(/ /g,''); };
+        const valOf = (o, keys) => { for (const k of keys) { const direct=o&&o[k]; if (direct !== undefined && String(direct).trim() !== "") return direct; const hit=Object.keys(o||{}).find(ok=>keyMatches(ok,k)); if(hit && String(o[hit]).trim()!=="") return o[hit]; } return "--"; };
         const baseMols = [...new Set(D.filter(r=>r[1]==="Forecast").map(r=>r[4]))];
         const catByMol = Object.fromEntries(catalog.map(c=>[c.Molecula||c.Molecule,c]));
         const molInfo = baseMols.map(m=>({ mol:m, cat:catByMol[m]||{}, rows:D.filter(r=>r[1]==="Forecast"&&r[4]===m) }));
-        const inputForMol = (mol, keys) => { const rows = inputs.filter(i=>i.Molecula===mol); for (const k of keys) { const hit = rows.find(i=>String(i.Input||"").trim().toLowerCase()===String(k).trim().toLowerCase()); if (hit && String(hit.Value||"").trim()!=="") return hit.Value; } return "--"; };
+        const inputForMol = (mol, keys) => { const rows = inputs.filter(i=>(i.Molecula||i.Molecule)===mol); for (const k of keys) { const hit = rows.find(i=>keyMatches(i.Input||i.Field||i.Campo,k)); if (hit && String(hit.Value||hit.Valor||"").trim()!=="") return hit.Value||hit.Valor; } return "--"; };
         const fieldForMol = (x, keys, fallback) => { const fromInputs = inputForMol(x.mol, keys); if (fromInputs !== "--") return fromInputs; const fromCat = valOf(x.cat, keys); if (fromCat !== "--") return fromCat; return fallback || "--"; };
         const netRows = D.filter(r=>r[1]==="Forecast" && ["Sales (Sell In)","Net Sales"].includes(r[0]));
         const by = (fn, rows=netRows) => rows.reduce((a,r)=>{ const k=fn(r)||"--"; a[k]=(a[k]||0)+Number(r[9]||0); return a; },{});
@@ -797,7 +815,7 @@ export default function Dashboard() {
         const readiness = c => { const fields=["Regulatory Status","Partner","Product Status","Channel","Reference Price","Saya Price Retail","Supply Cost"]; const filled=fields.filter(k=>valOf(c,[k])!=="--").length; return Math.round(filled/fields.length*100); };
         const uniq = arr => [...new Set(arr.filter(x=>x && x!=="--"))].sort();
         const filterDefs = [
-          ["Therapeutic Area", uniq(molInfo.map(x=>fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[8] || "--")))],
+          ["Therapeutic Area", uniq(molInfo.map(x=>fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[5] || "--")))],
           ["Partner", uniq(molInfo.map(x=>fieldForMol(x,["Partner"], "--")))],
           ["Channel", uniq(molInfo.map(x=>fieldForMol(x,["Channel"], "--")))],
           ["Regulatory Status", uniq(molInfo.map(x=>fieldForMol(x,["Regulatory Status"], "--")))],
@@ -809,7 +827,7 @@ export default function Dashboard() {
         const matchesFilter = (x) => {
           const fs = firstSale(x.mol);
           const vals = {
-            "Therapeutic Area": fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[8] || "--"),
+            "Therapeutic Area": fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[5] || "--"),
             "Partner": fieldForMol(x,["Partner"], "--"),
             "Channel": fieldForMol(x,["Channel"], "--"),
             "Regulatory Status": fieldForMol(x,["Regulatory Status"], "--"),
@@ -832,7 +850,7 @@ export default function Dashboard() {
         const fAreaMonths = fAreaMonthsAll.slice(0, Math.min(36, fAreaMonthsAll.length));
         const fAreas2 = [...new Set(fNetRows.map(r=>therapeuticForMol(r[4])||"--"))].slice(0,5);
         const fMaxLine = Math.max(1,...fAreas2.map(a=>Math.max(0,...fAreaMonths.map(mm=>{const [y,m]=mm.split('-').map(Number);return fNetRows.filter(r=>therapeuticForMol(r[4])===a&&r[2]===y&&r[3]===m).reduce((s,r)=>s+Number(r[9]||0),0)}))));
-        const shareBox = (title,obj) => { const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const total=entries.reduce((s,e)=>s+e[1],0)||1; let acc=0; const bg=entries.map((e,i)=>{const p=e[1]/total*100; const seg=`${colors[i%colors.length]} ${acc}% ${acc+p}%`; acc+=p; return seg;}).join(','); return <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16}}><div style={{fontSize:13,fontWeight:800,marginBottom:8}}>{title}</div><div style={{width:130,height:130,borderRadius:'50%',margin:'8px auto',background:`conic-gradient(${bg})`,position:'relative'}}><div style={{position:'absolute',inset:34,background:'#fff',borderRadius:'50%'}} /></div>{entries.map((e,i)=><div key={e[0]} style={{display:'flex',justifyContent:'space-between',fontSize:11,margin:'5px 0'}}><span><span style={{display:'inline-block',width:9,height:9,borderRadius:9,background:colors[i%colors.length],marginRight:6}} />{e[0]}</span><b>{Math.round(e[1]/total*100)}%</b></div>)}</div> };
+        const shareBox = (title,obj) => { const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const total=entries.reduce((s,e)=>s+e[1],0)||1; const pieData=entries.map(([name,value])=>({name,value,pct:value/total})); return <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16}}><div style={{fontSize:13,fontWeight:800,marginBottom:8}}>{title}</div><ResponsiveContainer width="100%" height={150}><PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={42} outerRadius={64} dataKey="value" nameKey="name" paddingAngle={1}>{pieData.map((e,i)=><Cell key={e.name} fill={colors[i%colors.length]} />)}</Pie><Tooltip formatter={(v,n,p)=>[money(v)+' / '+Math.round((p?.payload?.pct||0)*100)+'%', n]} contentStyle={{fontSize:11,borderRadius:8,border:'1px solid #E4E8F2'}} /></PieChart></ResponsiveContainer>{entries.map((e,i)=><div key={e[0]} title={`${e[0]}: ${money(e[1])} · ${Math.round(e[1]/total*100)}%`} style={{display:'flex',justifyContent:'space-between',fontSize:11,margin:'5px 0'}}><span><span style={{display:'inline-block',width:9,height:9,borderRadius:9,background:colors[i%colors.length],marginRight:6}} />{e[0]}</span><b>{Math.round(e[1]/total*100)}%</b></div>)}</div> };
         const cardField = (label,value) => <div><div style={{fontSize:11,color:'#667085',fontWeight:900}}>{label}</div><div style={{fontSize:22,fontWeight:950,color:'#071333'}}>{value||'--'}</div></div>;
         return <>
           <div style={{background:'linear-gradient(135deg,#35137d,#6616d0)',color:'#fff',borderRadius:18,padding:20,marginBottom:14}}><div style={{fontSize:10,letterSpacing:1.4,fontWeight:900,opacity:.8}}>PORTFOLIO MAPPING</div><div style={{fontSize:26,fontWeight:900}}>Forecast Inputs + Opportunity Evolution</div><div style={{fontSize:12,opacity:.85}}>Inputs de modelos, evolución mensual por área terapéutica y timeline de lanzamientos.</div></div>
