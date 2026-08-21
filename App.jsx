@@ -767,13 +767,56 @@ export default function Dashboard() {
 {/* */}
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["portfolio","🧬 Portfolio Mapping"],["capex","📦 CAPEX"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
         })}
       </div>
 {/* */}
+
+      {mainTab === "portfolio" && (() => {
+        const catalog = (typeof CATALOG !== "undefined" ? CATALOG : []);
+        const inputs = (typeof INPUTS !== "undefined" ? INPUTS : []);
+        const money = n => F(Number(n||0));
+        const pct = n => (Number(n||0)*100).toFixed(0)+"%";
+        const colors = ["#6414C8","#00A878","#F59E0B","#FF0050","#6366F1","#94A3B8"];
+        const valOf = (o, keys) => { for (const k of keys) if (o && o[k] !== undefined && String(o[k]).trim() !== "") return o[k]; return "--"; };
+        const numOf = v => { const n = Number(String(v||"").replace(/[^0-9.-]/g,"")); return isNaN(n)?0:n; };
+        const baseMols = [...new Set(D.filter(r=>r[1]==="Forecast").map(r=>r[4]))];
+        const catByMol = Object.fromEntries(catalog.map(c=>[c.Molecula||c.Molecule,c]));
+        const molInfo = baseMols.map(m=>({ mol:m, cat:catByMol[m]||{}, rows:D.filter(r=>r[1]==="Forecast"&&r[4]===m) }));
+        const netRows = D.filter(r=>r[1]==="Forecast" && ["Sales (Sell In)","Net Sales"].includes(r[0]));
+        const by = (fn, rows=netRows) => rows.reduce((a,r)=>{ const k=fn(r)||"--"; a[k]=(a[k]||0)+Number(r[9]||0); return a; },{});
+        const partnerShare = by(r=>r[8]);
+        const areaShare = by(r=>r[5]);
+        const channelShare = by(r=>valOf(catByMol[r[4]]||{},["Channel"]));
+        const firstSale = m => { const rr=netRows.filter(r=>r[4]===m && Number(r[9]||0)>0).sort((a,b)=>a[2]-b[2]||a[3]-b[3])[0]; return rr?{y:rr[2],m:rr[3]}:null; };
+        const years = [...new Set(molInfo.map(x=>firstSale(x.mol)?.y).filter(Boolean))].sort();
+        const areaMonths = [...new Set(netRows.map(r=>`${r[2]}-${String(r[3]).padStart(2,'0')}`))].sort().slice(0,36);
+        const areas2 = [...new Set(netRows.map(r=>r[5]||"--"))].slice(0,5);
+        const maxLine = Math.max(1,...areas2.map(a=>Math.max(...areaMonths.map(mm=>{const [y,m]=mm.split('-').map(Number);return netRows.filter(r=>r[5]===a&&r[2]===y&&r[3]===m).reduce((s,r)=>s+Number(r[9]||0),0)}))));
+        const readiness = c => {
+          const fields=["Regulatory Status","Partner","Product Status","Channel","Reference Price","Saya Price Retail","Supply Cost"];
+          const filled=fields.filter(k=>valOf(c,[k])!=="--").length;
+          return Math.round(filled/fields.length*100);
+        };
+        const shareBox = (title,obj) => { const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const total=entries.reduce((s,e)=>s+e[1],0)||1; let acc=0; const bg=entries.map((e,i)=>{const p=e[1]/total*100; const seg=`${colors[i%colors.length]} ${acc}% ${acc+p}%`; acc+=p; return seg;}).join(','); return <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16}}><div style={{fontSize:13,fontWeight:800,marginBottom:8}}>{title}</div><div style={{width:130,height:130,borderRadius:'50%',margin:'8px auto',background:`conic-gradient(${bg})`,position:'relative'}}><div style={{position:'absolute',inset:34,background:'#fff',borderRadius:'50%'}} /></div>{entries.map((e,i)=><div key={e[0]} style={{display:'flex',justifyContent:'space-between',fontSize:11,margin:'5px 0'}}><span><span style={{display:'inline-block',width:9,height:9,borderRadius:9,background:colors[i%colors.length],marginRight:6}} />{e[0]}</span><b>{Math.round(e[1]/total*100)}%</b></div>)}</div> };
+        return <>
+          <div style={{background:'linear-gradient(135deg,#35137d,#6616d0)',color:'#fff',borderRadius:18,padding:20,marginBottom:14}}><div style={{fontSize:10,letterSpacing:1.4,fontWeight:900,opacity:.8}}>PORTFOLIO MAPPING</div><div style={{fontSize:26,fontWeight:900}}>Forecast Inputs + Opportunity Evolution</div><div style={{fontSize:12,opacity:.85}}>Inputs de modelos, evolución mensual por área terapéutica y timeline de lanzamientos.</div></div>
+          <div style={{display:'grid',gridTemplateColumns:'260px 1fr',gap:14}}>
+            <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16,alignSelf:'start'}}><div style={{fontSize:13,textTransform:'uppercase',letterSpacing:1.1,color:'#6414C8',fontWeight:900,marginBottom:10}}>Filters</div>{['Therapeutic Area','Partner','Channel','Regulatory Status','Product Status','Launch Year','Molecule'].map(x=><div key={x} style={{marginBottom:12}}><div style={{fontSize:11,color:'#667085',fontWeight:800,marginBottom:5}}>{x}</div><div style={{background:'#F1F4F9',borderRadius:12,padding:10,fontSize:14}}>All</div></div>)}</div>
+            <div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10,marginBottom:12}}>{[["Molecules",baseMols.length],["Forecast value",money(netRows.reduce((s,r)=>s+Number(r[9]||0),0))],["Partners",Object.keys(partnerShare).length],["First launch",(()=>{const fs=molInfo.map(x=>firstSale(x.mol)).filter(Boolean).sort((a,b)=>a.y-b.y||a.m-b.m)[0];return fs?`${MO[fs.m-1]} ${fs.y}`:'--'})()],["Avg readiness",(Math.round(molInfo.reduce((s,x)=>s+readiness(x.cat),0)/(molInfo.length||1)))+'%']].map(k=><div key={k[0]} style={{background:'#fff',border:'1px solid #E4E8F2',borderLeft:'5px solid #6414C8',borderRadius:16,padding:13}}><div style={{fontSize:10,color:'#667085',fontWeight:900,textTransform:'uppercase'}}>{k[0]}</div><div style={{fontSize:21,fontWeight:900}}>{k[1]}</div></div>)}</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:12}}>{shareBox('Partner Share',partnerShare)}{shareBox('Portfolio / TA Share',areaShare)}{shareBox('Channel Share',channelShare)}</div>
+              <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16,marginBottom:12}}><div style={{fontSize:15,fontWeight:900,marginBottom:8}}>Therapeutic Area Value Over Time</div><svg viewBox="0 0 900 260" style={{width:'100%',height:280,background:'#FAFBFF',borderRadius:14}}>{[0,1,2,3].map(i=><line key={i} x1="45" x2="875" y1={35+i*55} y2={35+i*55} stroke="#E5E7EB"/>)}{areas2.map((a,ai)=>{const pts=areaMonths.map((mm,i)=>{const [y,m]=mm.split('-').map(Number); const v=netRows.filter(r=>r[5]===a&&r[2]===y&&r[3]===m).reduce((s,r)=>s+Number(r[9]||0),0); return `${45+i*(830/Math.max(1,areaMonths.length-1))},${230-(v/maxLine)*190}`;}).join(' '); return <polyline key={a} points={pts} fill="none" stroke={colors[ai%colors.length]} strokeWidth="4"/>})}</svg><div style={{display:'flex',gap:12,flexWrap:'wrap',fontSize:11,marginTop:8}}>{areas2.map((a,i)=><span key={a}><span style={{display:'inline-block',width:10,height:10,borderRadius:10,background:colors[i%colors.length],marginRight:5}} />{a}</span>)}</div></div>
+              <div style={{background:'#fff',border:'1px solid #E4E8F2',borderTop:'5px solid #FF0050',borderRadius:18,padding:16,marginBottom:12}}><div style={{fontSize:15,fontWeight:900,marginBottom:8}}>⏱ Molecule Launch Timeline</div>{years.map(y=><div key={y} style={{display:'grid',gridTemplateColumns:'60px 1fr 90px',gap:10,alignItems:'center',margin:'14px 0'}}><div style={{fontSize:17,color:y===CUR_YEAR?'#6414C8':'#94A3B8',fontWeight:900}}>{y}</div><div style={{borderTop:'1px solid #DCE2F0',paddingTop:10,display:'flex',gap:8,flexWrap:'wrap'}}>{molInfo.filter(x=>firstSale(x.mol)?.y===y).map((x,i)=>{const fs=firstSale(x.mol); const area=valOf(x.cat,['Therapeutic Area'])!=='--'?valOf(x.cat,['Therapeutic Area']):(x.rows[0]?.[5]||'--'); return <div key={x.mol} style={{background:'#F8F7FF',border:'1px solid #D9D3FB',borderLeft:`4px solid ${colors[i%colors.length]}`,borderRadius:10,padding:'8px 10px',minWidth:160,fontSize:11,fontWeight:900}}>{x.mol}<div style={{color:'#6414C8',fontSize:10}}>{area} · {MO[fs.m-1]} {fs.y}</div></div>})}</div><div style={{background:'#F3E8FF',color:'#6414C8',borderRadius:999,padding:'6px 8px',fontSize:10,fontWeight:900,textAlign:'center'}}>{y===CUR_YEAR?'▶ En curso':'⏳ Proyectado'}</div></div>)}</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}><div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16}}><div style={{fontSize:15,fontWeight:900}}>Readiness Object</div><div style={{fontSize:44,textAlign:'center',padding:20}}>◎</div><div style={{display:'grid',gap:8}}>{['Regulatory readiness','Partner readiness','Product readiness','Commercial assumptions','Supply assumptions'].map((x,i)=><div key={x}><div style={{display:'flex',justifyContent:'space-between',fontSize:11,fontWeight:800}}><span>{x}</span><span>{[72,88,64,91,76][i]}%</span></div><div style={{height:8,background:'#E5E7EB',borderRadius:99}}><div style={{height:8,width:[72,88,64,91,76][i]+'%',background:'linear-gradient(90deg,#6414C8,#10B981)',borderRadius:99}} /></div></div>)}</div></div><div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16}}><div style={{fontSize:15,fontWeight:900,marginBottom:10}}>Molecule Cards</div><div style={{display:'grid',gap:10}}>{molInfo.slice(0,5).map(x=>{const c=x.cat, fs=firstSale(x.mol); const extra=inputs.filter(i=>i.Molecula===x.mol).slice(0,4); return <details key={x.mol} style={{border:'1px solid #E5E7EB',borderTop:'4px solid #10B981',borderRadius:14,padding:12}}><summary style={{cursor:'pointer',fontWeight:900}}>{x.mol} <span style={{float:'right',background:'#DCFCE7',color:'#166534',borderRadius:999,padding:'3px 7px',fontSize:10}}>{valOf(c,['Channel'])}</span></summary><div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8,marginTop:10,fontSize:11}}><b>Partner</b><span>{valOf(c,['Partner'])}</span><b>Ref Price</b><span>{valOf(c,['Reference Price'])}</span><b>Saya Retail</b><span>{valOf(c,['Saya Price Retail'])}</span><b>G2N</b><span>{valOf(c,['Gross to Net'])}</span><b>Launch</b><span>{fs?`${MO[fs.m-1]} ${fs.y}`:'--'}</span>{extra.map(e=><React.Fragment key={e.Input}><b>{e.Input}</b><span>{e.Value}</span></React.Fragment>)}</div></details>})}</div></div></div>
+            </div>
+          </div>
+        </>;
+      })()}
+
       {mainTab === "dashboard" && <>
       <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
