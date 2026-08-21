@@ -783,11 +783,13 @@ export default function Dashboard() {
         const baseMols = [...new Set(D.filter(r=>r[1]==="Forecast").map(r=>r[4]))];
         const catByMol = Object.fromEntries(catalog.map(c=>[c.Molecula||c.Molecule,c]));
         const molInfo = baseMols.map(m=>({ mol:m, cat:catByMol[m]||{}, rows:D.filter(r=>r[1]==="Forecast"&&r[4]===m) }));
+        const inputForMol = (mol, keys) => { const rows = inputs.filter(i=>i.Molecula===mol); for (const k of keys) { const hit = rows.find(i=>String(i.Input||"").trim().toLowerCase()===String(k).trim().toLowerCase()); if (hit && String(hit.Value||"").trim()!=="") return hit.Value; } return "--"; };
+        const fieldForMol = (x, keys, fallback) => { const fromInputs = inputForMol(x.mol, keys); if (fromInputs !== "--") return fromInputs; const fromCat = valOf(x.cat, keys); if (fromCat !== "--") return fromCat; return fallback || "--"; };
         const netRows = D.filter(r=>r[1]==="Forecast" && ["Sales (Sell In)","Net Sales"].includes(r[0]));
         const by = (fn, rows=netRows) => rows.reduce((a,r)=>{ const k=fn(r)||"--"; a[k]=(a[k]||0)+Number(r[9]||0); return a; },{});
         const partnerShare = by(r=>r[8]);
         const areaShare = by(r=>r[5]);
-        const channelShare = by(r=>valOf(catByMol[r[4]]||{},["Channel"]));
+        const channelShare = by(r=>fieldForMol({mol:r[4],cat:catByMol[r[4]]||{},rows:[]},["Channel"],"--"));
         const firstSale = m => { const rr=netRows.filter(r=>r[4]===m && Number(r[9]||0)>0).sort((a,b)=>a[2]-b[2]||a[3]-b[3])[0]; return rr?{y:rr[2],m:rr[3]}:null; };
         const years = [...new Set(molInfo.map(x=>firstSale(x.mol)?.y).filter(Boolean))].sort();
         const areaMonthsAll = [...new Set(netRows.map(r=>`${r[2]}-${String(r[3]).padStart(2,'0')}`))].sort();
@@ -798,12 +800,12 @@ export default function Dashboard() {
         const readiness = c => { const fields=["Regulatory Status","Partner","Product Status","Channel","Reference Price","Saya Price Retail","Supply Cost"]; const filled=fields.filter(k=>valOf(c,[k])!=="--").length; return Math.round(filled/fields.length*100); };
         const uniq = arr => [...new Set(arr.filter(x=>x && x!=="--"))].sort();
         const filterDefs = [
-          ["Therapeutic Area", uniq(molInfo.map(x=>valOf(x.cat,["Therapeutic Area"])!=="--"?valOf(x.cat,["Therapeutic Area"]):(x.rows[0]?.[5]||"--")))],
-          ["Partner", uniq(molInfo.map(x=>valOf(x.cat,["Partner"])!=="--"?valOf(x.cat,["Partner"]):(x.rows[0]?.[8]||"--")))],
-          ["Channel", uniq(molInfo.map(x=>valOf(x.cat,["Channel"])))],
-          ["Regulatory Status", uniq(molInfo.map(x=>valOf(x.cat,["Regulatory Status"])))],
-          ["Product Status", uniq(molInfo.map(x=>valOf(x.cat,["Product Status"])))],
-          ["Launch Year", years.map(String)],
+          ["Therapeutic Area", uniq(molInfo.map(x=>fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[8] || "--")))],
+          ["Partner", uniq(molInfo.map(x=>fieldForMol(x,["Partner"], "--")))],
+          ["Channel", uniq(molInfo.map(x=>fieldForMol(x,["Channel"], "--")))],
+          ["Regulatory Status", uniq(molInfo.map(x=>fieldForMol(x,["Regulatory Status"], "--")))],
+          ["Product Status", uniq(molInfo.map(x=>fieldForMol(x,["Product Status"], "--")))],
+          ["Launch Year", years.map(String), true],
           ["Molecule", baseMols]
         ];
         const shareBox = (title,obj) => { const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const total=entries.reduce((s,e)=>s+e[1],0)||1; let acc=0; const bg=entries.map((e,i)=>{const p=e[1]/total*100; const seg=`${colors[i%colors.length]} ${acc}% ${acc+p}%`; acc+=p; return seg;}).join(','); return <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16}}><div style={{fontSize:13,fontWeight:800,marginBottom:8}}>{title}</div><div style={{width:130,height:130,borderRadius:'50%',margin:'8px auto',background:`conic-gradient(${bg})`,position:'relative'}}><div style={{position:'absolute',inset:34,background:'#fff',borderRadius:'50%'}} /></div>{entries.map((e,i)=><div key={e[0]} style={{display:'flex',justifyContent:'space-between',fontSize:11,margin:'5px 0'}}><span><span style={{display:'inline-block',width:9,height:9,borderRadius:9,background:colors[i%colors.length],marginRight:6}} />{e[0]}</span><b>{Math.round(e[1]/total*100)}%</b></div>)}</div> };
@@ -813,7 +815,7 @@ export default function Dashboard() {
           <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:14}}>
             <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16,alignSelf:'start'}}>
               <div style={{fontSize:13,textTransform:'uppercase',letterSpacing:1.1,color:'#6414C8',fontWeight:900,marginBottom:10}}>Filters</div>
-              {filterDefs.map(([label,opts])=><div key={label} style={{marginBottom:12}}><div style={{fontSize:11,color:'#667085',fontWeight:800,marginBottom:5}}>{label}</div><select style={{width:'100%',background:'#F1F4F9',border:'1px solid #E4E8F2',borderRadius:12,padding:10,fontSize:14,fontFamily:'inherit'}} defaultValue="All"><option>All</option>{opts.map(o=><option key={o}>{o}</option>)}</select></div>)}
+              {filterDefs.map(([label,opts,multiple])=><div key={label} style={{marginBottom:12}}><div style={{fontSize:11,color:'#667085',fontWeight:800,marginBottom:5}}>{label}</div><select multiple={!!multiple} size={multiple?Math.min(5, Math.max(2, opts.length+1)):undefined} style={{width:'100%',background:'#F1F4F9',border:'1px solid #E4E8F2',borderRadius:12,padding:10,fontSize:14,fontFamily:'inherit'}} defaultValue={multiple?[]:"All"}>{!multiple && <option>All</option>}{multiple && <option>All years</option>}{opts.map(o=><option key={o}>{o}</option>)}</select></div>)}
             </div>
             <div>
               <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10,marginBottom:12}}>{[["Molecules",baseMols.length],["Forecast value",money(netRows.reduce((s,r)=>s+Number(r[9]||0),0))],["Partners",Object.keys(partnerShare).length],["First launch",(()=>{const fs=molInfo.map(x=>firstSale(x.mol)).filter(Boolean).sort((a,b)=>a.y-b.y||a.m-b.m)[0];return fs?`${MO[fs.m-1]} ${fs.y}`:'--'})()],["Avg readiness",(Math.round(molInfo.reduce((s,x)=>s+readiness(x.cat),0)/(molInfo.length||1)))+'%']].map(k=><div key={k[0]} style={{background:'#fff',border:'1px solid #E4E8F2',borderLeft:'5px solid #6414C8',borderRadius:16,padding:13}}><div style={{fontSize:10,color:'#667085',fontWeight:900,textTransform:'uppercase'}}>{k[0]}</div><div style={{fontSize:21,fontWeight:900}}>{k[1]}</div></div>)}</div>
@@ -826,7 +828,7 @@ export default function Dashboard() {
                   {molInfo.map((x,ix)=>{
                     const c=x.cat, fs=firstSale(x.mol);
                     const inputMap=Object.fromEntries(inputs.filter(i=>i.Molecula===x.mol).map(i=>[i.Input,i.Value]));
-                    const get=(keys)=>{ for(const k of keys){ const v=valOf(c,[k]); if(v!=='--') return v; if(inputMap[k]!==undefined && String(inputMap[k]).trim()!=='') return inputMap[k]; } return '--'; };
+                    const get=(keys)=>{ for(const k of keys){ if(inputMap[k]!==undefined && String(inputMap[k]).trim()!=='') return inputMap[k]; const v=valOf(c,[k]); if(v!=='--') return v; } return '--'; };
                     const release=get(['Release_Date','Release Date'])!=='--'?get(['Release_Date','Release Date']):(fs?`${MO[fs.m-1]} ${fs.y}`:'--');
                     const fields=[
                       ['Molecule',x.mol],['Brand Name',get(['Brand Name'])],['Type',get(['Type'])],['Therapeutic Area',get(['Therapeutic Area'])],['Partner',get(['Partner'])],['Registration Number',get(['Registration Number'])],['Product Status',get(['Product Status'])],['Partner Status',get(['Partner Status'])],['Regulatory Status',get(['Regulatory Status'])],['Link to Contract',get(['Link to Contract'])],['Release Date',release],['Units',get(['Units'])],['Channel',get(['Channel'])],['Import Type',get(['Import Type'])],['Players',get(['Players'])],['Subjugations',get(['Subjugations','Subjugaciones'])],['Reference Price',get(['Reference Price'])],['Discount Price',get(['Discount Price'])],['Gross to Net',get(['Gross to Net'])],['Discount to Distributor',get(['Discount to Distributor','Discount to Distibuitor'])],['Other Discounts',get(['Other Discounts'])],['Supply Cost',get(['Supply Cost'])],['NSP%',get(['NSP%'])],['License Fee',get(['License Fee'])],['Royalty',get(['Royalty'])],['Market Share',get(['Market Share'])],['Sales Rep.',get(['Sales Rep.','Sales Rep'])],['Bioequivalence / Study of Fundamentals',get(['Bioequivalence / Study of Fundamentals'])],['MOQ',get(['MOQ'])],['Lead Time (Months)',get(['Lead Time (Months)','Lead Time'])],['Shelf Life',get(['Shelf Life'])],['Include IVA',get(['Include IVA'])],['Days to Collection',get(['Days to Collection'])],['Days to Pay',get(['Days to Pay'])],['Saya Price Retail',get(['Saya Price Retail'])],['Peak Sales',get(['Peak Sales'])],['EBITDA',get(['EBITDA'])],['NPV 11.51%',get(['NPV 11.51%','NPV'])],['TIR',get(['TIR','IRR'])]
