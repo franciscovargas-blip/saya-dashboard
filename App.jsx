@@ -808,7 +808,7 @@ export default function Dashboard() {
         const readiness = c => { const fields=["Regulatory Status","Partner","Product Status","Channel","Reference Price","Saya Price Retail","Supply Cost"]; const filled=fields.filter(k=>valOf(c,[k])!=="--").length; return Math.round(filled/fields.length*100); };
         const uniq = arr => [...new Set(arr.filter(x=>x && x!=="--"))].sort();
         const filterDefs = [
-          ["Therapeutic Area", uniq(molInfo.map(x=>fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], therapeuticForMol(x.mol)))],
+          ["Therapeutic Area", uniq(molInfo.map(x=>therapeuticForMol(x.mol)))],
           ["Partner", uniq(molInfo.map(x=>partnerForMol(x.mol)))],
           ["Channel", uniq(molInfo.map(x=>channelForMol(x.mol)))],
           ["Regulatory Status", uniq(molInfo.map(x=>fieldForMol(x,["Regulatory Status"], "--")))],
