@@ -832,8 +832,6 @@ export default function Dashboard() {
         };
         const filteredMolInfo = molInfo.filter(matchesFilter);
         const filteredMolSet = new Set(filteredMolInfo.map(x=>x.mol));
-        const therapeuticForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; return fieldForMol(x,["Therapeutic Area","Area Terapéutica","Area Terapeutica"], x.rows[0]?.[8] || x.rows[0]?.[5] || "--"); };
-        const typeForMol = (mol) => { const x = molInfo.find(z=>z.mol===mol) || {mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; return fieldForMol(x,["Type"], x.rows[0]?.[5] || "--"); };
         const fNetRows = netRows.filter(r=>filteredMolSet.has(r[4]));
         const fAreaShare = by(r=>therapeuticForMol(r[4]), fNetRows);
         const fMoleculeShare = by(r=>r[4], fNetRows);
