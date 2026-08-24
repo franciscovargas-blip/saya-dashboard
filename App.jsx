@@ -151,6 +151,11 @@ function buildPL(fd, yr, m, cm, mode) {
   const marketPenPct = (mode === "reales" || !marketGrowth) ? 0 : marketVolume / marketGrowth;
   const refPrice = mode === "reales" ? 0 : getVal("Reference Price <Player X>");
   const priceRetail = getVal("Price Retail (Saya)");
+  const priceToDistributor = firstNonZero(
+    getVal("Price After Discount to Distribuitor"),
+    getVal("Price After Discount to Distributor"),
+    getVal("Price (to Distribuitor)")
+  );
   const varRefPct = (mode === "reales" || !refPrice) ? 0 : priceRetail / refPrice;
   const salesDiscountPct = salesIn ? salesDiscount / salesIn : 0;
   const salesReturnsPct = salesIn ? salesReturns / salesIn : 0;
@@ -197,11 +202,11 @@ function buildPL(fd, yr, m, cm, mode) {
   const totFin = fi + fe;
   const netProfit = ebit - totFin;
   const netProfitPct = ns ? netProfit / ns : 0;
-  return { marketGrowth, marketVolume, marketPenPct, refPrice, priceRetail, varRefPct, salesIn, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
+  return { marketGrowth, marketVolume, priceToDistributor, marketPenPct, refPrice, priceRetail, varRefPct, salesIn, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
 }
 {/* */}
-const PL_KEYS = ["salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
-const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Market Volume <Saya>",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
+const PL_KEYS = ["marketVolume","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
+const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
 const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","depr"]);
