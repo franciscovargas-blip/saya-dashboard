@@ -154,7 +154,8 @@ function buildPL(fd, yr, m, cm, mode) {
   const priceToDistributor = firstNonZero(
     getVal("Price After Discount to Distribuitor"),
     getVal("Price After Discount to Distributor"),
-    getVal("Price (to Distribuitor)")
+    getVal("Price (to Distribuitor)"),
+    marketVolume ? salesIn / marketVolume : 0
   );
   const varRefPct = (mode === "reales" || !refPrice) ? 0 : priceRetail / refPrice;
   const salesDiscountPct = salesIn ? salesDiscount / salesIn : 0;
@@ -208,6 +209,7 @@ function buildPL(fd, yr, m, cm, mode) {
 const PL_KEYS = ["marketVolume","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
 const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
+const INTEGER_KEYS = new Set(["marketVolume"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
 const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","depr"]);
 {/* */}
@@ -416,7 +418,7 @@ export default function Dashboard() {
   const th = { fontSize: 9, color: "#8A90A8", fontWeight: 400, padding: "5px 6px", borderBottom: "1px solid #E4E8F2", whiteSpace: "nowrap" };
   const td = { fontSize: 10, padding: "5px 6px", borderBottom: "1px solid #f0f2fa" };
   const vc = v => v < 0 ? "#E24B4A" : v > 0 ? "#1D9E75" : "#ccc";
-  const fv = (v, isPct) => isPct ? P(v) : F(v);
+  const fv = (v, isPct, k) => isPct ? P(v) : INTEGER_KEYS.has(k) ? Math.round(v || 0).toLocaleString("en-US") : F(v);
   const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => { if (percent < 0.05) return null; const r = innerRadius + (outerRadius - innerRadius) * 0.5; const x = cx + r * Math.cos(-midAngle * Math.PI / 180); const y = cy + r * Math.sin(-midAngle * Math.PI / 180); return <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={500}>{`${(percent * 100).toFixed(0)}%`}</text> };
 {/* */}
 {/* */}
@@ -938,8 +940,8 @@ export default function Dashboard() {
                       {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
                       {PL_LABELS[k]}
                     </td>
-                    {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct)}</td>)}
-                    <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct)}</td>
+                    {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct, k)}</td>)}
+                    <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct, k)}</td>
                   </tr>
                 );
                 // Drill-down for OpEx rows
