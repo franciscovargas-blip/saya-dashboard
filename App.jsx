@@ -799,7 +799,10 @@ export default function Dashboard() {
         const channelForMol = mol => { const x=molInfo.find(z=>z.mol===mol)||{mol,cat:catByMol[mol]||{},rows:D.filter(r=>r[4]===mol)}; const v=String(fieldForMol(x,['Channel','Canal'], '--')); const k=v.toLowerCase(); if(k.includes('priv')) return 'Privado'; if(k.includes('pub')) return 'Público'; return v; };
         const areaListForColor = [...new Set(baseMols.map(therapeuticForMol).filter(a=>a&&a!=='--'))];
         const areaColor = a => colors[Math.max(0, areaListForColor.indexOf(a)) % colors.length] || '#94A3B8';
-        const netRows = D.filter(r=>r[1]==="Forecast" && ["Sales (Sell In)","Net Sales"].includes(r[0]));
+        const isActualAtCutoff = r => r[2] < CUR_YEAR || (r[2] === CUR_YEAR && r[3] <= cm);
+        const isForecastAtCutoff = r => r[2] > CUR_YEAR || (r[2] === CUR_YEAR && r[3] > cm);
+        const isSelectedOriginAtCutoff = r => (isActualAtCutoff(r) && r[1] === "Reales") || (isForecastAtCutoff(r) && r[1] === "Forecast");
+        const netRows = D.filter(r=>["Sales (Sell In)","Net Sales"].includes(r[0]) && isSelectedOriginAtCutoff(r));
         const by = (fn, rows=netRows) => rows.reduce((a,r)=>{ const k=fn(r)||"--"; a[k]=(a[k]||0)+Number(r[9]||0); return a; },{});
         const partnerShare = by(r=>r[8]);
         const areaShare = by(r=>r[5]);
@@ -815,7 +818,6 @@ export default function Dashboard() {
           ["Channel", uniq(molInfo.map(x=>channelForMol(x.mol)))],
           ["Regulatory Status", uniq(molInfo.map(x=>fieldForMol(x,["Regulatory Status"], "--")))],
           ["Product Status", uniq(molInfo.map(x=>fieldForMol(x,["Product Status"], "--")))],
-          ["Launch Year", years.map(String), true],
           ["Molecule", baseMols]
         ];
         const getFilterVals = (label) => Array.isArray(portfolioFilters[label]) ? portfolioFilters[label] : (portfolioFilters[label] ? [portfolioFilters[label]] : []);
@@ -827,7 +829,6 @@ export default function Dashboard() {
             "Channel": channelForMol(x.mol),
             "Regulatory Status": fieldForMol(x,["Regulatory Status"], "--"),
             "Product Status": fieldForMol(x,["Product Status"], "--"),
-            "Launch Year": fs ? String(fs.y) : "--",
             "Molecule": x.mol
           };
           return Object.keys(vals).every(k => { const selected=getFilterVals(k).filter(v=>v && !String(v).startsWith('All')); return selected.length===0 || selected.includes(String(vals[k])); });
