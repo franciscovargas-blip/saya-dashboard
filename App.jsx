@@ -325,7 +325,7 @@ export default function Dashboard() {
         const den = monthly.reduce((s, row) => s + row.ns, 0);
         totals[k] = den ? num / den : 0;
       } else {
-        totals[k] = monthly.reduce((s, row) => s + row[k], 0);
+        totals[k] = k === "priceToDistributor" ? ((monthly.reduce((s, row) => s + row.marketVolume, 0)) ? monthly.reduce((s, row) => s + row.salesIn, 0) / monthly.reduce((s, row) => s + row.marketVolume, 0) : 0) : monthly.reduce((s, row) => s + row[k], 0);
       }
     });
     return { monthly, totals };
@@ -339,10 +339,10 @@ export default function Dashboard() {
       const reMonthly = allM.map(m => buildPL(fd, CUR_YEAR, m, cm, "reales"));
       ytdFC[k] = PCT_KEYS.has(k) ?
         (ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + fcMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) : 0) :
-        ytdM.reduce((s, m) => s + fcMonthly[m-1][k], 0);
+        k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+fcMonthly[m-1].marketVolume,0) ? ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+fcMonthly[m-1].marketVolume,0) : 0) : ytdM.reduce((s, m) => s + fcMonthly[m-1][k], 0);
       ytdRE[k] = PCT_KEYS.has(k) ?
         (ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + reMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) : 0) :
-        ytdM.reduce((s, m) => s + reMonthly[m-1][k], 0);
+        k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+reMonthly[m-1].marketVolume,0) ? ytdM.reduce((s,m)=>s+reMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+reMonthly[m-1].marketVolume,0) : 0) : ytdM.reduce((s, m) => s + reMonthly[m-1][k], 0);
       cmFC[k] = fcMonthly[cm-1][k];
       cmRE[k] = reMonthly[cm-1][k];
     });
