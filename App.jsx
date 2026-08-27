@@ -207,12 +207,12 @@ function buildPL(fd, yr, m, cm, mode) {
   return { marketGrowth, marketVolume, priceToDistributor, marketPenPct, refPrice, priceRetail, varRefPct, salesIn, sellOut, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
 }
 {/* */}
-const PL_KEYS = ["marketVolume","priceToDistributor","salesIn","sellOut","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
-const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",sellOut:"Sales (Sell Out)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
+const PL_KEYS = ["marketVolume","priceToDistributor","salesIn","sellOut","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
+const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",sellOut:"Sales (Sell Out)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
 const INTEGER_KEYS = new Set(["marketVolume"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
-const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","depr"]);
+const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","reg","sh","qual","ops","oth","depr"]);
 {/* */}
 function LoginGate({ children }) {
   const [input, setInput] = React.useState('');
@@ -378,8 +378,8 @@ export default function Dashboard() {
   const OC_ALL=["Salaries & Wages","Professional Fees","Sales & Marketing","Travel & Accommodation","IT (Software-Hardware)","Office Expense","Operations","Depreciation & Amortization","Financial Expense","Financial Income","Others","Regulatory","Software & Hardware","Mobility"];
 {/* */}
   // OpEx por lineas del PnL - solo Reales, drill-down por clasificacion
-  const OPEX_PL_KEYS = ["sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth"];
-  const OPEX_PL_FD_NAME = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others"};
+  const OPEX_PL_KEYS = ["sw","sm","ta","pf","of","reg","sh","qual","ops","oth"];
+  const OPEX_PL_FD_NAME = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others"};
   const opexClsData = useMemo(() => {
     const real = buildPL(fd, CUR_YEAR, cm, cm, "reales");
     return OPEX_PL_KEYS
@@ -920,7 +920,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {(() => {
-              const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",depr:"Amortization and depreciation"};
+              const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",depr:"Amortization and depreciation"};
               const toggleOx = (key) => setExpOpex(p => ({...p, [key]: !p[key]}));
               const tableRows = [];
   const SEP_STYLE = {padding:"9px 8px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"};
@@ -1025,7 +1025,7 @@ export default function Dashboard() {
               <thead><tr>{["Line", "Forecast", "Actuals", "Var $", "Var %"].map(h => <th key={h} style={{ ...th, textAlign: h === "Línea" ? "left" : "right" }}>{h}</th>)}</tr></thead>
               <tbody>
                 {(() => {
-                  const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",depr:"Amortization and depreciation"};
+                  const OPEX_CODE_MAP = {sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",depr:"Amortization and depreciation"};
                   const tRows = [];
                   comp.forEach((r, i) => {
                     const isOpex = OPEX_KEY_SET.has(r.k);
