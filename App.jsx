@@ -143,6 +143,7 @@ function buildPL(fd, yr, m, cm, mode) {
     return current;
   };
   const salesIn = firstNonZero(getVal("Sales (Sell In)"), getVal("Sales (Sell In) Contable"), getVal("Net Sales"));
+  const sellOut = firstNonZero(getVal("Sales (Sell Out)"), getVal("Sales (Sell Out) Contable"), getVal("Sell Out"), getVal("Sell-Out"));
   const salesDiscount = getVal("Sales Discount (Gross to Net)");
   const salesReturns = getVal("Sales Returns");
   const ns = salesIn - salesDiscount - salesReturns;
@@ -203,11 +204,11 @@ function buildPL(fd, yr, m, cm, mode) {
   const totFin = fi + fe;
   const netProfit = ebit - totFin;
   const netProfitPct = ns ? netProfit / ns : 0;
-  return { marketGrowth, marketVolume, priceToDistributor, marketPenPct, refPrice, priceRetail, varRefPct, salesIn, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
+  return { marketGrowth, marketVolume, priceToDistributor, marketPenPct, refPrice, priceRetail, varRefPct, salesIn, sellOut, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
 }
 {/* */}
-const PL_KEYS = ["marketVolume","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
-const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
+const PL_KEYS = ["marketVolume","priceToDistributor","salesIn","sellOut","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","reg","sh","mob","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
+const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",sellOut:"Sales (Sell Out)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",reg:"Regulatory",sh:"Software & Hardware",mob:"Mobility",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
 const INTEGER_KEYS = new Set(["marketVolume"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
@@ -291,6 +292,7 @@ export default function Dashboard() {
     const getOpex = getPL;
     const firstNonZero = (...vals) => vals.find(v => v !== 0) || 0;
     const salesIn = firstNonZero(getPL("Sales (Sell In)"), getPL("Sales (Sell In) Contable"), getPL("Net Sales"));
+    const sellOut = firstNonZero(getPL("Sales (Sell Out)"), getPL("Sales (Sell Out) Contable"), getPL("Sell Out"), getPL("Sell-Out"));
     const salesDiscount = getPL("Sales Discount (Gross to Net)");
     const salesDiscountPct = salesIn ? salesDiscount / salesIn : 0;
     const salesReturns = getPL("Sales Returns");
@@ -304,7 +306,7 @@ export default function Dashboard() {
     const deprRaw = mode === "forecast" ? (firstNonZero(getPL("Up-Fronts"),getPL("Up-Fronts Contable"),getPL("Up-front Fees (by Contract)")) + firstNonZero(getPL("Hardware"),getPL("Hardware Contable")) + firstNonZero(getPL("Software"),getPL("Software Contable")) + firstNonZero(getPL("Regulatory"),getPL("Regulatory Contable")) + firstNonZero(getPL("Depreciation"),getPL("Depreciation & Amortization"))) : firstNonZero(getOpex("Depreciation & Amortization"), getOpex("Depreciation"));
     const depr=(mode!=="forecast"&&yr===2026&&m===7&&deprRaw===0)?312632.57:deprRaw, deprPct=ns?depr/ns:0, ebit=ebitda-depr, ebitPct=ns?ebit/ns:0;
     const fi=getOpex("Financial Income"),fe=getOpex("Financial Expense"),totFin=fi+fe,netProfit=ebit-totFin,netProfitPct=ns?netProfit/ns:0;
-    const result={salesIn,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,reg,sh,mob,qual,ops,oth,totOpex,totOpexPct,ebitda,ebitdaPct,depr,deprPct,ebit,ebitPct,fi,fe,totFin,netProfit,netProfitPct};
+    const result={salesIn,sellOut,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,reg,sh,mob,qual,ops,oth,totOpex,totOpexPct,ebitda,ebitdaPct,depr,deprPct,ebit,ebitPct,fi,fe,totFin,netProfit,netProfitPct};
     _bplC.current[k] = result;
     return result;
   };
