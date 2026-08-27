@@ -117,7 +117,7 @@ const auxRowsCum=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,monto
 const auxMonthRows=(sheet,yr,m)=> (AUX_DATA[sheet]||[]).map(r=>({name:r.name,value:r.values?.[auxMonthKey(yr,m)]||0}));
 
 const normPL = (pl) => pl === "GP0001" ? "Operations" : pl === "AS Manual" ? "Others" : pl;
-const gV=(d,pl,or,yr,m)=>d.filter(r=>normPL(r[0])===pl&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
+const gV=(d,pl,or,yr,m)=>d.filter(r=>normPL(r[0])===normPL(pl)&&r[1]===or&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0);
 const gVms=(d,pl,or,yr,ms)=>ms.reduce((s,m)=>s+gV(d,pl,or,yr,m),0);
 const mols=[...new Set(D.map(r=>mapMol(r[4])))].sort();
 const molsModelos=[...new Set(D.map(r=>r[4]).filter(m=>m&&m!=="--"&&m!=="—"))].sort();
