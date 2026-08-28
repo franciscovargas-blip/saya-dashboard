@@ -156,7 +156,7 @@ function buildPL(fd, yr, m, cm, mode) {
     getVal("Price After Discount to Distribuitor"),
     getVal("Price After Discount to Distributor"),
     getVal("Price (to Distribuitor)"),
-    ((mode !== "forecast" && yr === 2026 && m === 7 ? 75 : marketVolume) ? salesIn / (mode !== "forecast" && yr === 2026 && m === 7 ? 75 : marketVolume) : 0)
+    ((mode !== "forecast" && yr === 2026 && m === 6 ? 75 : marketVolume) ? salesIn / (mode !== "forecast" && yr === 2026 && m === 6 ? 75 : marketVolume) : 0)
   );
   const varRefPct = (mode === "reales" || !refPrice) ? 0 : priceRetail / refPrice;
   const salesDiscountPct = salesIn ? salesDiscount / salesIn : 0;
