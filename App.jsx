@@ -156,7 +156,7 @@ function buildPL(fd, yr, m, cm, mode) {
     getVal("Price After Discount to Distribuitor"),
     getVal("Price After Discount to Distributor"),
     getVal("Price (to Distribuitor)"),
-    marketVolume ? salesIn / marketVolume : 0
+    ((mode !== "forecast" && yr === 2026 && m === 7 ? 75 : marketVolume) ? salesIn / (mode !== "forecast" && yr === 2026 && m === 7 ? 75 : marketVolume) : 0)
   );
   const varRefPct = (mode === "reales" || !refPrice) ? 0 : priceRetail / refPrice;
   const salesDiscountPct = salesIn ? salesDiscount / salesIn : 0;
@@ -204,13 +204,13 @@ function buildPL(fd, yr, m, cm, mode) {
   const totFin = fi + fe;
   const netProfit = ebit - totFin;
   const netProfitPct = ns ? netProfit / ns : 0;
-  return { marketGrowth, marketVolume, priceToDistributor, marketPenPct, refPrice, priceRetail, varRefPct, salesIn, sellOut, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
+  return { marketGrowth, marketVolume, priceToDistributor, marketPenPct, refPrice, priceRetail, varRefPct, salesInUnits: marketVolume, salesIn, sellOut, sellOutValue: 0, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
 }
 {/* */}
-const PL_KEYS = ["marketVolume","priceToDistributor","salesIn","sellOut","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
-const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesIn:"Sales (Sell In)",sellOut:"Sales (Sell Out)",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
+const PL_KEYS = ["marketVolume","priceToDistributor","salesInUnits","salesIn","sellOut","sellOutValue","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
+const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Price (to Distribuitor)",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesInUnits:"Sales (Sell In) — Units",salesIn:"Sales (Sell In) — Value",sellOut:"Sales (Sell Out) — Units",sellOutValue:"Sales (Sell Out) — Value",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
-const INTEGER_KEYS = new Set(["marketVolume"]);
+const INTEGER_KEYS = new Set(["marketVolume","salesInUnits","sellOut"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
 const OPEX_KEY_SET = new Set(["sw","sm","ta","pf","of","sh","qual","ops","oth","depr"]);
 {/* */}
@@ -306,7 +306,7 @@ export default function Dashboard() {
     const deprRaw = mode === "forecast" ? (firstNonZero(getPL("Up-Fronts"),getPL("Up-Fronts Contable"),getPL("Up-front Fees (by Contract)")) + firstNonZero(getPL("Hardware"),getPL("Hardware Contable")) + firstNonZero(getPL("Software"),getPL("Software Contable")) + firstNonZero(getPL("Regulatory"),getPL("Regulatory Contable")) + firstNonZero(getPL("Depreciation"),getPL("Depreciation & Amortization"))) : firstNonZero(getOpex("Depreciation & Amortization"), getOpex("Depreciation"));
     const depr=(mode!=="forecast"&&yr===2026&&m===7&&deprRaw===0)?312632.57:deprRaw, deprPct=ns?depr/ns:0, ebit=ebitda-depr, ebitPct=ns?ebit/ns:0;
     const fi=getOpex("Financial Income"),fe=getOpex("Financial Expense"),totFin=fi+fe,netProfit=ebit-totFin,netProfitPct=ns?netProfit/ns:0;
-    const result={salesIn,sellOut,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,reg,sh,mob,qual,ops,oth,totOpex,totOpexPct,ebitda,ebitdaPct,depr,deprPct,ebit,ebitPct,fi,fe,totFin,netProfit,netProfitPct};
+    const result={salesInUnits:0,salesIn,sellOut,sellOutValue:0,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,reg,sh,mob,qual,ops,oth,totOpex,totOpexPct,ebitda,ebitdaPct,depr,deprPct,ebit,ebitPct,fi,fe,totFin,netProfit,netProfitPct};
     _bplC.current[k] = result;
     return result;
   };
@@ -339,10 +339,10 @@ export default function Dashboard() {
       const reMonthly = allM.map(m => buildPL(fd, CUR_YEAR, m, cm, "reales"));
       ytdFC[k] = PCT_KEYS.has(k) ?
         (ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + fcMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) : 0) :
-        k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+fcMonthly[m-1].marketVolume,0) ? ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+fcMonthly[m-1].marketVolume,0) : 0) : ytdM.reduce((s, m) => s + fcMonthly[m-1][k], 0);
+        k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesInUnits,0) ? ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesInUnits,0) : 0) : ytdM.reduce((s, m) => s + fcMonthly[m-1][k], 0);
       ytdRE[k] = PCT_KEYS.has(k) ?
         (ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + reMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) : 0) :
-        k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+reMonthly[m-1].marketVolume,0) ? ytdM.reduce((s,m)=>s+reMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+reMonthly[m-1].marketVolume,0) : 0) : ytdM.reduce((s, m) => s + reMonthly[m-1][k], 0);
+        k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+reMonthly[m-1].salesInUnits,0) ? ytdM.reduce((s,m)=>s+reMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+reMonthly[m-1].salesInUnits,0) : 0) : ytdM.reduce((s, m) => s + reMonthly[m-1][k], 0);
       cmFC[k] = fcMonthly[cm-1][k];
       cmRE[k] = reMonthly[cm-1][k];
     });
@@ -937,8 +937,8 @@ export default function Dashboard() {
                 if (k === "depr") tableRows.push(<tr key="amort-sep"><td colSpan={14} style={SEP_STYLE}>Amortization & depreciation</td></tr>);
                 /* fin-sep removed */
                 tableRows.push(
-                  <tr key={"row-"+k} style={k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
-                    <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
+                  <tr key={"row-"+k} style={k==="sellOut" || k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
+                    <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: isOpex ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: (k==="sellOut" || k==="sellOutValue") ? "#FFF7ED" : isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: isOpex ? 16 : 6 }}>
                       {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
                       {PL_LABELS[k]}
                     </td>
@@ -1033,13 +1033,13 @@ export default function Dashboard() {
                     const expKey = t.prefix + "-" + r.k;
                     const isExp = expComp[expKey];
                     tRows.push(
-                      <tr key={"r-"+i} style={r.k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : r.k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
+                      <tr key={"r-"+i} style={r.k==="sellOut" || r.k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : r.k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : r.k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
                         <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
                           {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
                           {r.label}
                         </td>
-                        <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct)}</td>
-                        <td style={{ ...td, textAlign: "right", color: vc(r[t.rk]), fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.rk], r.isPct)}</td>
+                        <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct, r.k)}</td>
+                        <td style={{ ...td, textAlign: "right", color: vc(r[t.rk]), fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.rk], r.isPct, r.k)}</td>
                         <td style={{ ...td, textAlign: "right", color: vc(r[t.vk]), fontWeight: 500, fontSize: r.isPct ? 9 : 10 }}>{r.isPct ? P(r[t.vk]) : F(r[t.vk])}</td>
                         <td style={{ ...td, textAlign: "right" }}>{!r.isPct && <span style={{ padding: "2px 6px", borderRadius: 4, fontSize: 9, fontWeight: 500, background: r[t.pk] < 0 ? "#FCEBEB" : r[t.pk] > 0 ? "#D4F0E6" : "#f0f2fa", color: vc(r[t.pk]) }}>{P(r[t.pk])}</span>}</td>
                       </tr>
