@@ -390,7 +390,8 @@ export default function Dashboard() {
       const allFcstMonthly = timeline.map(({yr,mo})=>molEBITDA(mol,yr,mo,"Forecast"));
       const postBEebitda = beFcstIdx!==null ? allFcstMonthly.slice(beFcstIdx) : [];
       const cod = postBEebitda.length>0 ? postBEebitda.reduce((s,v)=>s+v,0)/postBEebitda.length : 0;
-      return {fcstBE:fcstBE||"N/D",rfBE:rfBE||"N/D",deltaStr,delta,fcstCum,rfCum,timeline,fcstMin,rfMin,cod};
+      // Guardamos el array completo para que el simulador use valores reales (no promedio×N)
+      return {fcstBE:fcstBE||"N/D",rfBE:rfBE||"N/D",deltaStr,delta,fcstCum,rfCum,timeline,fcstMin,rfMin,cod,postBEebitda};
     };
     const data={};
     mols.forEach(m=>{data[m]=compute(m);});
@@ -2939,7 +2940,14 @@ export default function Dashboard() {
               {(()=>{
                 const Fm2=v=>{ const a=Math.abs(v); return a>=1e6?"$"+(a/1e6).toFixed(1)+"M":a>=1e3?"$"+(a/1e3).toFixed(0)+"K":"$0"; };
                 const ranked=[...mols]
-                  .map(mol=>({ mol, cod:beAllData[mol]?.cod||0, total:(beAllData[mol]?.cod||0)*beDelay, be:beAllData[mol]?.fcstBE||"N/D" }))
+                  .map(mol=>{
+                    const d=beAllData[mol];
+                    const cod=d?.cod||0;
+                    const arr=d?.postBEebitda||[];
+                    // Impacto real: suma de los primeros N meses post-BE (crecimiento progresivo)
+                    const total=arr.slice(0,beDelay).reduce((s,v)=>s+v,0);
+                    return { mol, cod, total, be:d?.fcstBE||"N/D", arr };
+                  })
                   .filter(r=>r.cod>0)
                   .sort((a,b)=>b.cod-a.cod);
                 if(!ranked.length) return <div style={{color:"#94A3B8",fontSize:12,padding:"20px 0"}}>Sin datos de CoD disponibles (moléculas sin breakeven proyectado)</div>;
