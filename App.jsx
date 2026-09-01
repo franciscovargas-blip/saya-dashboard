@@ -1777,8 +1777,6 @@ export default function Dashboard() {
           </div>
         );
       })()}
-        </div>
-      </div>
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
