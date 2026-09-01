@@ -1939,6 +1939,7 @@ export default function Dashboard() {
 
         );
       })()}
+      </>
       }
 {/* */}
       {mainTab === "pnl-anual" && (
