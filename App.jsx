@@ -1938,7 +1938,7 @@ export default function Dashboard() {
 
 
         );
-      })()}      </>
+      })()}
       }
 {/* */}
       {mainTab === "pnl-anual" && (
@@ -2433,7 +2433,7 @@ export default function Dashboard() {
           <div style={{padding:"20px 24px"}}>
             <div style={{marginBottom:20}}>
               <div style={{fontSize:18,fontWeight:700,color:"#1a1a2e"}}>Análisis Breakeven</div>
-              <div style={{fontSize:12,color:"#888",marginTop:3"}}>
+              <div style={{fontSize:12,color:"#888",marginTop:3}}>
                 ¿En qué mes los ingresos acumulados cubren el OPEX acumulado?</div>
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:24}}>
