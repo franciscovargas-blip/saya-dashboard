@@ -304,55 +304,79 @@ export default function Dashboard() {
     { real: "DENO",  fcst: "Denosumab 120",                  brand: "Nexavelyan",  comment: "Pendiente subir archivo de forecast" },
   ];
   const BE_MO_LABELS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-  /* Breakeven = mes en que el EBITDA ACUMULADO cruza cero por primera vez.
-     Se usan TODOS los anos del dataset (puede tardar 2-4 años).
-     Forecast puro primero; luego combinado Reales hasta el mes actual + Forecast desde hoy. */
+  /* Breakeven por molecula = mes en que el EBITDA ACUMULADO cruza cero.
+     Misma logica de lineas P&L que bpl(), pero filtrado por r[4]===mol.
+     Se incluye amortizacion (Up-Fronts, Hardware, Software, Regulatory, Depreciation)
+     porque representan la inversion inicial que la molecula debe recuperar.
+     Timeline abarca todos los anos del dataset. */
   const beData = React.useMemo(() => {
     const SKIP = new Set(["Consolidado","--","",null,undefined]);
-    const EBITDA_LINE = "EBITDA";
-    // Obtener lista de moleculas con datos de forecast (cualquier año)
     const mols = [...new Set(
-      D.filter(r => r[1]==="Forecast" && !SKIP.has(r[4]))
+      D.filter(r => r[1]==="Forecast" && r[4] && !SKIP.has(r[4]))
        .map(r => r[4])
-    )].filter(Boolean).sort();
-    // Todos los años disponibles ordenados
+    )].sort();
     const allYears = [...new Set(D.map(r=>r[2]))].sort((a,b)=>a-b);
-    // Generar secuencia cronológica de año-mes para el chart
     const timeline = [];
-    for (const yr of allYears) {
-      for (let mo = 1; mo <= 12; mo++) {
+    for (const yr of allYears)
+      for (let mo=1; mo<=12; mo++)
         timeline.push({yr, mo, label: BE_MO_LABELS[mo-1]+"'"+(String(yr).slice(2))});
-      }
-    }
-    const compute = mol => {
-      // Acumular EBITDA mes a mes a lo largo de todos los años
-      const fcstCum = [], rfCum = []; // EBITDA acumulado por punto del timeline
-      let cf = 0, cr = 0;
-      let fcstBE = null, rfBE = null;
-      for (const {yr, mo, label} of timeline) {
-        const rows = D.filter(r => r[2]===yr && r[3]===mo && r[4]===mol && r[0]===EBITDA_LINE);
-        const fcstVal = rows.filter(r=>r[1]==="Forecast").reduce((s,r)=>s+(r[9]||0),0);
-        const realVal = rows.filter(r=>r[1]==="Reales").reduce((s,r)=>s+(r[9]||0),0);
-        // Linea Forecast puro
-        cf += fcstVal;
-        fcstCum.push(cf);
-        if (cf > 0 && !fcstBE) fcstBE = label;
-        // Linea combinada: reales hasta hoy (año==CUR_YEAR && mo<=cm), resto forecast
-        const useReal = (yr < CUR_YEAR) || (yr === CUR_YEAR && mo <= cm);
-        cr += useReal ? realVal : fcstVal;
-        rfCum.push(cr);
-        if (cr > 0 && !rfBE) rfBE = label;
-      }
-      // Delta en meses entre forecast BE y real/fcst BE
-      const beIdx = (lbl) => { if(!lbl) return null; const t=timeline.findIndex(p=>p.label===lbl); return t; };
-      const dF = beIdx(fcstBE), dR = beIdx(rfBE);
-      const delta = dF!==null&&dR!==null ? dR-dF : null;
-      const deltaStr = delta===null?"N/D":delta===0?"En tiempo":delta>0?"+"+delta+" mes"+(delta!==1?"es":"")+" (retraso)":Math.abs(delta)+" mes"+(Math.abs(delta)!==1?"es":"")+" antes";
-      return { fcstBE: fcstBE||"N/D", rfBE: rfBE||"N/D", deltaStr, delta, fcstCum, rfCum, timeline };
+    // Calcula EBITDA mensual de una molecula replicando la logica de bpl()
+    const molEBITDA = (mol, yr, mo, orig) => {
+      const g = pl => D.filter(r=>r[4]===mol&&r[0]===pl&&r[1]===orig&&r[2]===yr&&r[3]===mo).reduce((s,r)=>s+(r[9]||0),0);
+      const fNZ = (...v) => v.find(x=>x!==0)||0;
+      const salesIn = fNZ(g("Sales (Sell In)"),g("Sales (Sell In) Contable"),g("Net Sales"));
+      const ns = salesIn - g("Sales Discount (Gross to Net)") - g("Sales Returns");
+      const cogsComp = fNZ(g("Cost per Volume"),g("Cost per Volume Contable"))
+                     + fNZ(g("Import Tax Cost"),g("Import Tax Cost Contable"))
+                     + fNZ(g("Logistic Cost Ambient"),g("Logistic Cost Ambient Contable"))
+                     + fNZ(g("Product WareHouse"),g("Product WareHouse Contable"));
+      const cogs = cogsComp || g("COGS");
+      const gp = ns - cogs;
+      // OPEX: forecast usa subset sin reg/sh/mob; reales incluye todo (igual que bpl)
+      const sw=g("Salaries & Wages"),
+            sm=fNZ(g("Sales & Marketing"),g("Sales &Marketing")),
+            ta=fNZ(g("Travel & Accommodation"),g("Travel & Accomodation")),
+            pf=fNZ(g("Professional Fees"),g("Professional Services")),
+            of_=g("Office Expense"),
+            ops=g("Operations"),oth=g("Others"),qual=g("Quality"),
+            reg=g("Regulatory"),sh=fNZ(g("Software & Hardware"),g("IT (Software-Hardware)")),mob=g("Mobility");
+      const totOpex = orig==="Forecast"
+        ? sw+sm+ta+pf+of_+ops+oth+qual
+        : sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth;
+      const ebitda = gp - totOpex;
+      // Amortizacion de inversion (upfronts, licencias, depr) — parte de la inversion a recuperar
+      const depr = orig==="Forecast"
+        ? fNZ(g("Up-Fronts"),g("Up-Fronts Contable"),g("Up-front Fees (by Contract)"))
+          + fNZ(g("Hardware"),g("Hardware Contable"))
+          + fNZ(g("Software"),g("Software Contable"))
+          + fNZ(g("Regulatory"),g("Regulatory Contable"))
+          + fNZ(g("Depreciation"),g("Depreciation & Amortization"))
+        : fNZ(g("Depreciation & Amortization"),g("Depreciation"));
+      return ebitda - depr; // EBIT: EBITDA menos amortizacion de la inversion
     };
-    const data = {};
-    mols.forEach(m => { data[m] = compute(m); });
-    return { mols, data };
+    const compute = mol => {
+      const fcstCum=[], rfCum=[];
+      let cf=0, cr=0, fcstBE=null, rfBE=null;
+      for (const {yr,mo,label} of timeline) {
+        const fv = molEBITDA(mol,yr,mo,"Forecast");
+        const rv = molEBITDA(mol,yr,mo,"Reales");
+        cf += fv;
+        fcstCum.push(cf);
+        if (cf>0 && !fcstBE) fcstBE=label;
+        const useReal = yr<CUR_YEAR || (yr===CUR_YEAR && mo<=cm);
+        cr += useReal ? rv : fv;
+        rfCum.push(cr);
+        if (cr>0 && !rfBE) rfBE=label;
+      }
+      const beIdx = lbl => !lbl?null:timeline.findIndex(p=>p.label===lbl);
+      const dF=beIdx(fcstBE), dR=beIdx(rfBE);
+      const delta=dF!==null&&dR!==null?dR-dF:null;
+      const deltaStr=delta===null?"N/D":delta===0?"En tiempo":delta>0?"+"+delta+" mes"+(delta!==1?"es":"")+" (retraso)":Math.abs(delta)+" mes"+(Math.abs(delta)!==1?"es":"")+" antes";
+      return {fcstBE:fcstBE||"N/D",rfBE:rfBE||"N/D",deltaStr,delta,fcstCum,rfCum,timeline};
+    };
+    const data={};
+    mols.forEach(m=>{data[m]=compute(m);});
+    return {mols,data};
   },[D,cm]);
   const activeBeMol = beMol||(beData.mols[0]||"");
   const beMolData = beData.data[activeBeMol]||{};
@@ -1439,7 +1463,7 @@ export default function Dashboard() {
       })()}
 {/* */}
 {/* */}
-      {/* ═══════ BALANCE GENERAL ═══════ */}
+      {/* ═══���═══ BALANCE GENERAL ═══════ */}
       {balData&&<div style={{borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1a1a2e"/><text x="16" y="18" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="600" fontFamily="'Fraunces',serif" dominantBaseline="middle">BG</text></svg>
