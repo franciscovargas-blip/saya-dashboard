@@ -186,7 +186,6 @@ export default function Dashboard() {
   const [expCF, setExpCF] = useState({});
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
   const [mainTab, setMainTab] = useState("executive");
-  const [beMol, setBeMol] = React.useState("");
   const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
   const fd = useMemo(() => {
@@ -208,66 +207,6 @@ export default function Dashboard() {
   }, []);
   const _bplC = React.useRef({});
   React.useEffect(() => { _bplC.current = {}; }, [fd, cm]);
-  const AUX_CATALOG = [
-    { real: "",      fcst: "Mesilato de Eribulina 1mg:2ml",  brand: "Pendiente",   comment: "Aun no tenemos reales" },
-    { real: "",      fcst: "Insulina Glargina PFS",           brand: "Pendiente",   comment: "Aun no tenemos reales" },
-    { real: "BEVA",  fcst: "Bevacizumab 100 mg.",            brand: "Bevalyax",    comment: "" },
-    { real: "",      fcst: "Insulina Glargina PFS 5 pack",    brand: "Pendiente",   comment: "Aun no tenemos reales" },
-    { real: "FIXED", fcst: "Fixed",                           brand: "Fixed",       comment: "" },
-    { real: "LIRA",  fcst: "Liraglutida",                    brand: "Saytelia",    comment: "" },
-    { real: "PELI",  fcst: "Pegfilgrastim",                  brand: "Neutorum",    comment: "" },
-    { real: "TERI",  fcst: "Teriparatida",                   brand: "Euxara",      comment: "" },
-    { real: "ACHI",  fcst: "Ácido Hialurónico 1.5%", brand: "Hyaxum Plus", comment: "" },
-    { real: "ACHI",  fcst: "Ácido Hialurónico 1%",   brand: "Hyaxum",      comment: "" },
-    { real: "ACHI",  fcst: "Ácido Hialurónico 2%",   brand: "Hyaxum Pro",  comment: "" },
-    { real: "Consolidado", fcst: "",                          brand: "",            comment: "Preguntar ¿qué es?" },
-    { real: "ACMI",  fcst: "Ácido Micofenólico",      brand: "Pendiente",   comment: "Pendiente subir archivo de forecast" },
-    { real: "DENO",  fcst: "Denosumab 60",                   brand: "Corelis",     comment: "Pendiente subir archivo de forecast" },
-    { real: "SIME",  fcst: "SitagliptinMetformin",           brand: "Pendiente",   comment: "Pendiente subir archivo de forecast" },
-    { real: "DENO",  fcst: "Denosumab 120",                  brand: "Nexavelyan",  comment: "Pendiente subir archivo de forecast" },
-  ];
-  const MOL_BRAND_BE = {
-    "ACHI":"Hyaxum","BEVA":"Bevalyax","LIRA":"Saytelia","PELI":"Neutorum",
-    "TERI":"Euxara","FIXED":"Fixed","DENO":"Denosumab","ACMI":"Ácido Micofenólico",
-    "SIME":"SitagliptinMetformin",
-    "Bevacizumab 100 mg.":"Bevalyax","Liraglutida":"Saytelia",
-    "Pegfilgrastim":"Neutorum","Teriparatida":"Euxara","Fixed":"Fixed",
-    "Ácido Hialurónico 1%":"Hyaxum","Ácido Hialurónico 1.5%":"Hyaxum",
-    "Ácido Hialurónico 2%":"Hyaxum","Denosumab 60":"Denosumab","Denosumab 120":"Denosumab",
-  };
-  const normBrand = mol => MOL_BRAND_BE[mol] || mol;
-  const BE_REVLINES = new Set(["Sales (Sell In)","Sales (Sell In) Contable","Net Sales"]);
-  const BE_MO_LABELS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-  const beData = React.useMemo(() => {
-    const SKIP = new Set(["Consolidado","--",""]);
-    const brands = [...new Set(D.filter(r=>r[2]===CUR_YEAR).map(r=>normBrand(r[4])))].filter(m=>!SKIP.has(m)).sort();
-    const compute = brand => {
-      const fRev=Array(13).fill(0),fCost=Array(13).fill(0),rRev=Array(13).fill(0),rCost=Array(13).fill(0);
-      D.filter(r=>r[2]===CUR_YEAR&&normBrand(r[4])===brand).forEach(r=>{
-        const m=r[3],v=Math.abs(r[9]||0),isRev=BE_REVLINES.has(r[0]);
-        if(r[1]==="Forecast"){isRev?(fRev[m]+=v):(fCost[m]+=v);}
-        else if(r[1]==="Reales"){isRev?(rRev[m]+=v):(rCost[m]+=v);}
-      });
-      const moLabel=(mo,yr)=>BE_MO_LABELS[mo-1]+" "+yr;
-      const moIdx=s=>{if(!s||s==="N/D")return null;const[mo,yr]=s.split(" ");return(parseInt(yr)-CUR_YEAR)*12+BE_MO_LABELS.indexOf(mo);};
-      let cfr=0,cfc=0,fcstBE="N/D";
-      for(let m=1;m<=12;m++){cfr+=fRev[m];cfc+=fCost[m];if(cfr>0&&cfr>=cfc&&fcstBE==="N/D")fcstBE=moLabel(m,CUR_YEAR);}
-      let cr=0,cc=0,rfBE="N/D";
-      for(let m=1;m<=24;m++){const mo=m<=12?m:m-12,yr=m<=12?CUR_YEAR:CUR_YEAR+1;cr+=m<=cm?rRev[m]:fRev[mo];cc+=m<=cm?rCost[m]:fCost[mo];if(cr>0&&cr>=cc&&rfBE==="N/D")rfBE=moLabel(mo,yr);}
-      const dF=moIdx(fcstBE),dR=moIdx(rfBE);
-      const delta=dF!==null&&dR!==null?dR-dF:null;
-      const deltaStr=delta===null?"N/D":delta===0?"En tiempo":delta>0?"+"+delta+" mes"+(delta!==1?"es":"")+" (retraso)":Math.abs(delta)+" mes"+(Math.abs(delta)!==1?"es":"")+" antes";
-      const cumFR=[],cumFC=[],cumRR=[],cumRC=[];let a=0,b=0,c=0,d2=0;
-      for(let m=1;m<=12;m++){a+=fRev[m];cumFR.push(a);b+=fCost[m];cumFC.push(b);c+=rRev[m];cumRR.push(c);d2+=rCost[m];cumRC.push(d2);}
-      const fcstBEMo=fcstBE!=="N/D"?BE_MO_LABELS.indexOf(fcstBE.split(" ")[0])+1:null;
-      return{fcstBE,rfBE,deltaStr,delta,cumFR,cumFC,cumRR,cumRC,fcstBEMo,activeCm:cm};
-    };
-    const result2={};
-    brands.forEach(b=>{result2[b]=compute(b);});
-    return{mols:brands,data:result2};
-  },[D,cm]);
-  const activeBeMol=beMol||(beData.mols[0]||"");
-  const beMolData=beData.data[activeBeMol]||{};
   const bpl = (yr, m, mode) => {
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
@@ -728,7 +667,7 @@ export default function Dashboard() {
 {/* */}
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["executive","🎯 Executive KPIs"],["ventas","📈 Ventas"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"],["auxiliares","🗂 Auxiliares"],["breakeven","📉 Breakeven"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["ventas","📈 Ventas"],["dashboard","📑 Estados Financieros"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -1750,8 +1689,6 @@ export default function Dashboard() {
           </div>
         );
       })()}
-        </div>
-      </div>
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Timeline de Lanzamientos de Moléculas </div>
@@ -1804,11 +1741,6 @@ export default function Dashboard() {
         );
       })()}
 
-
-
-
-{/* */}
-{/* */}
       {/* PIE CHARTS */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         {[{ title: "Gasto Real por Molécula — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Gasto Real por Molécula — ${MO[cm - 1]}`, sub: "Mes corriente", data: pieCM }].map((p, pi) => (
@@ -2345,152 +2277,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}}
-      {mainTab === "auxiliares" && (
-        <div style={{padding:"20px 24px"}}>
-          <div style={{marginBottom:20}}>
-            <div style={{fontSize:18,fontWeight:700,color:"#1a1a2e"}}>Catalogo de Moleculas</div>
-            <div style={{fontSize:12,color:"#888",marginTop:3}}>Estado por molecula: Reales vs Forecast vs Nombre comercial</div>
-          </div>
-          <div style={{overflowX:"auto",borderRadius:10,border:"1px solid #E4E8F2"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-              <thead><tr style={{background:"#F8F9FF"}}>
-                {["Reales 2026","Forecast 2026","Nombre comercial","Comentario"].map(h=>(
-                  <th key={h} style={{padding:"11px 16px",textAlign:"left",color:"#6B7280",fontSize:11,
-                    fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",
-                    borderBottom:"1px solid #E4E8F2",whiteSpace:"nowrap"}}>{h}</th>
-                ))}
-              </tr></thead>
-              <tbody>
-                {AUX_CATALOG.map((row,i)=>(
-                  <tr key={i} style={{borderBottom:"1px solid #F0F2FA",
-                    background:i%2===0?"#fff":"#FAFBFF",
-                    opacity:(!row.real&&row.comment.includes("no tenemos"))?0.65:1}}>
-                    <td style={{padding:"10px 16px",fontFamily:"monospace",fontSize:12,fontWeight:600,
-                      color:row.real?"#534AB7":"#CBD5E0"}}>{row.real||"—"}</td>
-                    <td style={{padding:"10px 16px",color:"#1a1a2e"}}>{row.fcst||"—"}</td>
-                    <td style={{padding:"10px 16px"}}>
-                      {row.brand==="Pendiente"
-                        ? <span style={{background:"#FEF3C7",color:"#92400E",borderRadius:10,
-                            padding:"2px 10px",fontSize:11,fontWeight:600}}>Pendiente</span>
-                        : row.brand
-                          ? <span style={{fontWeight:700,color:"#534AB7"}}>{row.brand}</span>
-                          : <span style={{color:"#CBD5E0"}}>—</span>}
-                    </td>
-                    <td style={{padding:"10px 16px",fontSize:12,
-                      color:(row.comment.includes("Pendiente")||row.comment.includes("no tenemos"))?
-                        "#F59E0B":"#6B7280"}}>{row.comment}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-      {mainTab === "breakeven" && (()=>{
-        const {mols}=beData, d=beMolData;
-        const BEmo=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-        const cW=620,cH=220,pL=52,pR=20,pT=22,pB=28;
-        const plotW=cW-pL-pR,plotH=cH-pT-pB;
-        const allV=[...(d.cumFR||[]),...(d.cumFC||[]),...(d.cumRR||[]),...(d.cumRC||[])].filter(v=>v>0);
-        const maxV=allV.length?Math.max(...allV)*1.15:1e6;
-        const xS=plotW/11;
-        const toX=idx2=>pL+idx2*xS;
-        const toY=v=>pT+plotH-(v/maxV)*plotH;
-        const pts=(arr,from)=>arr.slice(from).map((v,idx2)=>`${toX(from+idx2)},${toY(v)}`).join(" ");
-        const Fm=v=>v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1e3?"$"+(v/1e3).toFixed(0)+"K":"$0";
-        const yTicks=[0,.25,.5,.75,1].map(p=>({v:maxV*p,y:toY(maxV*p)}));
-        const dc=d.delta===null?"#888":d.delta===0?"#16a34a":d.delta>0?"#ea580c":"#16a34a";
-        return(
-          <div style={{padding:"20px 24px"}}>
-            <div style={{marginBottom:20}}>
-              <div style={{fontSize:18,fontWeight:700,color:"#1a1a2e"}}>Analisis Breakeven</div>
-              <div style={{fontSize:12,color:"#888",marginTop:3}}>En que mes los ingresos acumulados cubren el OPEX acumulado?</div>
-            </div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:24}}>
-              {mols.map(mol=>{
-                const active=mol===activeBeMol;
-                return <button key={mol} onClick={()=>setBeMol(mol)} style={{
-                  padding:"6px 16px",borderRadius:20,fontSize:12,fontWeight:active?700:500,
-                  border:active?"1.5px solid #534AB7":"1px solid #E4E8F2",
-                  background:active?"#EEF0FF":"#fff",color:active?"#534AB7":"#6B7280",cursor:"pointer"}}>{mol}</button>;
-              })}
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:24}}>
-              {[
-                {label:"Breakeven segun Forecast",value:d.fcstBE||"N/D",sub:"Mes proyectado en el modelo",color:"#534AB7"},
-                {label:"Breakeven Reales + Forecast",value:d.rfBE||"N/D",sub:"Con ritmo real hasta hoy + fcst",color:"#16a34a"},
-                {label:"Diferencia vs Forecast",value:d.deltaStr||"N/D",sub:"Retraso o adelanto",color:dc},
-              ].map(({label,value,sub,color},ki)=>(
-                <div key={ki} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,
-                  padding:"20px 22px",boxShadow:"0 1px 3px #0001"}}>
-                  <div style={{fontSize:10,color:"#888",textTransform:"uppercase",letterSpacing:".07em",
-                    marginBottom:8,fontWeight:600}}>{label}</div>
-                  <div style={{fontSize:26,fontWeight:800,color}}>{value}</div>
-                  <div style={{fontSize:10,color:"#94A3B8",marginTop:4}}>{sub}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:22}}>
-              <div style={{fontSize:14,fontWeight:600,marginBottom:4}}>Ingresos vs OPEX acumulado — {activeBeMol}</div>
-              <div style={{fontSize:11,color:"#888",marginBottom:16}}>Solido=Reales, Punteado=Forecast, Estrella=Breakeven Fcst</div>
-              <svg width="100%" viewBox={`0 0 ${cW} ${cH}`} style={{overflow:"visible"}}>
-                {yTicks.map(({v,y},ti)=>(
-                  <g key={ti}>
-                    <line x1={pL} y1={y} x2={cW-pR} y2={y} stroke="#F0F2FA" strokeWidth="1"/>
-                    <text x={pL-5} y={y+3} fill="#94A3B8" fontSize="8" textAnchor="end">{Fm(v)}</text>
-                  </g>
-                ))}
-                {BEmo.map((mo,mi)=>(
-                  <text key={mi} x={toX(mi)} y={cH-2} fill="#94A3B8" fontSize="8" textAnchor="middle">{mo}</text>
-                ))}
-                {d.activeCm>=1&&d.activeCm<=12&&(
-                  <line x1={toX(d.activeCm-.5)} y1={pT} x2={toX(d.activeCm-.5)} y2={cH-pB}
-                    stroke="#CBD5E0" strokeWidth="1" strokeDasharray="3,2"/>
-                )}
-                {d.cumRR&&d.cumRR.some(v=>v>0)&&(
-                  <polyline points={pts(d.cumRR,0)} fill="none" stroke="#16a34a"
-                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                )}
-                {d.cumFR&&d.cumFR.some(v=>v>0)&&(
-                  <polyline points={pts(d.cumFR,d.activeCm||0)} fill="none" stroke="#16a34a"
-                    strokeWidth="2" strokeDasharray="7,4" strokeLinecap="round"/>
-                )}
-                {d.cumRC&&d.cumRC.some(v=>v>0)&&(
-                  <polyline points={pts(d.cumRC,0)} fill="none" stroke="#ef4444"
-                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                )}
-                {d.cumFC&&d.cumFC.some(v=>v>0)&&(
-                  <polyline points={pts(d.cumFC,d.activeCm||0)} fill="none" stroke="#ef4444"
-                    strokeWidth="2" strokeDasharray="7,4" strokeLinecap="round"/>
-                )}
-                {d.fcstBEMo&&(()=>{
-                  const bx=toX(d.fcstBEMo-1),by=toY((d.cumFR||[])[d.fcstBEMo-1]||0);
-                  return <g>
-                    <line x1={bx} y1={pT} x2={bx} y2={cH-pB} stroke="#F59E0B"
-                      strokeWidth="1" strokeDasharray="3,3" opacity=".5"/>
-                    <circle cx={bx} cy={by} r="7" fill="none" stroke="#F59E0B" strokeWidth="2"/>
-                    <circle cx={bx} cy={by} r="3" fill="#F59E0B"/>
-                  </g>;
-                })()}
-              </svg>
-              <div style={{display:"flex",gap:16,marginTop:12,flexWrap:"wrap"}}>
-                {[
-                  {c:"#16a34a",d:false,l:"Ingresos Reales"},{c:"#16a34a",d:true,l:"Ingresos Forecast"},
-                  {c:"#ef4444",d:false,l:"OPEX Reales"},{c:"#ef4444",d:true,l:"OPEX Forecast"},
-                ].map(({c,d:dash,l},li)=>(
-                  <div key={li} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#6B7280"}}>
-                    {dash
-                      ?<span style={{width:20,height:0,borderTop:`2.5px dashed ${c}`,display:"inline-block"}}/>
-                      :<span style={{width:20,height:3,background:c,borderRadius:2,display:"inline-block"}}/>
-                    }
-                    {l}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
     </div>
   );
