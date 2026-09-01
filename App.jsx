@@ -2231,18 +2231,7 @@ export default function Dashboard() {
 
 
         );
-      })()}
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </>
+      })()}      </>
       }
 {/* */}
       {mainTab === "pnl-anual" && (
