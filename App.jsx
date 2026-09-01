@@ -303,44 +303,59 @@ export default function Dashboard() {
     { real: "SIME",  fcst: "SitagliptinMetformin",           brand: "Pendiente",   comment: "Pendiente subir archivo de forecast" },
     { real: "DENO",  fcst: "Denosumab 120",                  brand: "Nexavelyan",  comment: "Pendiente subir archivo de forecast" },
   ];
-  const MOL_BRAND_BE = {
-    "ACHI":"Hyaxum","BEVA":"Bevalyax","LIRA":"Saytelia","PELI":"Neutorum",
-    "TERI":"Euxara","FIXED":"Fixed","DENO":"Denosumab","ACMI":"Ácido Micofenólico",
-    "SIME":"SitagliptinMetformin",
-  };
-  const normBrand = mol => MOL_BRAND_BE[mol] || mol;
-  const BE_REVLINES = new Set(["Sales (Sell In)","Sales (Sell In) Contable","Net Sales"]);
   const BE_MO_LABELS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  /* Breakeven = mes en que el EBITDA ACUMULADO cruza cero por primera vez.
+     Se usan TODOS los anos del dataset (puede tardar 2-4 años).
+     Forecast puro primero; luego combinado Reales hasta el mes actual + Forecast desde hoy. */
   const beData = React.useMemo(() => {
-    const SKIP = new Set(["Consolidado","--",""]);
-    const brands = [...new Set(D.filter(r=>r[2]===CUR_YEAR).map(r=>normBrand(r[4])))].filter(m=>!SKIP.has(m)).sort();
-    const compute = brand => {
-      const fRev=Array(13).fill(0),fCost=Array(13).fill(0),rRev=Array(13).fill(0),rCost=Array(13).fill(0);
-      D.filter(r=>r[2]===CUR_YEAR&&normBrand(r[4])===brand).forEach(r=>{
-        const m=r[3],v=Math.abs(r[9]||0),isRev=BE_REVLINES.has(r[0]);
-        if(r[1]==="Forecast"){isRev?(fRev[m]+=v):(fCost[m]+=v);}
-        else if(r[1]==="Reales"){isRev?(rRev[m]+=v):(rCost[m]+=v);}
-      });
-      const moLabel=(mo,yr)=>BE_MO_LABELS[mo-1]+" "+yr;
-      let cfr=0,cfc=0,fcstBE="N/D";
-      for(let m=1;m<=12;m++){cfr+=fRev[m];cfc+=fCost[m];if(cfr>0&&cfr>=cfc&&fcstBE==="N/D")fcstBE=moLabel(m,CUR_YEAR);}
-      let cr=0,cc=0,rfBE="N/D";
-      for(let m=1;m<=24;m++){const mo=m<=12?m:m-12,yr=m<=12?CUR_YEAR:CUR_YEAR+1;cr+=m<=cm?rRev[m]:fRev[mo];cc+=m<=cm?rCost[m]:fCost[mo];if(cr>0&&cr>=cc&&rfBE==="N/D")rfBE=moLabel(mo,yr);}
-      const moIdx=s=>{if(!s||s==="N/D")return null;const[mo,yr]=s.split(" ");return(parseInt(yr)-CUR_YEAR)*12+BE_MO_LABELS.indexOf(mo);};
-      const dF=moIdx(fcstBE),dR=moIdx(rfBE);
-      const delta=dF!==null&&dR!==null?dR-dF:null;
-      const deltaStr=delta===null?"N/D":delta===0?"En tiempo":delta>0?"+"+delta+" mes"+(delta!==1?"es":"")+" (retraso)":Math.abs(delta)+" mes"+(Math.abs(delta)!==1?"es":"")+" antes";
-      const cumFR=[],cumFC=[],cumRR=[],cumRC=[];let a=0,b=0,c=0,d2=0;
-      for(let m=1;m<=12;m++){a+=fRev[m];cumFR.push(a);b+=fCost[m];cumFC.push(b);c+=rRev[m];cumRR.push(c);d2+=rCost[m];cumRC.push(d2);}
-      const fcstBEMo=fcstBE!=="N/D"?BE_MO_LABELS.indexOf(fcstBE.split(" ")[0])+1:null;
-      return{fcstBE,rfBE,deltaStr,delta,cumFR,cumFC,cumRR,cumRC,fcstBEMo,activeCm:cm};
+    const SKIP = new Set(["Consolidado","--","",null,undefined]);
+    const EBITDA_LINE = "EBITDA";
+    // Obtener lista de moleculas con datos de forecast (cualquier año)
+    const mols = [...new Set(
+      D.filter(r => r[1]==="Forecast" && !SKIP.has(r[4]))
+       .map(r => r[4])
+    )].filter(Boolean).sort();
+    // Todos los años disponibles ordenados
+    const allYears = [...new Set(D.map(r=>r[2]))].sort((a,b)=>a-b);
+    // Generar secuencia cronológica de año-mes para el chart
+    const timeline = [];
+    for (const yr of allYears) {
+      for (let mo = 1; mo <= 12; mo++) {
+        timeline.push({yr, mo, label: BE_MO_LABELS[mo-1]+"'"+(String(yr).slice(2))});
+      }
+    }
+    const compute = mol => {
+      // Acumular EBITDA mes a mes a lo largo de todos los años
+      const fcstCum = [], rfCum = []; // EBITDA acumulado por punto del timeline
+      let cf = 0, cr = 0;
+      let fcstBE = null, rfBE = null;
+      for (const {yr, mo, label} of timeline) {
+        const rows = D.filter(r => r[2]===yr && r[3]===mo && r[4]===mol && r[0]===EBITDA_LINE);
+        const fcstVal = rows.filter(r=>r[1]==="Forecast").reduce((s,r)=>s+(r[9]||0),0);
+        const realVal = rows.filter(r=>r[1]==="Reales").reduce((s,r)=>s+(r[9]||0),0);
+        // Linea Forecast puro
+        cf += fcstVal;
+        fcstCum.push(cf);
+        if (cf > 0 && !fcstBE) fcstBE = label;
+        // Linea combinada: reales hasta hoy (año==CUR_YEAR && mo<=cm), resto forecast
+        const useReal = (yr < CUR_YEAR) || (yr === CUR_YEAR && mo <= cm);
+        cr += useReal ? realVal : fcstVal;
+        rfCum.push(cr);
+        if (cr > 0 && !rfBE) rfBE = label;
+      }
+      // Delta en meses entre forecast BE y real/fcst BE
+      const beIdx = (lbl) => { if(!lbl) return null; const t=timeline.findIndex(p=>p.label===lbl); return t; };
+      const dF = beIdx(fcstBE), dR = beIdx(rfBE);
+      const delta = dF!==null&&dR!==null ? dR-dF : null;
+      const deltaStr = delta===null?"N/D":delta===0?"En tiempo":delta>0?"+"+delta+" mes"+(delta!==1?"es":"")+" (retraso)":Math.abs(delta)+" mes"+(Math.abs(delta)!==1?"es":"")+" antes";
+      return { fcstBE: fcstBE||"N/D", rfBE: rfBE||"N/D", deltaStr, delta, fcstCum, rfCum, timeline };
     };
-    const result2={};
-    brands.forEach(b=>{result2[b]=compute(b);});
-    return{mols:brands,data:result2};
+    const data = {};
+    mols.forEach(m => { data[m] = compute(m); });
+    return { mols, data };
   },[D,cm]);
-  const activeBeMol=beMol||(beData.mols[0]||"");
-  const beMolData=beData.data[activeBeMol]||{};
+  const activeBeMol = beMol||(beData.mols[0]||"");
+  const beMolData = beData.data[activeBeMol]||{};
   const bpl = (yr, m, mode) => {
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
@@ -2690,26 +2705,153 @@ export default function Dashboard() {
         </div>
       )}
       {mainTab === "breakeven" && (()=>{
-        const {mols}=beData,d=beMolData;
-        const BEmo=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-        const cW=620,cH=220,pL=52,pR=20,pT=22,pB=28,plotW=620-52-20,plotH=220-22-28;
-        const allV=[...(d.cumFR||[]),...(d.cumFC||[]),...(d.cumRR||[]),...(d.cumRC||[])].filter(v=>v>0);
-        const maxV=allV.length?Math.max(...allV)*1.15:1e6;
-        const xS=plotW/11,toX=idx2=>pL+idx2*xS,toY=v=>pT+plotH-(v/maxV)*plotH;
-        const pts=(arr,from)=>arr.slice(from).map((v,idx2)=>`${toX(from+idx2)},${toY(v)}`).join(" ");
-        const Fm=v=>v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1e3?"$"+(v/1e3).toFixed(0)+"K":"$0";
-        const yTicks=[0,.25,.5,.75,1].map(p=>({v:maxV*p,y:toY(maxV*p)}));
-        const dc=d.delta===null?"#888":d.delta===0?"#16a34a":d.delta>0?"#ea580c":"#16a34a";
+        const {mols, data:beAllData} = beData;
+        const d = beMolData;
+        const tl = d.timeline || [];
+        // Dimensiones SVG adaptadas a la cantidad de puntos
+        const nPts = tl.length;
+        const cW=Math.max(620, nPts*28), cH=240, pL=60, pR=24, pT=24, pB=36;
+        const plotW=cW-pL-pR, plotH=cH-pT-pB;
+        const allV=[...(d.fcstCum||[]),...(d.rfCum||[])].filter(v=>v!==undefined);
+        const minV=allV.length?Math.min(...allV):0;
+        const maxV=allV.length?Math.max(...allV):1;
+        const span=Math.max(Math.abs(minV),Math.abs(maxV),1);
+        const toX=idx=>pL+(idx/(Math.max(nPts-1,1)))*plotW;
+        const toY=v=>pT+plotH/2 - (v/(span*2))*plotH;  // centro=0
+        const pts=(arr)=>arr.map((v,i)=>`${toX(i)},${toY(v)}`).join(" ");
+        const Fm=v=>v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v<=-1e6?"$("+(Math.abs(v)/1e6).toFixed(1)+"M)":v>=1e3?"$"+(v/1e3).toFixed(0)+"K":v<=-1e3?"$("+(Math.abs(v)/1e3).toFixed(0)+"K)":"$0";
+        const dc=d.delta===null||d.delta===undefined?"#888":d.delta===0?"#16a34a":d.delta>0?"#ea580c":"#16a34a";
+        // Ticks del eje Y
+        const yTicks=[-1,-0.5,0,0.5,1].map(p=>({v:span*2*p*0.5,y:toY(span*2*p*0.5)}));
+        // Linea del zero
+        const zeroY = toY(0);
+        // indice del breakeven forecast
+        const fcstBEIdx = d.fcstBE&&d.fcstBE!=="N/D" ? tl.findIndex(t=>t.label===d.fcstBE) : null;
+        const rfBEIdx   = d.rfBE&&d.rfBE!=="N/D"     ? tl.findIndex(t=>t.label===d.rfBE)   : null;
+        // Ticks del eje X: mostrar etiqueta solo cada 6 meses
+        const xTicks = tl.filter((_,i)=>i%6===0||i===tl.length-1);
         return(
           <div style={{padding:"20px 24px"}}>
-            <div style={{marginBottom:20}}><div style={{fontSize:18,fontWeight:700,color:"#1a1a2e"}}>Análisis Breakeven</div><div style={{fontSize:12,color:"#888",marginTop:3}}>¿En qué mes los ingresos acumulados cubren el OPEX acumulado?</div></div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:24}}>{mols.map(mol=>{const active=mol===activeBeMol;return <button key={mol} onClick={()=>setBeMol(mol)} style={{padding:"6px 16px",borderRadius:20,fontSize:12,fontWeight:active?700:500,border:active?"1.5px solid #534AB7":"1px solid #E4E8F2",background:active?"#EEF0FF":"#fff",color:active?"#534AB7":"#6B7280",cursor:"pointer"}}>{mol}</button>;})}</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:24}}>{[{label:"Breakeven según Forecast",value:d.fcstBE||"N/D",sub:"Mes proyectado en el modelo",color:"#534AB7"},{label:"Breakeven Reales + Forecast",value:d.rfBE||"N/D",sub:"Con ritmo real hasta hoy + fcst",color:"#16a34a"},{label:"Diferencia vs Forecast",value:d.deltaStr||"N/D",sub:"Retraso o adelanto",color:dc}].map(({label,value,sub,color},ki)=>(<div key={ki} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"20px 22px",boxShadow:"0 1px 3px #0001"}}><div style={{fontSize:10,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:8,fontWeight:600}}>{label}</div><div style={{fontSize:26,fontWeight:800,color}}>{value}</div><div style={{fontSize:10,color:"#94A3B8",marginTop:4}}>{sub}</div></div>))}</div>
-            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:22}}>
-              <div style={{fontSize:14,fontWeight:600,marginBottom:4}}>Ingresos vs OPEX acumulado — {activeBeMol}</div>
-              <div style={{fontSize:11,color:"#888",marginBottom:16}}>Sólido=Reales, Punteado=Forecast, Círculo=Breakeven Fcst</div>
-              <svg width="100%" viewBox={`0 0 ${cW} ${cH}`} style={{overflow:"visible"}}>{yTicks.map(({v,y},ti)=>(<g key={ti}><line x1={pL} y1={y} x2={cW-pR} y2={y} stroke="#F0F2FA" strokeWidth="1"/><text x={pL-5} y={y+3} fill="#94A3B8" fontSize="8" textAnchor="end">{Fm(v)}</text></g>))}{BEmo.map((mo,mi)=>(<text key={mi} x={toX(mi)} y={cH-2} fill="#94A3B8" fontSize="8" textAnchor="middle">{mo}</text>))}{d.activeCm>=1&&d.activeCm<=12&&(<line x1={toX(d.activeCm-.5)} y1={pT} x2={toX(d.activeCm-.5)} y2={cH-pB} stroke="#CBD5E0" strokeWidth="1" strokeDasharray="3,2"/>)}{d.cumRR&&d.cumRR.some(v=>v>0)&&(<polyline points={pts(d.cumRR,0)} fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>)}{d.cumFR&&d.cumFR.some(v=>v>0)&&(<polyline points={pts(d.cumFR,d.activeCm||0)} fill="none" stroke="#16a34a" strokeWidth="2" strokeDasharray="7,4" strokeLinecap="round"/>)}{d.cumRC&&d.cumRC.some(v=>v>0)&&(<polyline points={pts(d.cumRC,0)} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>)}{d.cumFC&&d.cumFC.some(v=>v>0)&&(<polyline points={pts(d.cumFC,d.activeCm||0)} fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="7,4" strokeLinecap="round"/>)}{d.fcstBEMo&&(()=>{const bx=toX(d.fcstBEMo-1),by=toY((d.cumFR||[])[d.fcstBEMo-1]||0);return <g><line x1={bx} y1={pT} x2={bx} y2={cH-pB} stroke="#F59E0B" strokeWidth="1" strokeDasharray="3,3" opacity=".5"/><circle cx={bx} cy={by} r="7" fill="none" stroke="#F59E0B" strokeWidth="2"/><circle cx={bx} cy={by} r="3" fill="#F59E0B"/></g>;})()}</svg>
-              <div style={{display:"flex",gap:16,marginTop:12,flexWrap:"wrap"}}>{[{c:"#16a34a",dash:false,l:"Ingresos Reales"},{c:"#16a34a",dash:true,l:"Ingresos Forecast"},{c:"#ef4444",dash:false,l:"OPEX Reales"},{c:"#ef4444",dash:true,l:"OPEX Forecast"}].map(({c,dash,l},li)=>(<div key={li} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#6B7280"}}>{dash?<span style={{width:20,height:0,borderTop:`2.5px dashed ${c}`,display:"inline-block"}}/>:<span style={{width:20,height:3,background:c,borderRadius:2,display:"inline-block"}}/>}{l}</div>))}</div>
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:18,fontWeight:700,color:"#1a1a2e"}}>Análisis Breakeven por Molécula</div>
+              <div style={{fontSize:12,color:"#888",marginTop:3}}>¿Cuándo el EBITDA acumulado de la molécula cruza cero por primera vez?</div>
+            </div>
+            {/* Selector de moleculas */}
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
+              {mols.map(mol=>{
+                const active=mol===activeBeMol;
+                const molData=beAllData[mol]||{};
+                const hasBE=molData.fcstBE&&molData.fcstBE!=="N/D";
+                return(
+                  <button key={mol} onClick={()=>setBeMol(mol)} style={{
+                    padding:"5px 14px",borderRadius:20,fontSize:11,fontWeight:active?700:500,
+                    border:active?"1.5px solid #534AB7":"1px solid #E4E8F2",
+                    background:active?"#EEF0FF":hasBE?"#F0FDF4":"#fff",
+                    color:active?"#534AB7":hasBE?"#16a34a":"#6B7280",cursor:"pointer"
+                  }}>
+                    {mol}{hasBE?" ✓":""}
+                  </button>
+                );
+              })}
+            </div>
+            {/* KPI cards */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:20}}>
+              {[
+                {label:"Breakeven según Forecast",value:d.fcstBE||"N/D",sub:"Mes en que EBITDA acum. > 0 (solo forecast)",color:"#534AB7"},
+                {label:"Breakeven Reales + Forecast",value:d.rfBE||"N/D",sub:"Con reales hasta hoy, forecast desde hoy",color:"#16a34a"},
+                {label:"Diferencia vs Forecast",value:d.deltaStr||"N/D",sub:"Retraso (+) o adelanto (-)",color:dc},
+              ].map(({label,value,sub,color},ki)=>(
+                <div key={ki} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"18px 20px"}}>
+                  <div style={{fontSize:9,color:"#94A3B8",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6,fontWeight:600}}>{label}</div>
+                  <div style={{fontSize:24,fontWeight:800,color,lineHeight:1.1}}>{value}</div>
+                  <div style={{fontSize:10,color:"#94A3B8",marginTop:5}}>{sub}</div>
+                </div>
+              ))}
+            </div>
+            {/* Grafica EBITDA acumulado */}
+            <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"18px 20px"}}>
+              <div style={{fontSize:13,fontWeight:700,marginBottom:2}}>EBITDA acumulado — {activeBeMol}</div>
+              <div style={{fontSize:10,color:"#888",marginBottom:12}}>La línea cruza el eje cero = Breakeven alcanzado. Sombra verde = zona positiva.</div>
+              {nPts === 0 ? (
+                <div style={{height:80,display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:13}}>
+                  Sin datos de EBITDA para esta molécula en el forecast
+                </div>
+              ) : (
+              <div style={{overflowX:"auto"}}>
+              <svg width={cW} height={cH} style={{display:"block",minWidth:"100%"}}>
+                {/* Zona positiva (verde claro) */}
+                <rect x={pL} y={pT} width={plotW} height={zeroY-pT} fill="#F0FDF4" opacity="0.7"/>
+                {/* Zona negativa (rojo claro) */}
+                <rect x={pL} y={zeroY} width={plotW} height={pT+plotH-zeroY} fill="#FEF2F2" opacity="0.5"/>
+                {/* Grid y ticks Y */}
+                {yTicks.map(({v,y},ti)=>(
+                  <g key={ti}>
+                    <line x1={pL} y1={y} x2={cW-pR} y2={y} stroke={v===0?"#94A3B8":"#F0F2FA"} strokeWidth={v===0?1.5:1} strokeDasharray={v===0?"none":"3,3"}/>
+                    <text x={pL-5} y={y+3} fill="#94A3B8" fontSize="8" textAnchor="end">{Fm(v)}</text>
+                  </g>
+                ))}
+                {/* Linea cero con etiqueta */}
+                <text x={pL-5} y={zeroY+3} fill="#374151" fontSize="8" textAnchor="end" fontWeight="600">$0</text>
+                {/* Ticks X */}
+                {xTicks.map((t,ti)=>{
+                  const xi=tl.findIndex(p=>p.label===t.label);
+                  return(
+                    <g key={ti}>
+                      <line x1={toX(xi)} y1={cH-pB} x2={toX(xi)} y2={cH-pB+4} stroke="#CBD5E0" strokeWidth="1"/>
+                      <text x={toX(xi)} y={cH-pB+13} fill="#94A3B8" fontSize="8" textAnchor="middle">{t.label}</text>
+                    </g>
+                  );
+                })}
+                {/* Linea combinada Reales+Forecast */}
+                {d.rfCum&&d.rfCum.length>0&&(
+                  <polyline points={pts(d.rfCum)} fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                )}
+                {/* Linea Forecast puro */}
+                {d.fcstCum&&d.fcstCum.length>0&&(
+                  <polyline points={pts(d.fcstCum)} fill="none" stroke="#534AB7" strokeWidth="1.5" strokeDasharray="6,3" strokeLinecap="round"/>
+                )}
+                {/* Marcador Breakeven Forecast */}
+                {fcstBEIdx!==null&&fcstBEIdx>=0&&(()=>{
+                  const bx=toX(fcstBEIdx), by=toY((d.fcstCum||[])[fcstBEIdx]||0);
+                  return(
+                    <g>
+                      <line x1={bx} y1={pT} x2={bx} y2={cH-pB} stroke="#534AB7" strokeWidth="1" strokeDasharray="4,3" opacity=".6"/>
+                      <circle cx={bx} cy={by} r="6" fill="none" stroke="#534AB7" strokeWidth="2"/>
+                      <circle cx={bx} cy={by} r="3" fill="#534AB7"/>
+                      <text x={bx+4} y={by-8} fill="#534AB7" fontSize="8" fontWeight="700">{d.fcstBE}</text>
+                    </g>
+                  );
+                })()}
+                {/* Marcador Breakeven Real+Fcst */}
+                {rfBEIdx!==null&&rfBEIdx>=0&&rfBEIdx!==fcstBEIdx&&(()=>{
+                  const bx=toX(rfBEIdx), by=toY((d.rfCum||[])[rfBEIdx]||0);
+                  return(
+                    <g>
+                      <line x1={bx} y1={pT} x2={bx} y2={cH-pB} stroke="#16a34a" strokeWidth="1" strokeDasharray="4,3" opacity=".6"/>
+                      <circle cx={bx} cy={by} r="6" fill="none" stroke="#16a34a" strokeWidth="2"/>
+                      <circle cx={bx} cy={by} r="3" fill="#16a34a"/>
+                      <text x={bx+4} y={by-8} fill="#16a34a" fontSize="8" fontWeight="700">{d.rfBE}</text>
+                    </g>
+                  );
+                })()}
+              </svg>
+              </div>
+              )}
+              {/* Leyenda */}
+              <div style={{display:"flex",gap:20,marginTop:10,flexWrap:"wrap"}}>
+                {[
+                  {c:"#16a34a",dash:false,l:"EBITDA acum. (Reales + Forecast)"},
+                  {c:"#534AB7",dash:true,l:"EBITDA acum. (Forecast puro)"},
+                ].map(({c,dash,l},li)=>(
+                  <div key={li} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:"#6B7280"}}>
+                    {dash
+                      ?<span style={{width:22,height:0,borderTop:`2px dashed ${c}`,display:"inline-block"}}/>
+                      :<span style={{width:22,height:3,background:c,borderRadius:2,display:"inline-block"}}/>
+                    }
+                    {l}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         );
