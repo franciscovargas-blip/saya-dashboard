@@ -263,6 +263,7 @@ export default function Dashboard() {
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
   const [mainTab, setMainTab] = useState("executive");
   const [beMol, setBeMol] = React.useState("");
+  const [beDelay, setBeDelay] = React.useState(3);
   const [portfolioFilters, setPortfolioFilters] = useState({});
   const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
@@ -379,7 +380,17 @@ export default function Dashboard() {
       const dF=beIdx(fcstBE), dR=beIdx(rfBE);
       const delta=dF!==null&&dR!==null?dR-dF:null;
       const deltaStr=delta===null?"N/D":delta===0?"En tiempo":delta>0?"+"+delta+" mes"+(delta!==1?"es":"")+" (retraso)":Math.abs(delta)+" mes"+(Math.abs(delta)!==1?"es":"")+" antes";
-      return {fcstBE:fcstBE||"N/D",rfBE:rfBE||"N/D",deltaStr,delta,fcstCum,rfCum,timeline,fcstMin,rfMin};
+      // Cost of Delay = promedio mensual de EBITDA en meses POST-breakeven (forecast)
+      // Representa cuanto pierdes por cada mes que no lanzas la molecula
+      const beFcstIdx = beIdx(fcstBE);
+      const postBEmonths = beFcstIdx!==null
+        ? fcstCum.slice(beFcstIdx).map((cv,i) => i===0 ? cv : cv - fcstCum[beFcstIdx+i-1]).filter(v=>isFinite(v))
+        : [];
+      // Recalcular EBITDA mensual post-BE (diferencia entre acumulados consecutivos)
+      const allFcstMonthly = timeline.map(({yr,mo})=>molEBITDA(mol,yr,mo,"Forecast"));
+      const postBEebitda = beFcstIdx!==null ? allFcstMonthly.slice(beFcstIdx) : [];
+      const cod = postBEebitda.length>0 ? postBEebitda.reduce((s,v)=>s+v,0)/postBEebitda.length : 0;
+      return {fcstBE:fcstBE||"N/D",rfBE:rfBE||"N/D",deltaStr,delta,fcstCum,rfCum,timeline,fcstMin,rfMin,cod};
     };
     const data={};
     mols.forEach(m=>{data[m]=compute(m);});
@@ -2907,6 +2918,89 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
+            </div>
+            {/* ========== COST OF DELAY ========== */}
+            <div style={{marginTop:28}}>
+              <div style={{fontSize:15,fontWeight:700,color:"#1a1a2e",marginBottom:4}}>⏱ Cost of Delay por Molécula</div>
+              <div style={{fontSize:11,color:"#888",marginBottom:16}}>¿Cuánto EBITDA se pierde por cada mes que no se lanza la molécula? Basado en el promedio mensual post-breakeven del Forecast.</div>
+              {/* Simulador de meses de retraso */}
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,background:"#F8F9FF",borderRadius:10,padding:"12px 18px",border:"1px solid #E4E8F2"}}>
+                <span style={{fontSize:11,fontWeight:600,color:"#534AB7",whiteSpace:"nowrap"}}>Simular retraso de:</span>
+                {[1,3,6,12,24].map(n=>(
+                  <button key={n} onClick={()=>setBeDelay(n)} style={{
+                    padding:"5px 14px",borderRadius:20,fontSize:11,fontWeight:beDelay===n?700:400,
+                    border:beDelay===n?"1.5px solid #534AB7":"1px solid #D1D5DB",
+                    background:beDelay===n?"#534AB7":"#fff",color:beDelay===n?"#fff":"#374151",cursor:"pointer"
+                  }}>{n} {n===1?"mes":"meses"}</button>
+                ))}
+                <span style={{fontSize:11,color:"#888",marginLeft:4}}>→ Impacto total por molécula</span>
+              </div>
+              {/* Ranking bar chart */}
+              {(()=>{
+                const Fm2=v=>{ const a=Math.abs(v); return a>=1e6?"$"+(a/1e6).toFixed(1)+"M":a>=1e3?"$"+(a/1e3).toFixed(0)+"K":"$0"; };
+                const ranked=[...mols]
+                  .map(mol=>({ mol, cod:beAllData[mol]?.cod||0, total:(beAllData[mol]?.cod||0)*beDelay, be:beAllData[mol]?.fcstBE||"N/D" }))
+                  .filter(r=>r.cod>0)
+                  .sort((a,b)=>b.cod-a.cod);
+                if(!ranked.length) return <div style={{color:"#94A3B8",fontSize:12,padding:"20px 0"}}>Sin datos de CoD disponibles (moléculas sin breakeven proyectado)</div>;
+                const maxCod=ranked[0].cod;
+                return(
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+                    {/* Barra de ranking CoD */}
+                    <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 20px"}}>
+                      <div style={{fontSize:11,fontWeight:700,color:"#374151",marginBottom:12,textTransform:"uppercase",letterSpacing:".06em"}}>Ranking — CoD mensual (Forecast)</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                        {ranked.map(({mol,cod,be},ri)=>{
+                          const pct=maxCod?cod/maxCod:0;
+                          const urgColor=ri===0?"#dc2626":ri<3?"#ea580c":"#534AB7";
+                          return(
+                            <div key={mol} style={{display:"flex",alignItems:"center",gap:10}}>
+                              <div style={{width:22,height:22,borderRadius:"50%",background:urgColor,color:"#fff",fontSize:9,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{ri+1}</div>
+                              <div style={{flex:1,minWidth:0}}>
+                                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                                  <span style={{fontSize:10,fontWeight:600,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{mol}</span>
+                                  <span style={{fontSize:10,fontWeight:700,color:urgColor,flexShrink:0,marginLeft:6}}>{Fm2(cod)}/mes</span>
+                                </div>
+                                <div style={{height:6,background:"#F0F2FA",borderRadius:3,overflow:"hidden"}}>
+                                  <div style={{height:"100%",width:`${pct*100}%`,background:urgColor,borderRadius:3,transition:"width .3s"}}/>
+                                </div>
+                                <div style={{fontSize:9,color:"#94A3B8",marginTop:2}}>BE: {be}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {/* Tabla impacto por retraso */}
+                    <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 20px"}}>
+                      <div style={{fontSize:11,fontWeight:700,color:"#374151",marginBottom:12,textTransform:"uppercase",letterSpacing:".06em"}}>Impacto si retrasas {beDelay} {beDelay===1?"mes":"meses"}</div>
+                      <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+                        <thead>
+                          <tr style={{borderBottom:"1.5px solid #E4E8F2"}}>
+                            <th style={{textAlign:"left",padding:"4px 8px",color:"#94A3B8",fontWeight:600}}>Molécula</th>
+                            <th style={{textAlign:"right",padding:"4px 8px",color:"#94A3B8",fontWeight:600}}>CoD/mes</th>
+                            <th style={{textAlign:"right",padding:"4px 8px",color:"#94A3B8",fontWeight:600}}>Total {beDelay}m</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ranked.map(({mol,cod,total},ri)=>(
+                            <tr key={mol} style={{borderBottom:"1px solid #F0F2FA",background:ri%2===0?"#FAFBFF":"#fff"}}>
+                              <td style={{padding:"5px 8px",color:"#1a1a2e",fontWeight:ri===0?700:400,maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{mol}</td>
+                              <td style={{padding:"5px 8px",textAlign:"right",color:"#534AB7",fontWeight:600}}>{Fm2(cod)}</td>
+                              <td style={{padding:"5px 8px",textAlign:"right",color:ri===0?"#dc2626":"#ea580c",fontWeight:700}}>{Fm2(total)}</td>
+                            </tr>
+                          ))}
+                          <tr style={{borderTop:"2px solid #534AB7",background:"#EEF0FF"}}>
+                            <td style={{padding:"5px 8px",fontWeight:800,color:"#534AB7"}}>TOTAL PORTFOLIO</td>
+                            <td style={{padding:"5px 8px",textAlign:"right",color:"#534AB7",fontWeight:700}}>{Fm2(ranked.reduce((s,r)=>s+r.cod,0))}</td>
+                            <td style={{padding:"5px 8px",textAlign:"right",color:"#dc2626",fontWeight:800}}>{Fm2(ranked.reduce((s,r)=>s+r.total,0))}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         );
