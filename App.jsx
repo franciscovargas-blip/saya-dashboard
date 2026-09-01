@@ -357,22 +357,29 @@ export default function Dashboard() {
     const compute = mol => {
       const fcstCum=[], rfCum=[];
       let cf=0, cr=0, fcstBE=null, rfBE=null;
+      let fcstMin=0, rfMin=0; // pico maximo de deficit acumulado
       for (const {yr,mo,label} of timeline) {
         const fv = molEBITDA(mol,yr,mo,"Forecast");
         const rv = molEBITDA(mol,yr,mo,"Reales");
         cf += fv;
         fcstCum.push(cf);
+        if (cf < fcstMin) fcstMin = cf;
         if (cf>0 && !fcstBE) fcstBE=label;
-        const useReal = yr<CUR_YEAR || (yr===CUR_YEAR && mo<=cm);
-        cr += useReal ? rv : fv;
+        // Solo usar Reales si la molecula tiene filas Reales para ESE mes concreto.
+        // Si no hay datos reales ese mes (mol sin ventas aun), usar Forecast para no
+        // crear una ventaja artificial que acorte el breakeven incorrectamente.
+        const inRealesWindow = yr<CUR_YEAR || (yr===CUR_YEAR && mo<=cm);
+        const hasRealRows = inRealesWindow && D.some(r=>r[4]===mol&&r[1]==="Reales"&&r[2]===yr&&r[3]===mo);
+        cr += hasRealRows ? rv : fv;
         rfCum.push(cr);
+        if (cr < rfMin) rfMin = cr;
         if (cr>0 && !rfBE) rfBE=label;
       }
       const beIdx = lbl => !lbl?null:timeline.findIndex(p=>p.label===lbl);
       const dF=beIdx(fcstBE), dR=beIdx(rfBE);
       const delta=dF!==null&&dR!==null?dR-dF:null;
       const deltaStr=delta===null?"N/D":delta===0?"En tiempo":delta>0?"+"+delta+" mes"+(delta!==1?"es":"")+" (retraso)":Math.abs(delta)+" mes"+(Math.abs(delta)!==1?"es":"")+" antes";
-      return {fcstBE:fcstBE||"N/D",rfBE:rfBE||"N/D",deltaStr,delta,fcstCum,rfCum,timeline};
+      return {fcstBE:fcstBE||"N/D",rfBE:rfBE||"N/D",deltaStr,delta,fcstCum,rfCum,timeline,fcstMin,rfMin};
     };
     const data={};
     mols.forEach(m=>{data[m]=compute(m);});
@@ -603,7 +610,7 @@ export default function Dashboard() {
     //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
     //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
     //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ──���─���─���──��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─���──��─────────
+    // ──���─���─���──��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─�����──��─────────
 {/* */}
     // Cuentas de efectivo y equivalentes
     const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
@@ -2779,12 +2786,20 @@ export default function Dashboard() {
               })}
             </div>
             {/* KPI cards */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:20}}>
-              {[
-                {label:"Breakeven según Forecast",value:d.fcstBE||"N/D",sub:"Mes en que EBITDA acum. > 0 (solo forecast)",color:"#534AB7"},
-                {label:"Breakeven Reales + Forecast",value:d.rfBE||"N/D",sub:"Con reales hasta hoy, forecast desde hoy",color:"#16a34a"},
-                {label:"Diferencia vs Forecast",value:d.deltaStr||"N/D",sub:"Retraso (+) o adelanto (-)",color:dc},
-              ].map(({label,value,sub,color},ki)=>(
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
+              {(()=>{
+                const fmCard=v=>{
+                  const a=Math.abs(v);
+                  const s=a>=1e6?"$("+(a/1e6).toFixed(1)+"M)":a>=1e3?"$("+(a/1e3).toFixed(0)+"K)":"$0";
+                  return v<0?s:"$0";
+                };
+                return [
+                  {label:"Breakeven según Forecast",value:d.fcstBE||"N/D",sub:"Mes en que EBITDA acum. > 0 (solo forecast)",color:"#534AB7"},
+                  {label:"Breakeven Reales + Forecast",value:d.rfBE||"N/D",sub:"Con reales hasta hoy, forecast desde hoy",color:"#16a34a"},
+                  {label:"Diferencia vs Forecast",value:d.deltaStr||"N/D",sub:"Retraso (+) o adelanto (-)",color:dc},
+                  {label:"Inversión a recuperar (Forecast)",value:fmCard(d.fcstMin||0),sub:"Pico máximo de déficit acumulado",color:"#ea580c"},
+                ];
+              })().map(({label,value,sub,color},ki)=>(
                 <div key={ki} style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"18px 20px"}}>
                   <div style={{fontSize:9,color:"#94A3B8",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6,fontWeight:600}}>{label}</div>
                   <div style={{fontSize:24,fontWeight:800,color,lineHeight:1.1}}>{value}</div>
@@ -2834,6 +2849,22 @@ export default function Dashboard() {
                 {d.fcstCum&&d.fcstCum.length>0&&(
                   <polyline points={pts(d.fcstCum)} fill="none" stroke="#534AB7" strokeWidth="1.5" strokeDasharray="6,3" strokeLinecap="round"/>
                 )}
+                {/* Marcador valor minimo (deficit maximo) Forecast */}
+                {(()=>{
+                  const arr=d.fcstCum||[];
+                  const minIdx=arr.reduce((mi,v,i)=>v<arr[mi]?i:mi,0);
+                  if(arr[minIdx]>=0) return null;
+                  const bx=toX(minIdx), by=toY(arr[minIdx]);
+                  const a=Math.abs(arr[minIdx]);
+                  const lbl=a>=1e6?"$("+(a/1e6).toFixed(1)+"M)":a>=1e3?"$("+(a/1e3).toFixed(0)+"K)":"$(0)";
+                  return(
+                    <g>
+                      <line x1={bx} y1={by} x2={bx} y2={toY(0)} stroke="#ea580c" strokeWidth="1" strokeDasharray="2,2" opacity=".5"/>
+                      <circle cx={bx} cy={by} r="4" fill="#ea580c" opacity=".8"/>
+                      <text x={bx+5} y={by+4} fill="#ea580c" fontSize="8" fontWeight="700">{lbl}</text>
+                    </g>
+                  );
+                })()}
                 {/* Marcador Breakeven Forecast */}
                 {fcstBEIdx!==null&&fcstBEIdx>=0&&(()=>{
                   const bx=toX(fcstBEIdx), by=toY((d.fcstCum||[])[fcstBEIdx]||0);
