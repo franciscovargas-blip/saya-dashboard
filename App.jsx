@@ -2735,7 +2735,7 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      {mainTab === "breakeven" && (()=>{
+      {mainTab === "breakeven" && (()=>{ try {
         const {mols, data:beAllData} = beData;
         const d = beMolData;
         const tl = d.timeline || [];
@@ -3034,6 +3034,7 @@ export default function Dashboard() {
             </div>
           </div>
         );
+      } catch(e) { return <div style={{padding:20,color:'#dc2626',fontSize:13,background:'#fff',borderRadius:12,margin:20}}><strong>Error en Breakeven:</strong> {String(e)}</div>; }
       })()}
       <div style={{ textAlign: "center", fontSize: 8, color: "#B0B6CC", padding: "12px 0", marginTop: 8 }}>Saya Biologics — Business Intelligence · P&L + Balance General · 2026</div>
     </div>
