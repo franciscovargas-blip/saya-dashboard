@@ -413,7 +413,7 @@ export default function Dashboard() {
     const salesReturnsPct = salesIn ? salesReturns / salesIn : 0;
     const ns = salesIn - salesDiscount - salesReturns;
     const cogsComponents = firstNonZero(getPL("Cost per Volume"), getPL("Cost per Volume Contable")) + firstNonZero(getPL("Import Tax Cost"), getPL("Import Tax Cost Contable")) + firstNonZero(getPL("Logistic Cost Ambient"), getPL("Logistic Cost Ambient Contable")) + firstNonZero(getPL("Product WareHouse"), getPL("Product WareHouse Contable"));
-    const cogs = cogsComponents || getPL("COGS"), gp=ns-cogs, gmPct=ns?gp/ns:0;
+    const cogsSAP=fd.filter(r=>normPL(r[0])===normPL("COGS")&&r[1]==="Reales"&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0); const cogs = cogsComponents || cogsSAP, gp=ns-cogs, gmPct=ns?gp/ns:0;
     const sw=getOpex("Salaries & Wages"),sm=firstNonZero(getOpex("Sales & Marketing"),getOpex("Sales &Marketing")),ta=firstNonZero(getOpex("Travel & Accommodation"),getOpex("Travel & Accomodation")),pf=firstNonZero(getOpex("Professional Fees"),getOpex("Professional Services")),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=firstNonZero(getOpex("Software & Hardware"),getOpex("IT (Software-Hardware)")),mob=getOpex("Mobility");
     const qual=getOpex("Quality"),ops=getOpex("Operations"),oth=getOpex("Others");
     const totOpex=mode==="forecast"?(sw+sm+ta+pf+of_+ops+oth+qual):(sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth),totOpexPct=ns?totOpex/ns:0,ebitda=(getPL("EBITDA")||gp-totOpex),ebitdaPct=ns?ebitda/ns:0;
