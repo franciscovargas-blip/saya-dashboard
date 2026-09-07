@@ -893,7 +893,7 @@ export default function Dashboard() {
 {/* */}
       {/* MAIN TABS */}
       <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
-        {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["portfolio","🧬 Portfolio Mapping"],["capex","📦 CAPEX"],["auxiliares","🗂 Auxiliares"],["breakeven","📉 Breakeven"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["portfolio","🧬 Portfolio Mapping"],["capex","📦 CAPEX"],["auxiliares","🗂 Auxiliares"],["breakeven","📉 Breakeven"],["inventarios","📦 Inventarios"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -3042,6 +3042,158 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {mainTab === "inventarios" && (() => {
+        const INV_CORTE = "2 Sep 2026";
+        const INV_FUENTE = "SAP Business One — Tracking_Inventarios_5.txt (UTF-16LE)";
+        const stock = [
+          { producto: "Euxara (Teriparatida 600 mcg)",  uds: 2000,  valor: 5704135.42, pct: 58.6, cad: "30/04/2028", estado: "⚠️ No accesible", lote: "M2012601A" },
+          { producto: "Hyaxum Plus (HA 45 mg)",          uds: 4934,  valor: 1725484.68, pct: 17.7, cad: "26/04/2029", estado: "✅ Liberado",     lote: "AAP-2625/2626" },
+          { producto: "Hyaxum Pro (HA 60 mg)",           uds: 1517,  valor: 1556358.83, pct: 16.0, cad: "08/09/2028", estado: "✅ Liberado",     lote: "AB-2545/2551/2627" },
+          { producto: "Hyaxum 25 mg (HA 25 mg)",         uds: 2315,  valor:  749401.62, pct:  7.7, cad: "10/05/2029", estado: "✅ Liberado",     lote: "AA-2609" },
+        ];
+        const ventas = [
+          { producto: "Hyaxum Pro 60 mg",  uds: 75,  precio: 5161.47, neta: 387110.25, costo:  80008.96, margen: 307101.29, mpct: 79.33 },
+          { producto: "Hyaxum Plus 45 mg", uds: 75,  precio: 1617.40, neta: 121305.00, costo:  26228.53, margen:  95076.47, mpct: 78.38 },
+          { producto: "Hyaxum 25 mg",      uds: 85,  precio: 1186.10, neta: 100818.50, costo:  27515.83, margen:  73302.67, mpct: 72.71 },
+        ];
+        const fm = v => v.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+        const fp = v => v.toFixed(2) + "%";
+        const kpis = [
+          { icon: "📦", label: "Existencia actual",   val: "10,766 uds",  bg: "#EEF0FF", color: "#534AB7" },
+          { icon: "💰", label: "Valor inventario",    val: "$9,735,381",  bg: "#F3E8FF", color: "#7C3AED" },
+          { icon: "🧾", label: "Venta neta acum.",    val: "$609,234",    bg: "#ECFDF5", color: "#059669" },
+          { icon: "📈", label: "Margen bruto",        val: "78.05%",      bg: "#FFF7ED", color: "#C2410C" },
+        ];
+        const thSt = { padding: "6px 10px", textAlign: "left",  color: "#94A3B8", fontWeight: 600, fontSize: 10, borderBottom: "1.5px solid #E4E8F2" };
+        const thR  = { ...{padding:"6px 10px",textAlign:"right",color:"#94A3B8",fontWeight:600,fontSize:10,borderBottom:"1.5px solid #E4E8F2"} };
+        const tdSt = { padding: "6px 10px", fontSize: 11, borderBottom: "1px solid #F0F2FA" };
+        const tdR  = { ...{padding:"6px 10px",fontSize:11,borderBottom:"1px solid #F0F2FA",textAlign:"right"} };
+        return (
+          <div style={{ padding: "20px 24px" }}>
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#1a1a2e" }}>📦 Inventarios — Resumen Ejecutivo</div>
+                <div style={{ fontSize: 10, color: "#94A3B8", marginTop: 2 }}>Corte: {INV_CORTE} · {INV_FUENTE}</div>
+              </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
+              {kpis.map(k => (
+                <div key={k.label} style={{ background: k.bg, borderRadius: 12, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 18 }}>{k.icon}</div>
+                  <div style={{ fontSize: 10, color: "#6B7280", marginTop: 4 }}>{k.label}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: k.color, marginTop: 2 }}>{k.val}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+
+              {/* Stock por producto */}
+              <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 12, padding: "16px 20px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#374151", marginBottom: 12, textTransform: "uppercase", letterSpacing: ".06em" }}>Inventario por Producto — Sep 2026</div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead><tr>
+                    <th style={thSt}>Producto</th>
+                    <th style={thR}>Uds.</th>
+                    <th style={thR}>Valor costo</th>
+                    <th style={thR}>%</th>
+                    <th style={thSt}>Estado</th>
+                  </tr></thead>
+                  <tbody>
+                    {stock.map((s, i) => (
+                      <tr key={s.producto} style={{ background: i % 2 === 0 ? "#FAFBFF" : "#fff" }}>
+                        <td style={{ ...tdSt, fontWeight: 600, maxWidth: 160, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.producto}</td>
+                        <td style={{ ...tdR, fontWeight: 600 }}>{s.uds.toLocaleString()}</td>
+                        <td style={{ ...tdR, color: "#534AB7" }}>{fm(s.valor)}</td>
+                        <td style={{ ...tdR, color: "#6B7280" }}>{s.pct}%</td>
+                        <td style={{ ...tdSt, fontSize: 10 }}>{s.estado}</td>
+                      </tr>
+                    ))}
+                    <tr style={{ background: "#EEF0FF", borderTop: "2px solid #534AB7" }}>
+                      <td style={{ ...tdSt, fontWeight: 800, color: "#534AB7" }}>TOTAL</td>
+                      <td style={{ ...tdR, fontWeight: 800, color: "#534AB7" }}>10,766</td>
+                      <td style={{ ...tdR, fontWeight: 800, color: "#534AB7" }}>$9,735,381</td>
+                      <td style={{ ...tdR, fontWeight: 800, color: "#534AB7" }}>100%</td>
+                      <td style={tdSt}></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style={{ marginTop: 10, fontSize: 10, background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 8, padding: "8px 12px", color: "#92400E" }}>
+                  ⚠️ Euxara concentra 58.6% del valor. Lote M2012601A marcado <strong>No accesible</strong> en SAP — confirmar liberación.
+                </div>
+              </div>
+
+              {/* Ventas comerciales */}
+              <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 12, padding: "16px 20px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#374151", marginBottom: 12, textTransform: "uppercase", letterSpacing: ".06em" }}>Ventas Comerciales — Acumulado al Corte</div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead><tr>
+                    <th style={thSt}>Producto</th>
+                    <th style={thR}>Uds.</th>
+                    <th style={thR}>Venta neta</th>
+                    <th style={thR}>Margen</th>
+                    <th style={thR}>Margen %</th>
+                  </tr></thead>
+                  <tbody>
+                    {ventas.map((v, i) => (
+                      <tr key={v.producto} style={{ background: i % 2 === 0 ? "#FAFBFF" : "#fff" }}>
+                        <td style={{ ...tdSt, fontWeight: 600 }}>{v.producto}</td>
+                        <td style={{ ...tdR }}>{v.uds}</td>
+                        <td style={{ ...tdR, color: "#059669", fontWeight: 600 }}>{fm(v.neta)}</td>
+                        <td style={{ ...tdR, color: "#534AB7" }}>{fm(v.margen)}</td>
+                        <td style={{ ...tdR, fontWeight: 700, color: v.mpct >= 75 ? "#059669" : "#C2410C" }}>{fp(v.mpct)}</td>
+                      </tr>
+                    ))}
+                    <tr style={{ background: "#ECFDF5", borderTop: "2px solid #059669" }}>
+                      <td style={{ ...tdSt, fontWeight: 800, color: "#059669" }}>TOTAL</td>
+                      <td style={{ ...tdR, fontWeight: 800, color: "#059669" }}>235</td>
+                      <td style={{ ...tdR, fontWeight: 800, color: "#059669" }}>$609,234</td>
+                      <td style={{ ...tdR, fontWeight: 800, color: "#059669" }}>$475,480</td>
+                      <td style={{ ...tdR, fontWeight: 800, color: "#059669" }}>78.05%</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style={{ marginTop: 10, fontSize: 10, color: "#6B7280" }}>
+                  Distribuidor: <strong>Grupo Unimedical Soluciones</strong> · Sin devoluciones · 7 muestras médicas excluidas de KPIs
+                </div>
+
+                {/* Lotes */}
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#374151", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".06em" }}>Detalle de Lotes</div>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead><tr>
+                      <th style={thSt}>Producto</th>
+                      <th style={thSt}>Lote</th>
+                      <th style={thSt}>Caducidad</th>
+                      <th style={thSt}>Estado</th>
+                    </tr></thead>
+                    <tbody>
+                      {stock.map((s, i) => (
+                        <tr key={s.lote} style={{ background: i % 2 === 0 ? "#FAFBFF" : "#fff" }}>
+                          <td style={{ ...tdSt, fontSize: 10 }}>{s.producto}</td>
+                          <td style={{ ...tdSt, fontSize: 10, fontFamily: "monospace", color: "#534AB7" }}>{s.lote}</td>
+                          <td style={{ ...tdSt, fontSize: 10 }}>{s.cad}</td>
+                          <td style={{ ...tdSt, fontSize: 10 }}>{s.estado}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer note */}
+            <div style={{ marginTop: 16, background: "#F8FAFF", border: "1px solid #E4E8F2", borderRadius: 10, padding: "12px 16px", fontSize: 10, color: "#6B7280" }}>
+              🤖 <strong>Para actualizar:</strong> adjunta <code>Tracking_Inventarios_5.txt</code> (SAP, UTF-16LE) en el chat y el script lo convierte automáticamente — sin necesidad de crear TSVs manualmente.<br/>
+              📁 Fuente: <code>OneDrive › Elysian Bio › FP&amp;A › Finance › Reales SAP › Inventarios</code>
             </div>
           </div>
         );
