@@ -207,7 +207,7 @@ function buildPL(fd, yr, m, cm, mode) {
   return { marketGrowth, marketVolume, priceToDistributor, marketPenPct, refPrice, priceRetail, varRefPct, salesInUnits: marketVolume, salesIn, sellOut, sellOutValue: 0, salesDiscount, salesDiscountPct, salesReturns, salesReturnsPct, ns, cogs, gp, gmPct, sw, sm, ta, pf, of: of_, reg, sh, mob, ops, oth, qual, totOpex, totOpexPct, ebitda, ebitdaPct, upfronts, hardware, software, regulatory, depreciation, depr, deprPct, ebit, ebitPct, fi, fe, totFin, netProfit, netProfitPct };
 }
 {/* */}
-const PL_KEYS = ["salesInUnits","priceToDistributor","sellOut","sellOutValue","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
+const PL_KEYS = ["salesInUnits","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
 const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Sell In Price",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesInUnits:"Sell In Units",salesIn:"Sales (Sell In)",sellOut:"Sell Out Units",sellOutValue:"Sell Out Value",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
 const INTEGER_KEYS = new Set(["marketVolume","salesInUnits","sellOut"]);
@@ -521,8 +521,8 @@ export default function Dashboard() {
   // Pies
 {/* */}
   // Pareto
-  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
-  const paretoMes = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && r[3] === cm); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c = r[7]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c=String(r[7]??"").trim(); if(!c||c==="--"||c==="—"||c==="- - -") return; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const paretoMes = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && r[3] === cm); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c=String(r[7]??"").trim(); if(!c||c==="--"||c==="—"||c==="- - -") return; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
   const maxPMes = paretoMes.length ? Math.abs(paretoMes[0].total) : 1;
 {/* */}
 {/* */}
@@ -1772,6 +1772,8 @@ export default function Dashboard() {
             .filter(r => r.total > 0)
             .sort((a, b) => b.total - a.total).filter(r => r.area !== 'Otros');
           const grandTotal = areaRows.reduce((s, r) => s + r.total, 0);
+          const AREA_LABELS = {GE:'General',MA:'Marketing',CO:'Commercial',DG:'General Management',CA:'Quality',FI:'Finance',BD:'Business Development',HR:'Human Resources',ME:'Medical',RE:'Regulatory'};
+          const areaLabel = area => AREA_LABELS[area] || area;
           // Si no hay datos por AreaCode, mostrar estructura con áreas conocidas
           if (areaRows.length === 0 || (areaRows.length === 1 && areaRows[0].area === "Otros")) {
             areaRows = ["BD","CA","CO","DG","FI","GE","HR","MA","RE"].map(a => ({ area: a, total: 0, accounts: {} }));
@@ -1780,7 +1782,7 @@ export default function Dashboard() {
             <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #F59E0B',boxSizing:'border-box',height:'100%'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e'}}>Expenses by Area</div>
-                <button onClick={()=>{const he="Work Area,Amount,% Total\n"; const re2=areaRows.map(r=>[r.area,r.total.toFixed(2),(grandTotal>0?Math.round(r.total/grandTotal*100):0)+'%'].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="expenses_by_area.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                <button onClick={()=>{const he="Work Area,Amount,% Total\n"; const re2=areaRows.map(r=>[areaLabel(r.area),r.total.toFixed(2),(grandTotal>0?Math.round(r.total/grandTotal*100):0)+'%'].join(",")).join("\n"); const be=new Blob([he+re2],{type:"text/csv"}); const ae=document.createElement("a"); ae.href=URL.createObjectURL(be); ae.download="expenses_by_area.csv"; ae.click();}} style={{fontSize:9,padding:"4px 10px",background:"#F59E0B",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
                 <div style={{fontSize:10,fontWeight:800,color:'#F59E0B'}}>TOTAL {F(grandTotal)}</div>
               </div>
               <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
@@ -1800,7 +1802,7 @@ export default function Dashboard() {
                         {/* Area row */}
                         <tr onClick={()=>setExpArea(prev=>({...prev,['ax_'+r.area]:!prev['ax_'+r.area]}))} style={{background:i%2===0?'#fff':'#fafbfe',cursor:'pointer'}}>
                           <td style={{padding:'4px 5px',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                            <span style={{marginRight:4,fontSize:8,color:'#534AB7'}}>{isExpArea?'▼':'▶'}</span>{r.area}
+                            <span style={{marginRight:4,fontSize:8,color:'#534AB7'}}>{isExpArea?'▼':'▶'}</span>{areaLabel(r.area)}
                           </td>
                           <td style={{padding:'4px 5px',textAlign:'right',fontWeight:600}}>{F(r.total)}</td>
                           <td style={{padding:'4px 5px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{grandTotal>0?Math.round(r.total/grandTotal*100):0}%</td>
@@ -2049,94 +2051,6 @@ export default function Dashboard() {
       })()}
         </div>
       </div>
-      {/* ===== CADUCIDAD POR LOTES ===== */}
-      <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',marginTop:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          <div>
-            <div style={{fontSize:10,fontWeight:700,color:'#1a1a2e',marginBottom:1}}>📦 Batch Expiration · Shelf Life</div>
-            <div style={{fontSize:8,color:'#8A90A8'}}>Remaining shelf life by batch · ⚠️ ≤12 months = destruction </div>
-          </div>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'flex-end'}}>
-            {[['#FECACA','#991B1B','Destruction (≤12m)'],['#FEF3C7','#92400E','Alert (12-18m)'],['#D1FAE5','#065F46','OK (>18m)']].map(([bg,tc,l],i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:3,fontSize:8}}>
-                <span style={{width:10,height:10,background:bg,borderRadius:2,border:'1px solid '+tc,display:'inline-block'}}></span>
-                <span style={{color:tc,fontWeight:600}}>{l}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{overflowX:'auto'}}>
-          <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
-            <thead><tr style={{background:'#F8F9FE'}}>
-              {['Molecule','Batch No.','Units','Manufacturing','Expiration','Days Left','Shelf Life','Status'].map((h,i)=>(
-                <th key={i} style={{padding:'5px 7px',textAlign:i>2?'center':'left',color:'#8A90A8',fontWeight:600,borderBottom:'2px solid #E4E8F2',whiteSpace:'nowrap'}}>{h}</th>
-              ))}
-            </tr></thead>
-            <tbody>
-              {[
-                {mol:'Hyaxum Pro',  lote:'HXP-2025-001', uds:1324, fab:'2024-06-08', fecha:'2027-06-08', sl:36, si:false},
-                {mol:'Hyaxum Pro',  lote:'HXP-2026-SI',  uds:75,   fab:'2024-12-08', fecha:'2027-12-08', sl:36, si:true, siDate:'08-Jun-2026'},
-              ].map((row,i)=>{
-                const totalDias = row.sl * 30;
-                const cad = new Date(row.fecha);
-                const hoy = new Date('2024-07-28');
-                const diasRest = Math.round((cad - hoy) / 86400000);
-                const pctRest = Math.max(0, Math.min(100, Math.round(diasRest / totalDias * 100)));
-                const mesesRest = Math.round(diasRest / 30);
-                const isDestruct = mesesRest <= 12;
-                const isAlerta = !isDestruct && mesesRest <= 18;
-                const bg = isDestruct ? '#FECACA' : isAlerta ? '#FEF3C7' : '#D1FAE5';
-                const tc = isDestruct ? '#991B1B' : isAlerta ? '#92400E' : '#065F46';
-                const bc = isDestruct ? '#EF4444' : isAlerta ? '#F59E0B' : '#10B981';
-                const est = isDestruct ? '🔴 Destroy' : isAlerta ? '🟡 Alerta' : '🟢 OK';
-                const prevMols = ['Hyaxum Pro','Hyaxum Pro'];
-                const isFirst = i===0 || row.mol !== prevMols[i-1];
-                const MCOLS = {'Hyaxum Pro':'#534AB7'};
-                const mc = MCOLS[row.mol] || '#8A90A8';
-                const destructLinePct = Math.round(12 / row.sl * 100);
-                return(
-                  <tr key={i} style={{borderBottom:'1px solid #F0F2FA',background:i%2?'#FAFBFF':'#fff'}}>
-                    <td style={{padding:'5px 7px'}}>
-                      {isFirst && <span style={{background:mc+'18',color:mc,borderRadius:4,padding:'2px 7px',fontWeight:700,fontSize:8,whiteSpace:'nowrap'}}>{row.mol}</span>}
-                    </td>
-                    <td style={{padding:'5px 7px',fontFamily:'monospace',color:'#534AB7',fontSize:8,whiteSpace:'nowrap'}}>{row.lote}{row.si && <span style={{marginLeft:4,background:'#FEF3C7',color:'#92400E',borderRadius:3,padding:'1px 5px',fontSize:7,fontWeight:700}}>SI {row.siDate}</span>}</td>
-                    <td style={{padding:'5px 7px',textAlign:'center',fontWeight:600,color:'#1a1a2e'}}>{row.uds.toLocaleString()}</td>
-                    <td style={{padding:'5px 7px',textAlign:'center',color:'#B0B6C3',fontSize:8}}>{row.fab}</td>
-                    <td style={{padding:'5px 7px',textAlign:'center',color:'#8A90A8',fontSize:8}}>{row.fecha}</td>
-                    <td style={{padding:'5px 7px',textAlign:'center'}}>
-                      <span style={{background:bg,color:tc,borderRadius:4,padding:'2px 8px',fontWeight:700,whiteSpace:'nowrap'}}>{diasRest}d · {mesesRest}m</span>
-                    </td>
-                    <td style={{padding:'5px 10px',minWidth:140}}>
-                      <div style={{display:'flex',alignItems:'center',gap:5}}>
-                        <div style={{flex:1,height:10,background:'#F0F2FA',borderRadius:5,position:'relative',overflow:'visible'}}>
-                          <div style={{width:pctRest+'%',height:'100%',background:bc,borderRadius:5}} />
-                          <div style={{position:'absolute',top:-2,left:destructLinePct+'%',width:2,height:14,background:'#E24B4A',borderRadius:1,zIndex:2}} />
-                        </div>
-                        <span style={{fontSize:8,fontWeight:700,color:tc,minWidth:30,textAlign:'right'}}>{pctRest}%</span>
-                      </div>
-                      <div style={{fontSize:7,color:'#B0B6C3',marginTop:2,textAlign:'center'}}>{row.sl}m shelf life · red line=12m</div>
-                    </td>
-                    <td style={{padding:'5px 7px',textAlign:'center',fontSize:9,whiteSpace:'nowrap'}}>{est}</td>
-                  </tr>
-                );
-              })}
-              <tr>
-                <td colSpan={8} style={{padding:'6px 10px',background:'#FFF7ED',borderTop:'1px dashed #FCD34D'}}>
-                  <span style={{fontSize:8,color:'#92400E',fontWeight:700}}>⚠️ Recorded movement: </span>
-                  <span style={{fontSize:8,color:'#92400E'}}>1 unit from batch HXP-2026-SI was sent to lab samples. Previous balance: 76 units → Current balance: 75 units.</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style={{display:'flex',gap:12,marginTop:8,paddingTop:6,borderTop:'1px dashed #E4E8F2',fontSize:8,color:'#8A90A8',flexWrap:'wrap',alignItems:'center'}}>
-          <span>🔴 <b style={{color:'#991B1B'}}>Destrucción</b>: ≤12 meses restantes</span>
-          <span>🟡 <b style={{color:'#92400E'}}>Alerta</b>: 12-18 meses</span>
-          <span>🟢 <b style={{color:'#065F46'}}>OK</b>: &gt;18 meses</span>
-          <span style={{marginLeft:'auto',background:'#FEE2E2',color:'#991B1B',borderRadius:4,padding:'2px 8px',fontWeight:700}}>| red line = destruction threshold (12m)</span>
-        </div>
-      </div>
-
       {/* ===== TIMELINE EJECUTIVO ===== */}
       <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
         <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Molecule Launch Timeline </div>
