@@ -521,8 +521,8 @@ export default function Dashboard() {
   // Pies
 {/* */}
   // Pareto
-  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c=String(r[7]??"").trim(); if(!c||c==="--"||c==="—"||c==="- - -") return; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
-  const paretoMes = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && r[3] === cm); const map = {}; re.forEach(r => { const p = r[8]; if (p === "NOAP" || p === "- - -" || p === "VARIOS") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; const c=String(r[7]??"").trim(); if(!c||c==="--"||c==="—"||c==="- - -") return; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const pareto = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && ytdM.includes(r[3])); const map = {}; re.forEach(r => { const p=String(r[8]??"").trim(); const c=String(r[7]??"").trim(); if(!p||p==="--"||p==="—"||p==="- - -"||p==="NOAP"||p==="VARIOS"||!c||c==="--"||c==="—"||c==="- - -") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
+  const paretoMes = useMemo(() => { const re = fd.filter(r => r[1] === "Reales" && OC_ALL.includes(normPL(r[0])) && r[3] === cm); const map = {}; re.forEach(r => { const p=String(r[8]??"").trim(); const c=String(r[7]??"").trim(); if(!p||p==="--"||p==="—"||p==="- - -"||p==="NOAP"||p==="VARIOS"||!c||c==="--"||c==="—"||c==="- - -") return; if (!map[p]) map[p] = { t: 0, items: {} }; map[p].t += r[9]; if (!map[p].items[c]) map[p].items[c] = 0; map[p].items[c] += r[9] }); const arr = Object.entries(map).map(([k, v]) => ({ partner: k, total: v.t, items: v.items })).sort((a, b) => Math.abs(b.total) - Math.abs(a.total)); const grand = arr.reduce((s, x) => s + Math.abs(x.total), 0); let cum = 0; return arr.map(x => { cum += Math.abs(x.total); return { ...x, cumPct: grand ? cum / grand : 0 } }); }, [fd, cm]);
   const maxPMes = paretoMes.length ? Math.abs(paretoMes[0].total) : 1;
 {/* */}
 {/* */}
@@ -2051,63 +2051,6 @@ export default function Dashboard() {
       })()}
         </div>
       </div>
-      {/* ===== TIMELINE EJECUTIVO ===== */}
-      <div style={{margin:'28px 0 10px',borderTop:'2px solid #E24B4A',paddingTop:16}}>
-        <div style={{fontSize:14,fontWeight:900,color:'#1a1a2e'}}>⏱ Molecule Launch Timeline </div>
-      </div>
-
-      {(() => {
-        const molLaunches = {};
-        D.filter(r=>r[0]==="Net Sales"&&r[1]==="Forecast"&&r[9]>0).forEach(r=>{
-          const mol=r[4]; const yr=r[2]; const mo=r[3];
-          if(!molLaunches[mol]||yr<molLaunches[mol].yr||(yr===molLaunches[mol].yr&&mo<molLaunches[mol].mo))
-            molLaunches[mol]={yr,mo,area:r[5]};
-        });
-        const launches=Object.entries(molLaunches).map(([mol,d])=>({mol,yr:d.yr,mo:d.mo,area:d.area})).sort((a,b)=>a.yr!==b.yr?a.yr-b.yr:a.mo-b.mo);
-        const tlYrs=[...new Set(launches.map(l=>l.yr))].sort();
-        const TCOLS=["#534AB7","#1D9E75","#F59E0B","#E24B4A","#7C3AED","#06B6D4","#EC4899","#10B981"];
-        const aCols={}; let ci=0; launches.forEach(l=>{ if(!aCols[l.area]) aCols[l.area]=TCOLS[ci++%TCOLS.length]; });
-        const MS=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-        return (
-          <div style={{background:"#fff",border:"1px solid #E4E8F2",borderRadius:10,padding:"16px 18px",marginBottom:16,borderTop:"3px solid #E24B4A"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1a1a2e"}}>🚀 Molecule Launches — First Forecast Sales</div>
-              <div style={{fontSize:9,color:"#8A90A8"}}>{launches.length} molecules in pipeline</div>
-            </div>
-            {tlYrs.map(yr=>(
-              <div key={yr} style={{marginBottom:14}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <div style={{fontSize:12,fontWeight:800,color:yr===CUR_YEAR?"#534AB7":yr<CUR_YEAR?"#1D9E75":"#8A90A8",minWidth:44}}>{yr}</div>
-                  <div style={{flex:1,height:1,background:"#E4E8F2"}}/> 
-                  <span style={{fontSize:8,color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#B0B6C3",fontWeight:700,background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",borderRadius:6,padding:"2px 8px"}}>{yr<CUR_YEAR?"✓ Completado":yr===CUR_YEAR?"▶ En curso":"⏳ Proyectado"}</span>
-                </div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {launches.filter(l=>l.yr===yr).map((l,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#f8f9fe",border:"1px solid #E4E8F2",borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+(aCols[l.area]||"#534AB7")}}>
-                      <div>
-                        <div style={{fontSize:8,fontWeight:700,color:"#1a1a2e",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l.mol}</div>
-                        <div style={{fontSize:7,color:aCols[l.area]||"#534AB7",fontWeight:600,marginTop:1}}>{(l.area||"--")} · {MS[l.mo-1]} {l.yr}</div>
-                      </div>
-                      <span style={{background:yr<CUR_YEAR?"#e6f9f1":yr===CUR_YEAR?"rgba(83,74,183,0.1)":"#f5f3ff",color:yr<CUR_YEAR?"#1D9E75":yr===CUR_YEAR?"#534AB7":"#7C3AED",borderRadius:6,padding:"2px 6px",fontSize:7,fontWeight:700,whiteSpace:"nowrap"}}>{yr<CUR_YEAR?"✓ Lanzado":yr===CUR_YEAR?"▶ Activo":"⏳ Futuro"}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <div style={{display:"flex",gap:10,marginTop:8,flexWrap:"wrap",paddingTop:10,borderTop:"1px solid #f0f2fa",fontSize:8}}>
-              {Object.entries(aCols).map(([area,col],i)=>(
-                <span key={i} style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:2,background:col,display:"inline-block"}}/>{area}</span>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
-
-
-
-
-{/* */}
-{/* */}
       {/* PIE CHARTS */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
         {[{ title: "Actual Spend by Molecule — YTD", sub: `${MO[0]}–${MO[cm - 1]}`, data: pieYTD }, { title: `Actual Spend by Molecule — ${MO[cm - 1]}`, sub: "Current month", data: pieCM }].map((p, pi) => (
