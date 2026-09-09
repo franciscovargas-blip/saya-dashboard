@@ -1027,16 +1027,16 @@ export default function Dashboard() {
       })()}
 
       {mainTab === "dashboard" && <>
-      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, overflowX: "auto" }}>
+      <div style={{ background: "#fff", border: "1px solid #E4E8F2", borderRadius: 10, padding: 12, marginBottom: 16, maxHeight: "72vh", overflow: "auto", position: "relative" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 500, color: "#1a1a2e" }}>Annual P&L — {view === "forecast" ? "Forecast" : view === "reales" ? "Reales" : "Consolidado"} 2026</span>
         </div>
           <button onClick={()=>{const hd="Linea," + MO.join(",") + ",Total\n"; const rd="(ver tabla en pantalla)"; const bd=new Blob([hd+rd],{type:"text/csv"}); const ad=document.createElement("a"); ad.href=URL.createObjectURL(bd); ad.download="pnl_dashboard.csv"; ad.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead><tr>
-            <th style={{ ...th, textAlign: "left", position: "sticky", left: 0, background: "#fff", minWidth: 180 }}>P&L Line</th>
-            {MO.map((m, i) => <th key={i} style={{ ...th, textAlign: "right", minWidth: 64, color: i + 1 <= cm ? "#085041" : "#185FA5", background: i + 1 <= cm ? "#f0faf6" : "#f5f8fc" }}>{m}</th>)}
-            <th style={{ ...th, textAlign: "right", fontWeight: 500, color: "#1a1a2e", borderLeft: "2px solid #E4E8F2" }}>Total</th>
+            <th style={{ ...th, textAlign: "left", position: "sticky", top: 0, left: 0, zIndex: 7, background: "#fff", minWidth: 180 }}>P&L Line</th>
+            {MO.map((m, i) => <th key={i} style={{ ...th, textAlign: "right", minWidth: 64, position: "sticky", top: 0, zIndex: 6, color: i + 1 <= cm ? "#085041" : "#185FA5", background: i + 1 <= cm ? "#f0faf6" : "#f5f8fc" }}>{m}</th>)}
+            <th style={{ ...th, textAlign: "right", fontWeight: 500, position: "sticky", top: 0, zIndex: 6, color: "#1a1a2e", background: "#fff", borderLeft: "2px solid #E4E8F2" }}>Total</th>
           </tr></thead>
           <tbody>
             {(() => {
