@@ -1561,13 +1561,13 @@ export default function Dashboard() {
             {(()=>{
               const empCount=22;
               const nsYTDe=MO.slice(0,cm).reduce((s,_mo,i)=>{const r=buildPL(fd,CUR_YEAR,i+1,cm,"reales");return s+(r.ns||0);},0);
-              const revEmp=nsYTDe&&empCount?Math.round(nsYTDe/(Math.max(cm,1)*empCount)):0;
+              const revEmp=nsYTDe&&empCount?Math.round(nsYTDe/empCount):0;
               return(
                 <div style={kC("#D97706")}>
                   <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>👤</div>
                   <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>REVENUE PER EMPLOYEE</div>
                   <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(revEmp)}</div>
-                  <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD ÷ {Math.max(cm,1)} months · {empCount} employees</div>
+                  <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR} · {empCount} employees</div>
                 </div>
               );
             })()}
