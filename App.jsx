@@ -248,7 +248,7 @@ const BurnDetailTable=({year,month})=>{
   const cf=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
   const months=Array.from({length:Math.max(month,1)},(_,i)=>i+1);
   const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-  const [open,setOpen]=React.useState({operating:true,wc:true,investing:true,other:true,net:true});
+  const [open,setOpen]=React.useState({operating:true,revenue:true,opex:true,wc:true,investing:true,other:true,net:true});
   const toggle=id=>setOpen(prev=>({...prev,[id]:!prev[id]}));
   const serie=(...names)=>cf.find(x=>names.includes(x.name));
   const at=(names,m)=>{
@@ -257,10 +257,19 @@ const BurnDetailTable=({year,month})=>{
     const n=Number(ss.values[key]); return Number.isFinite(n)?n:null;
   };
   const vals=(...names)=>months.map(m=>at(names,m));
-  const nz=v=>Number(v==null?0:v),sum=a=>a.reduce((x,y)=>x+nz(y),0);
-  const combine=(...arrays)=>months.map((_,i)=>arrays.reduce((t,a)=>t+nz(a[i]),0));
-  const revenue=vals("Ingresos","Revenue","Cash Inflows");
-  const opex=vals("OPEX");
+  const nz=v=>Number(v==null?0:v),sum=a=>a.some(v=>v!=null)?a.reduce((x,y)=>x+nz(y),0):null;
+  const combine=(...arrays)=>months.map((_,i)=>arrays.some(a=>a[i]!=null)?arrays.reduce((t,a)=>t+nz(a[i]),0):null);
+  const dRows=(typeof D!=="undefined"?D:[]).filter(r=>Array.isArray(r)&&r.length>9&&String(r[1]).toLowerCase()==="reales"&&Number(r[2])===Number(year)&&months.includes(Number(r[3]))&&Number.isFinite(Number(r[9])));
+  const clean=v=>String(v??"").trim();
+  const isRevenue=line=>/^(net sales|sales returns|gross sales|sales \(sell in\))$/i.test(clean(line));
+  const excludedOpex=line=>/(sales|cogs|cost of goods|gross profit|gross margin|ebit|tax|interest|net income|market volume|sell in units|sell in price|price to distributor)/i.test(clean(line));
+  const revenueDRows=dRows.filter(r=>isRevenue(r[0]));
+  const opexDRows=dRows.filter(r=>clean(r[0])&&!excludedOpex(r[0]));
+  const dMonthly=rows=>months.map(m=>{const rr=rows.filter(r=>Number(r[3])===m);return rr.length?rr.reduce((t,r)=>t+Number(r[9]||0),0):null;});
+  const auxRevenue=vals("Ingresos","Revenue","Cash Inflows"),auxOpex=vals("OPEX");
+  const dRevenue=dMonthly(revenueDRows),dOpex=dMonthly(opexDRows);
+  const revenue=months.map((_,i)=>auxRevenue[i]!=null?auxRevenue[i]:dRevenue[i]);
+  const opex=months.map((_,i)=>auxOpex[i]!=null?auxOpex[i]:dOpex[i]);
   const wc=vals("Capital de Trabajo","Working Capital");
   const ar=vals("Cuentas por cobrar","Cuentas por Cobrar","Accounts Receivable");
   const inventory=vals("Inventarios","Inventory");
@@ -274,8 +283,22 @@ const BurnDetailTable=({year,month})=>{
   const otherActivities=combine(capital,other);
   const net=months.map((_,i)=>ending[i]==null||starting[i]==null?null:nz(ending[i])-nz(starting[i]));
   const firstStart=starting.find(v=>v!=null),lastEnd=[...ending].reverse().find(v=>v!=null);
+  const detailRows=(source,prefix,parentOpen)=>{
+    const byLine=new Map();
+    source.forEach(r=>{const line=clean(r[0])||"Unclassified";if(!byLine.has(line))byLine.set(line,[]);byLine.get(line).push(r);});
+    const out=[];
+    [...byLine.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([line,lineRows],idx)=>{
+      const id=`${prefix}-${idx}`,lineVals=dMonthly(lineRows),byConcept=new Map();
+      lineRows.forEach(r=>{const c=clean(r[7])||clean(r[6])||"No concept";if(!byConcept.has(c))byConcept.set(c,[]);byConcept.get(c).push(r);});
+      out.push({id,label:line,values:lineVals,ytd:sum(lineVals),level:2,expandable:true,visible:parentOpen});
+      [...byConcept.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([concept,conceptRows])=>out.push({label:concept,values:dMonthly(conceptRows),ytd:sum(dMonthly(conceptRows)),level:3,visible:parentOpen&&Boolean(open[id])}));
+    });
+    return out;
+  };
+  const revenueDetails=detailRows(revenueDRows,"rev",open.operating&&open.revenue);
+  const opexDetails=detailRows(opexDRows,"opx",open.operating&&open.opex);
   const fmt=v=>{
-    if(v==null)return "—";
+    if(v==null||Math.abs(Number(v))<0.005)return "—";
     const n=Number(v),a=Math.abs(n),sign=n<0?"−":"";
     if(a>=1e6)return `${sign}$${(a/1e6).toFixed(1)}M`;
     if(a>=1e3)return `${sign}$${(a/1e3).toFixed(0)}K`;
@@ -283,8 +306,10 @@ const BurnDetailTable=({year,month})=>{
   };
   const rows=[
     {id:"operating",label:"Operating Activities",values:operating,ytd:sum(operating),group:"operating",expandable:true,visible:true},
-    {label:"Cash inflows / Revenue",values:revenue,ytd:sum(revenue),level:1,visible:open.operating},
-    {label:"Operating expenses (OPEX)",values:opex,ytd:sum(opex),level:1,visible:open.operating},
+    {id:"revenue",label:"Cash inflows / Revenue",values:revenue,ytd:sum(revenue),level:1,expandable:true,visible:open.operating},
+    ...revenueDetails,
+    {id:"opex",label:"Operating expenses (OPEX)",values:opex,ytd:sum(opex),level:1,expandable:true,visible:open.operating},
+    ...opexDetails,
     {id:"wc",label:"Working capital movement",values:wc,ytd:sum(wc),level:1,expandable:true,visible:open.operating},
     {label:"Accounts receivable",values:ar,ytd:sum(ar),level:2,visible:open.operating&&open.wc},
     {label:"Inventory",values:inventory,ytd:sum(inventory),level:2,visible:open.operating&&open.wc},
