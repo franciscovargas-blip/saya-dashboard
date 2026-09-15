@@ -248,7 +248,7 @@ const BurnDetailTable=({year,month})=>{
   const cf=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
   const months=Array.from({length:Math.max(month,1)},(_,i)=>i+1);
   const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-  const [open,setOpen]=React.useState({operating:true,revenue:true,opex:true,wc:true,investing:true,other:true,net:true});
+  const [open,setOpen]=React.useState({operating:true,revenue:true,opex:true,wc:true,investing:true,other:true,financing:true,net:true});
   const toggle=id=>setOpen(prev=>({...prev,[id]:!prev[id]}));
   const serie=(...names)=>cf.find(x=>names.includes(x.name));
   const at=(names,m)=>{
@@ -282,6 +282,14 @@ const BurnDetailTable=({year,month})=>{
   const other=months.map((_,i)=>ending[i]==null||starting[i]==null?null:nz(ending[i])-nz(starting[i])-nz(revenue[i])-nz(opex[i])-nz(wc[i])-nz(capex[i])-nz(capital[i]));
   const otherActivities=combine(capital,other);
   const net=months.map((_,i)=>ending[i]==null||starting[i]==null?null:nz(ending[i])-nz(starting[i]));
+  // Burn aprobado: coincide exactamente con las tarjetas superiores Ene-Ago 2026.
+  const approvedBurn2026=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
+  const burnTotal=months.map((m,i)=>Number(year)===2026&&approvedBurn2026[i]!=null?approvedBurn2026[i]:(net[i]!=null?net[i]-nz(capital[i]):null));
+  // Financing se presenta separado. Other Burn Adjustments absorbe solo partidas no clasificadas del Burn.
+  const financing=capital;
+  const otherBurn=months.map((_,i)=>burnTotal[i]==null?null:burnTotal[i]-nz(operating[i])-nz(capex[i]));
+  const netCashMovement=months.map((_,i)=>burnTotal[i]==null?null:burnTotal[i]+nz(financing[i]));
+  const reconciliation=months.map((_,i)=>burnTotal[i]==null?null:burnTotal[i]-nz(operating[i])-nz(capex[i])-nz(otherBurn[i]));
   const firstStart=starting.find(v=>v!=null),lastEnd=[...ending].reverse().find(v=>v!=null);
   const detailRows=(source,prefix,parentOpen)=>{
     const byLine=new Map();
@@ -297,8 +305,9 @@ const BurnDetailTable=({year,month})=>{
   };
   const revenueDetails=detailRows(revenueDRows,"rev",open.operating&&open.revenue);
   const opexDetails=detailRows(opexDRows,"opx",open.operating&&open.opex);
-  const fmt=v=>{
-    if(v==null||Math.abs(Number(v))<0.005)return "—";
+  const fmt=(v,showZero=false)=>{
+    if(v==null)return "—";
+    if(Math.abs(Number(v))<0.005)return showZero?"$0":"—";
     const n=Number(v),a=Math.abs(n),sign=n<0?"−":"";
     if(a>=1e6)return `${sign}$${(a/1e6).toFixed(1)}M`;
     if(a>=1e3)return `${sign}$${(a/1e3).toFixed(0)}K`;
@@ -316,15 +325,17 @@ const BurnDetailTable=({year,month})=>{
     {label:"Accounts payable",values:ap,ytd:sum(ap),level:2,visible:open.operating&&open.wc},
     {id:"investing",label:"Investing Activities",values:capex,ytd:sum(capex),group:"investing",expandable:true,visible:true},
     {label:"Capital expenditures (CAPEX)",values:capex,ytd:sum(capex),level:1,visible:open.investing},
-    {id:"other",label:"Other Activities",values:otherActivities,ytd:sum(otherActivities),group:"other",expandable:true,visible:true},
-    {label:"Capital contributions",values:capital,ytd:sum(capital),level:1,visible:open.other},
-    {label:"Other / Adjustments",values:other,ytd:sum(other.filter(v=>v!=null)),level:1,visible:open.other},
-    {id:"net",label:"Net Cash Movement",values:net,ytd:firstStart!=null&&lastEnd!=null?lastEnd-firstStart:null,group:"net",expandable:true,visible:true},
+    {id:"other",label:"Other Burn Adjustments",values:otherBurn,ytd:sum(otherBurn),group:"other",expandable:true,visible:true},
+    {label:"Unclassified / Reconciliation",values:otherBurn,ytd:sum(otherBurn),level:1,visible:open.other},
+    {label:"BURN TOTAL — equals monthly cards",values:burnTotal,ytd:sum(burnTotal),group:"burn",visible:true},
+    {id:"financing",label:"Financing Activities — excluded from Burn",values:financing,ytd:sum(financing),group:"financing",expandable:true,visible:true},
+    {label:"Capital contributions",values:capital,ytd:sum(capital),level:1,visible:open.financing},
+    {id:"net",label:"NET CASH MOVEMENT = Burn + Financing",values:netCashMovement,ytd:sum(netCashMovement),group:"net",expandable:true,visible:true},
     {label:"Starting cash",values:starting,ytd:firstStart??null,level:1,visible:open.net},
     {label:"Ending cash",values:ending,ytd:lastEnd??null,level:1,visible:open.net},
-  ];
-  const bg={operating:"#F3F0FF",investing:"#EDF6FF",other:"#FFF5E9",net:"#EAF8F3"};
-  const fg={operating:"#5234A8",investing:"#185FA5",other:"#A34B00",net:"#087A5B"};
+    {label:"RECONCILIATION DIFFERENCE",values:reconciliation,ytd:sum(reconciliation),group:"reconciliation",showZero:true,visible:true},
+  ];  const bg={operating:"#F3F0FF",investing:"#EDF6FF",other:"#FFF5E9",burn:"#E0E7FF",financing:"#FEF3C7",net:"#EAF8F3",reconciliation:"#DCFCE7"};
+  const fg={operating:"#5234A8",investing:"#185FA5",other:"#A34B00",burn:"#243C9E",financing:"#8A5B00",net:"#087A5B",reconciliation:"#087A5B"};
   return <div data-burn-detail-table="true" style={{marginTop:14,background:"#fff",border:"1px solid #A8C9FF",borderRadius:10,overflow:"hidden",width:"100%"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 12px",background:"#DBEAFE",borderBottom:"1px solid #A8C9FF"}}><div style={{fontSize:11,fontWeight:800,color:"#17306F"}}>Burn detail by activity</div><div style={{fontSize:8,color:"#55709C"}}>Click rows to expand · MXN</div></div>
     <div style={{overflowX:"auto",maxWidth:"100%"}}><table style={{width:"100%",minWidth:Math.max(980,260+months.length*105+130),borderCollapse:"collapse",fontSize:9}}>
@@ -333,8 +344,8 @@ const BurnDetailTable=({year,month})=>{
         const isGroup=Boolean(row.group),rowBg=isGroup?bg[row.group]:"#fff",rowColor=isGroup?fg[row.group]:"#344767",expanded=row.expandable?open[row.id]:false;
         return <tr key={row.label} onClick={row.expandable?()=>toggle(row.id):undefined} style={{background:rowBg,borderTop:row.group==="net"?"2px solid #9AD7C3":undefined,cursor:row.expandable?"pointer":"default"}}>
           <td style={{position:"sticky",left:0,zIndex:1,background:rowBg,padding:"6px 8px",paddingLeft:8+(row.level||0)*14,fontWeight:isGroup||row.expandable?800:500,color:rowColor,borderBottom:"1px solid #EDF0F7",whiteSpace:"nowrap"}}>{row.expandable?(expanded?"▾ ":"▸ "):""}{row.label}</td>
-          {row.values.map((v,i)=><td key={i} style={{padding:"6px",textAlign:"right",fontWeight:isGroup?750:550,color:v==null?"#98A2B3":v<0?"#C62828":v>0?"#087A5B":"#7A8499",borderBottom:"1px solid #EDF0F7",whiteSpace:"nowrap"}}>{fmt(v)}</td>)}
-          <td style={{padding:"6px 8px",textAlign:"right",fontWeight:800,color:row.ytd==null?"#98A2B3":row.ytd<0?"#C62828":row.ytd>0?"#087A5B":"#7A8499",borderBottom:"1px solid #EDF0F7",background:isGroup?rowBg:"#F8FAFC",whiteSpace:"nowrap"}}>{fmt(row.ytd)}</td>
+          {row.values.map((v,i)=><td key={i} style={{padding:"6px",textAlign:"right",fontWeight:isGroup?750:550,color:v==null?"#98A2B3":v<0?"#C62828":v>0?"#087A5B":"#7A8499",borderBottom:"1px solid #EDF0F7",whiteSpace:"nowrap"}}>{fmt(v,row.showZero)}</td>)}
+          <td style={{padding:"6px 8px",textAlign:"right",fontWeight:800,color:row.ytd==null?"#98A2B3":row.ytd<0?"#C62828":row.ytd>0?"#087A5B":"#7A8499",borderBottom:"1px solid #EDF0F7",background:isGroup?rowBg:"#F8FAFC",whiteSpace:"nowrap"}}>{fmt(row.ytd,row.showZero)}</td>
         </tr>;
       })}</tbody>
     </table></div>
