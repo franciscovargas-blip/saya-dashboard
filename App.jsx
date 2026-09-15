@@ -244,8 +244,9 @@ function LoginGate({ children }) {
   );
 }
 
-const PnlAutoVarianceLabel=({label,prefix,year,month})=>{
+const PnlAutoVarianceLabel=({label,metric,prefix,year,month})=>{
   const [show,setShow]=React.useState(false);
+  const isUnits=metric==="salesInUnits";
   const monthNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const months=prefix==="ytd"?Array.from({length:Math.max(0,month)},(_,i)=>i+1):[month];
   const normalize=x=>String(x??"").trim().toLowerCase();
@@ -256,53 +257,44 @@ const PnlAutoVarianceLabel=({label,prefix,year,month})=>{
     return "";
   };
   const isUnitLine=r=>["market volume <saya>","market volume saya","sales in units","sell in units"].includes(normalize(r?.[0]));
-  const isPriceLine=r=>["price after discount to distributor","price after discount to distribuitor","price (to distribuitor)","sell in price"].includes(normalize(r?.[0]));
   const isValueLine=r=>normalize(r?.[0])==="sales (sell in)";
-  const periodRows=D.filter(r=>Array.isArray(r)&&Number(r[2])===Number(year)&&months.includes(Number(r[3]))&&(isUnitLine(r)||isPriceLine(r)||isValueLine(r)));
+  const relevant=r=>isUnits?isUnitLine(r):isValueLine(r);
+  const sourceRows=D.filter(r=>Array.isArray(r)&&Number(r[2])===Number(year)&&months.includes(Number(r[3]))&&relevant(r));
   const moleculeOf=r=>String(r?.[4]??"Unspecified").trim()||"Unspecified";
-  const molecules=[...new Set(periodRows.filter(isUnitLine).map(moleculeOf))].sort((a,b)=>a.localeCompare(b));
+  const molecules=[...new Set(sourceRows.map(moleculeOf))].sort((a,b)=>a.localeCompare(b));
   const n=r=>Number(r?.[9])||0;
-  const metric=(version,molecule)=>{
-    let units=0,value=0;
-    for(const mo of months){
-      const same=(r)=>Number(r[3])===mo&&moleculeOf(r)===molecule&&versionOf(r)===version;
-      const monthUnits=periodRows.filter(r=>same(r)&&isUnitLine(r)).reduce((a,r)=>a+n(r),0);
-      const directValues=periodRows.filter(r=>same(r)&&isValueLine(r));
-      const priceRows=periodRows.filter(r=>same(r)&&isPriceLine(r));
-      const avgPrice=priceRows.length?priceRows.reduce((a,r)=>a+n(r),0)/priceRows.length:0;
-      units+=monthUnits;
-      value+=directValues.length?directValues.reduce((a,r)=>a+n(r),0):monthUnits*avgPrice;
-    }
-    return {units,value};
-  };
+  const amount=(version,molecule)=>sourceRows.filter(r=>versionOf(r)===version&&moleculeOf(r)===molecule).reduce((a,r)=>a+n(r),0);
   const rows=molecules.map(molecule=>{
-    const forecast=metric("forecast",molecule),actual=metric("actual",molecule);
-    return {molecule,forecastUnits:forecast.units,actualUnits:actual.units,varUnits:actual.units-forecast.units,forecastValue:forecast.value,actualValue:actual.value,varValue:actual.value-forecast.value};
-  }).filter(x=>x.forecastUnits||x.actualUnits||x.forecastValue||x.actualValue);
-  const total=rows.reduce((a,x)=>({forecastUnits:a.forecastUnits+x.forecastUnits,actualUnits:a.actualUnits+x.actualUnits,varUnits:a.varUnits+x.varUnits,forecastValue:a.forecastValue+x.forecastValue,actualValue:a.actualValue+x.actualValue,varValue:a.varValue+x.varValue}),{forecastUnits:0,actualUnits:0,varUnits:0,forecastValue:0,actualValue:0,varValue:0});
+    const forecast=amount("forecast",molecule),actual=amount("actual",molecule);
+    return {molecule,forecast,actual,variance:actual-forecast};
+  }).filter(x=>x.forecast||x.actual);
+  const total=rows.reduce((a,x)=>({forecast:a.forecast+x.forecast,actual:a.actual+x.actual,variance:a.variance+x.variance}),{forecast:0,actual:0,variance:0});
+  const sourceForecast=sourceRows.filter(r=>versionOf(r)==="forecast").reduce((a,r)=>a+n(r),0);
+  const sourceActual=sourceRows.filter(r=>versionOf(r)==="actual").reduce((a,r)=>a+n(r),0);
+  const sourceVariance=sourceActual-sourceForecast;
+  const reconciliation=Math.max(Math.abs(total.forecast-sourceForecast),Math.abs(total.actual-sourceActual),Math.abs(total.variance-sourceVariance));
   const period=prefix==="ytd"?`YTD Jan–${monthNames[Math.max(0,month-1)]} ${year}`:`${monthNames[Math.max(0,month-1)]} ${year}`;
   const fmtUnits=v=>Math.round(v).toLocaleString("en-US");
   const fmtValue=v=>`$${Math.round(v).toLocaleString("en-US")}`;
+  const fmt=isUnits?fmtUnits:fmtValue;
   const color=v=>v===0?"#667085":v>0?"#067647":"#B42318";
+  const title=isUnits?"Sell In Units":"Sales (Sell In)";
+  const varianceHeader=isUnits?"Var Units":"Var Value";
   return <span style={{position:"relative",display:"inline-block"}} onMouseEnter={()=>setShow(true)} onMouseLeave={()=>setShow(false)}>
-    <span style={{textDecoration:"underline",textDecorationStyle:"dotted",textUnderlineOffset:3,cursor:"help",fontWeight:700}}>{label} <span style={{color:"#7C3AED"}}>ⓘ</span></span>
-    {show&&<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,top:"calc(100% + 8px)",zIndex:9999,width:720,maxWidth:"82vw",background:"#fff",border:"1px solid #C4B5FD",borderTop:"4px solid #7C3AED",borderRadius:10,boxShadow:"0 12px 30px rgba(30,42,58,0.22)",padding:12,color:"#1a1a2e"}}>
-      <div style={{fontSize:11,fontWeight:800,marginBottom:2}}>Automatic P&L Variance · {period}</div>
-      <div style={{fontSize:8,color:"#8A90A8",marginBottom:9}}>Calculated from the latest Forecast and Actuals loaded into the dashboard — units and MXN values.</div>
+    <span style={{textDecoration:"underline",textDecorationStyle:"dotted",textUnderlineOffset:3,cursor:"help",fontWeight:700}}>{label} <span style={{color:isUnits?"#7C3AED":"#1570EF"}}>ⓘ</span></span>
+    {show&&<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,top:"calc(100% + 8px)",zIndex:9999,width:520,maxWidth:"82vw",background:"#fff",border:`1px solid ${isUnits?"#C4B5FD":"#B2CCFF"}`,borderTop:`4px solid ${isUnits?"#7C3AED":"#1570EF"}`,borderRadius:10,boxShadow:"0 12px 30px rgba(30,42,58,0.22)",padding:12,color:"#1a1a2e"}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",marginBottom:2}}><div style={{fontSize:12,fontWeight:800}}>{title}</div><div style={{fontSize:8,fontWeight:800,padding:"4px 8px",borderRadius:8,background:isUnits?"#F3E8FF":"#EAF2FF",color:isUnits?"#6D28D9":"#175CD3"}}>{isUnits?"UNITS ONLY":"VALUES ONLY"}</div></div>
+      <div style={{fontSize:9,color:"#667085",marginBottom:9}}>{period} · automatic period</div>
       {rows.length?<table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
-        <thead><tr style={{background:"#F3E8FF"}}>{["Molecule","Fcst Units","Actual Units","Var Units","Fcst Value","Actual Value","Var Value"].map((h,i)=><th key={h} style={{padding:"5px 6px",borderBottom:"1px solid #D8B4FE",textAlign:i===0?"left":"right",fontWeight:700}}>{h}</th>)}</tr></thead>
-        <tbody>{rows.map((x,i)=><tr key={x.molecule} style={{background:i%2?"#FAFAFF":"#fff"}}>
-          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA"}}>{x.molecule}</td>
-          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right"}}>{fmtUnits(x.forecastUnits)}</td>
-          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:600}}>{fmtUnits(x.actualUnits)}</td>
-          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:700,color:color(x.varUnits)}}>{fmtUnits(x.varUnits)}</td>
-          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right"}}>{fmtValue(x.forecastValue)}</td>
-          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:600}}>{fmtValue(x.actualValue)}</td>
-          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:700,color:color(x.varValue)}}>{fmtValue(x.varValue)}</td>
-        </tr>)}<tr style={{background:"#E5E7EB",fontWeight:800}}>
-          <td style={{padding:"5px 6px"}}>Total</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtUnits(total.forecastUnits)}</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtUnits(total.actualUnits)}</td><td style={{padding:"5px 6px",textAlign:"right",color:color(total.varUnits)}}>{fmtUnits(total.varUnits)}</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtValue(total.forecastValue)}</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtValue(total.actualValue)}</td><td style={{padding:"5px 6px",textAlign:"right",color:color(total.varValue)}}>{fmtValue(total.varValue)}</td>
-        </tr></tbody>
-      </table>:<div style={{padding:"12px 4px",fontSize:10,color:"#667085"}}>No unit/value data is available for this period.</div>}
+        <thead><tr style={{background:isUnits?"#FAFAFF":"#F8FAFC"}}>{["Molecule","Forecast","Actual",varianceHeader].map((h,i)=><th key={h} style={{padding:"5px 7px",borderBottom:`1px solid ${isUnits?"#D8B4FE":"#B2CCFF"}`,textAlign:i===0?"left":"right",fontWeight:700}}>{h}</th>)}</tr></thead>
+        <tbody>{rows.map((x,i)=><tr key={x.molecule} style={{background:i%2?"#F8FAFC":"#fff"}}>
+          <td style={{padding:"5px 7px",borderBottom:"1px solid #F0F2FA"}}>{x.molecule}</td>
+          <td style={{padding:"5px 7px",borderBottom:"1px solid #F0F2FA",textAlign:"right"}}>{fmt(x.forecast)}</td>
+          <td style={{padding:"5px 7px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:600}}>{fmt(x.actual)}</td>
+          <td style={{padding:"5px 7px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:700,color:color(x.variance)}}>{fmt(x.variance)}</td>
+        </tr>)}<tr style={{background:"#EEF2F6",fontWeight:800}}><td style={{padding:"6px 7px"}}>TOTAL</td><td style={{padding:"6px 7px",textAlign:"right"}}>{fmt(total.forecast)}</td><td style={{padding:"6px 7px",textAlign:"right"}}>{fmt(total.actual)}</td><td style={{padding:"6px 7px",textAlign:"right",color:color(total.variance)}}>{fmt(total.variance)}</td></tr></tbody>
+      </table>:<div style={{padding:"12px 4px",fontSize:10,color:"#667085"}}>No {isUnits?"unit":"Sales (Sell In) value"} data is available for this period.</div>}
+      <div style={{marginTop:9,padding:"7px 9px",borderRadius:8,background:reconciliation<0.005?"#ECFDF3":"#FEF3F2",border:`1px solid ${reconciliation<0.005?"#ABEFC6":"#FECDCA"}`,fontSize:9,fontWeight:700,color:reconciliation<0.005?"#067647":"#B42318"}}>{reconciliation<0.005?`✓ Total equals the ${title} P&L row`:`⚠ Difference versus ${title} P&L source: ${fmt(reconciliation)}`}</div>
     </div>}
   </span>;
 };
@@ -1323,7 +1315,7 @@ export default function Dashboard() {
                         <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
                           {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
                           {(r.k==="salesInUnits"||r.k==="salesIn") && (t.prefix==="ytd"||t.prefix==="cm") ? (
-                            <PnlAutoVarianceLabel label={r.label} prefix={t.prefix} year={CUR_YEAR} month={cm}/>
+                            <PnlAutoVarianceLabel label={r.label} metric={r.k} prefix={t.prefix} year={CUR_YEAR} month={cm}/>
                           ) : r.label}
                         </td>
                         <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct, r.k)}</td>
