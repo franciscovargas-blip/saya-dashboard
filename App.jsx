@@ -261,14 +261,14 @@ const BurnDetailTable=({year,month})=>{
   const combine=(...arrays)=>months.map((_,i)=>arrays.some(a=>a[i]!=null)?arrays.reduce((t,a)=>t+nz(a[i]),0):null);
   const dRows=(typeof D!=="undefined"?D:[]).filter(r=>Array.isArray(r)&&r.length>9&&String(r[1]).toLowerCase()==="reales"&&Number(r[2])===Number(year)&&months.includes(Number(r[3]))&&Number.isFinite(Number(r[9])));
   const clean=v=>String(v??"").trim();
-  const isRevenue=line=>/^(net sales|sales returns|gross sales|sales \(sell in\))$/i.test(clean(line));
+  const isRevenue=line=>/^(sales returns|sales \(sell in\)|sales in)$/i.test(clean(line));
   const excludedOpex=line=>/(sales|cogs|cost of goods|gross profit|gross margin|ebit|tax|interest|net income|market volume|sell in units|sell in price|price to distributor)/i.test(clean(line));
   const revenueDRows=dRows.filter(r=>isRevenue(r[0]));
   const opexDRows=dRows.filter(r=>clean(r[0])&&!excludedOpex(r[0]));
   const dMonthly=rows=>months.map(m=>{const rr=rows.filter(r=>Number(r[3])===m);return rr.length?rr.reduce((t,r)=>t+Number(r[9]||0),0):null;});
   const auxRevenue=vals("Ingresos","Revenue","Cash Inflows"),auxOpex=vals("OPEX");
   const dRevenue=dMonthly(revenueDRows),dOpex=dMonthly(opexDRows);
-  const revenue=months.map((_,i)=>auxRevenue[i]!=null?auxRevenue[i]:dRevenue[i]);
+  const revenue=months.map((_,i)=>dRevenue[i]!=null?dRevenue[i]:auxRevenue[i]);
   const opex=months.map((_,i)=>auxOpex[i]!=null?auxOpex[i]:dOpex[i]);
   const wc=vals("Capital de Trabajo","Working Capital");
   const ar=vals("Cuentas por cobrar","Cuentas por Cobrar","Accounts Receivable");
