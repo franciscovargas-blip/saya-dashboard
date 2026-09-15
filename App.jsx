@@ -1158,12 +1158,12 @@ export default function Dashboard() {
                       <tr key={"r-"+i} style={r.k==="sellOut" || r.k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : r.k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : r.k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
                         <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
                           {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
-                          {r.k==="salesInUnits" && t.prefix==="ytd" && CUR_YEAR===2026 && cm===8 ? (
+                          {r.k==="salesInUnits" && (t.prefix==="ytd"||t.prefix==="cm") && CUR_YEAR===2026 && cm===8 ? (
                             <span style={{position:"relative",display:"inline-block"}} onMouseEnter={()=>setShowSellInDetail(true)} onMouseLeave={()=>setShowSellInDetail(false)}>
                               <span style={{textDecoration:"underline",textDecorationStyle:"dotted",textUnderlineOffset:3,cursor:"help",fontWeight:700}}>{r.label} <span style={{color:"#7C3AED"}}>ⓘ</span></span>
                               {showSellInDetail && (
                                 <div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,top:"calc(100% + 8px)",zIndex:9999,width:390,background:"#fff",border:"1px solid #C4B5FD",borderTop:"4px solid #7C3AED",borderRadius:10,boxShadow:"0 12px 30px rgba(30,42,58,0.22)",padding:12,color:"#1a1a2e"}}>
-                                  <div style={{fontSize:11,fontWeight:800,marginBottom:2}}>Sell In Units Detail · YTD Jan–Aug 2026</div>
+                                  <div style={{fontSize:11,fontWeight:800,marginBottom:2}}>Sell In Units Detail · {t.prefix==="ytd"?"YTD Jan–Aug 2026":"Month — Aug 2026"}</div>
                                   <div style={{fontSize:8,color:"#8A90A8",marginBottom:9}}>Variance explanation by channel and molecule</div>
                                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
                                     <thead><tr style={{background:"#F3E8FF"}}>
@@ -1173,7 +1173,7 @@ export default function Dashboard() {
                                       {[
                                         ["Private","Hyaxum",70,85],
                                         ["Private","Hyaxum Plus",100,75],
-                                        ["Private","Hyaxum Pro",180,75],
+                                        ["Private","Hyaxum Pro",t.prefix==="ytd"?180:90,75],
                                         ["Private","Euxara",47,0],
                                         ["Public","Hyaxum",55,0],
                                         ["Public","Hyaxum Pro",16,0],
@@ -1186,7 +1186,7 @@ export default function Dashboard() {
                                       </tr>)}
                                       <tr style={{background:"#E5E7EB",fontWeight:800}}>
                                         <td style={{padding:"5px 7px"}}></td><td style={{padding:"5px 7px"}}>Total</td>
-                                        <td style={{padding:"5px 7px",textAlign:"right"}}>504</td>
+                                        <td style={{padding:"5px 7px",textAlign:"right"}}>{t.prefix==="ytd"?504:414}</td>
                                         <td style={{padding:"5px 7px",textAlign:"right",color:"#534AB7"}}>235</td>
                                       </tr>
                                     </tbody>
