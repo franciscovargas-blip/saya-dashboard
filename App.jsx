@@ -285,7 +285,7 @@ const BurnDetailPanel=({year,month})=>{
   return <details style={{position:"relative",display:"inline-block",marginLeft:8,fontSize:9,fontWeight:500}}>
     <summary style={{listStyle:"none",cursor:"pointer",border:"1px solid #C4B5FD",background:"#F5F3FF",color:"#6D28D9",padding:"4px 8px",borderRadius:6,userSelect:"none"}}>View burn detail ▾</summary>
     <div style={{position:"absolute",right:0,top:"calc(100% + 6px)",zIndex:9999,width:430,maxHeight:480,overflow:"auto",background:"#fff",border:"1px solid #C4B5FD",borderTop:"4px solid #7C3AED",borderRadius:10,boxShadow:"0 14px 35px rgba(30,42,58,.24)",padding:12}}>
-      <div style={{fontSize:12,fontWeight:800,color:"#1A1A2E",marginBottom:2}}>Burn & Cash Movement Detail<BurnDetailPanel year={CUR_YEAR} month={cm} /></div>
+      <div style={{fontSize:12,fontWeight:800,color:"#1A1A2E",marginBottom:2}}>Burn & Cash Movement Detail</div>
       <div style={{fontSize:8,color:"#8A90A8",marginBottom:9}}>Operating, investing and other activities · MXN</div>
       <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
         <thead><tr style={{background:"#EDE9FE"}}><th style={{padding:"6px 7px",textAlign:"left"}}>Activity</th><th style={{padding:"6px 7px",textAlign:"right"}}>Month</th><th style={{padding:"6px 7px",textAlign:"right"}}>YTD</th></tr></thead>
@@ -1468,7 +1468,7 @@ export default function Dashboard() {
               return (
               <div style={bs.wrap}>
                 <div style={bs.head}>
-                  <div style={bs.title}>Burn Mexico</div>
+                  <div style={bs.title}>Burn Mexico<BurnDetailPanel year={CUR_YEAR} month={cm} /></div>
                   <div style={bs.sub}>Actividades de Operación + Inversión + Otras variaciones no clasificadas · Ene–{MO[cm-1]} {CUR_YEAR}</div>
                 </div>
                 <div style={bs.rowLbl}>Burn mensual</div>
@@ -1669,7 +1669,7 @@ export default function Dashboard() {
               return(
                 <div style={kC("#D97706")}>
                   <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>👤</div>
-                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>Anual Revenue per Employee</div>
+                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>Anual Anual Revenue per Employee</div>
                   <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(revEmp)}</div>
                   <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR} · {empCount} employees</div>
                 </div>
@@ -1763,7 +1763,7 @@ export default function Dashboard() {
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                     <div>
-                      <div style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>Net Sales (M MXN) &amp; Gross Margin (%)</div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>Sales In (M MXN) &amp; Gross Margin (%)</div>
                       <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Bars: Actual Net Sales · Light bars: Forecast · Green line: Gross Margin %</div>
                     </div>
                     <button onClick={()=>{const h="Mes,Real,Forecast,GM%Real,GM%Fcst\n";const r=revData.map(d=>[d.name,d.Real,d.Forecast,d.GmPct??'',d.GmPctF??''].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="ventas_netas.csv";a.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
