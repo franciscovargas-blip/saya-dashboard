@@ -244,6 +244,69 @@ function LoginGate({ children }) {
   );
 }
 
+const PnlAutoVarianceLabel=({label,prefix,year,month})=>{
+  const [show,setShow]=React.useState(false);
+  const monthNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const months=prefix==="ytd"?Array.from({length:Math.max(0,month)},(_,i)=>i+1):[month];
+  const normalize=x=>String(x??"").trim().toLowerCase();
+  const versionOf=r=>{
+    const v=normalize(r?.[1]);
+    if(/real|actual/.test(v)) return "actual";
+    if(/forecast|budget|presup/.test(v)) return "forecast";
+    return "";
+  };
+  const isUnitLine=r=>["market volume <saya>","market volume saya","sales in units","sell in units"].includes(normalize(r?.[0]));
+  const isPriceLine=r=>["price after discount to distributor","price after discount to distribuitor","price (to distribuitor)","sell in price"].includes(normalize(r?.[0]));
+  const isValueLine=r=>normalize(r?.[0])==="sales (sell in)";
+  const periodRows=D.filter(r=>Array.isArray(r)&&Number(r[2])===Number(year)&&months.includes(Number(r[3]))&&(isUnitLine(r)||isPriceLine(r)||isValueLine(r)));
+  const moleculeOf=r=>String(r?.[4]??"Unspecified").trim()||"Unspecified";
+  const molecules=[...new Set(periodRows.filter(isUnitLine).map(moleculeOf))].sort((a,b)=>a.localeCompare(b));
+  const n=r=>Number(r?.[9])||0;
+  const metric=(version,molecule)=>{
+    let units=0,value=0;
+    for(const mo of months){
+      const same=(r)=>Number(r[3])===mo&&moleculeOf(r)===molecule&&versionOf(r)===version;
+      const monthUnits=periodRows.filter(r=>same(r)&&isUnitLine(r)).reduce((a,r)=>a+n(r),0);
+      const directValues=periodRows.filter(r=>same(r)&&isValueLine(r));
+      const priceRows=periodRows.filter(r=>same(r)&&isPriceLine(r));
+      const avgPrice=priceRows.length?priceRows.reduce((a,r)=>a+n(r),0)/priceRows.length:0;
+      units+=monthUnits;
+      value+=directValues.length?directValues.reduce((a,r)=>a+n(r),0):monthUnits*avgPrice;
+    }
+    return {units,value};
+  };
+  const rows=molecules.map(molecule=>{
+    const forecast=metric("forecast",molecule),actual=metric("actual",molecule);
+    return {molecule,forecastUnits:forecast.units,actualUnits:actual.units,varUnits:actual.units-forecast.units,forecastValue:forecast.value,actualValue:actual.value,varValue:actual.value-forecast.value};
+  }).filter(x=>x.forecastUnits||x.actualUnits||x.forecastValue||x.actualValue);
+  const total=rows.reduce((a,x)=>({forecastUnits:a.forecastUnits+x.forecastUnits,actualUnits:a.actualUnits+x.actualUnits,varUnits:a.varUnits+x.varUnits,forecastValue:a.forecastValue+x.forecastValue,actualValue:a.actualValue+x.actualValue,varValue:a.varValue+x.varValue}),{forecastUnits:0,actualUnits:0,varUnits:0,forecastValue:0,actualValue:0,varValue:0});
+  const period=prefix==="ytd"?`YTD Jan–${monthNames[Math.max(0,month-1)]} ${year}`:`${monthNames[Math.max(0,month-1)]} ${year}`;
+  const fmtUnits=v=>Math.round(v).toLocaleString("en-US");
+  const fmtValue=v=>`$${Math.round(v).toLocaleString("en-US")}`;
+  const color=v=>v===0?"#667085":v>0?"#067647":"#B42318";
+  return <span style={{position:"relative",display:"inline-block"}} onMouseEnter={()=>setShow(true)} onMouseLeave={()=>setShow(false)}>
+    <span style={{textDecoration:"underline",textDecorationStyle:"dotted",textUnderlineOffset:3,cursor:"help",fontWeight:700}}>{label} <span style={{color:"#7C3AED"}}>ⓘ</span></span>
+    {show&&<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,top:"calc(100% + 8px)",zIndex:9999,width:720,maxWidth:"82vw",background:"#fff",border:"1px solid #C4B5FD",borderTop:"4px solid #7C3AED",borderRadius:10,boxShadow:"0 12px 30px rgba(30,42,58,0.22)",padding:12,color:"#1a1a2e"}}>
+      <div style={{fontSize:11,fontWeight:800,marginBottom:2}}>Automatic P&L Variance · {period}</div>
+      <div style={{fontSize:8,color:"#8A90A8",marginBottom:9}}>Calculated from the latest Forecast and Actuals loaded into the dashboard — units and MXN values.</div>
+      {rows.length?<table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
+        <thead><tr style={{background:"#F3E8FF"}}>{["Molecule","Fcst Units","Actual Units","Var Units","Fcst Value","Actual Value","Var Value"].map((h,i)=><th key={h} style={{padding:"5px 6px",borderBottom:"1px solid #D8B4FE",textAlign:i===0?"left":"right",fontWeight:700}}>{h}</th>)}</tr></thead>
+        <tbody>{rows.map((x,i)=><tr key={x.molecule} style={{background:i%2?"#FAFAFF":"#fff"}}>
+          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA"}}>{x.molecule}</td>
+          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right"}}>{fmtUnits(x.forecastUnits)}</td>
+          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:600}}>{fmtUnits(x.actualUnits)}</td>
+          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:700,color:color(x.varUnits)}}>{fmtUnits(x.varUnits)}</td>
+          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right"}}>{fmtValue(x.forecastValue)}</td>
+          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:600}}>{fmtValue(x.actualValue)}</td>
+          <td style={{padding:"4px 6px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:700,color:color(x.varValue)}}>{fmtValue(x.varValue)}</td>
+        </tr>)}<tr style={{background:"#E5E7EB",fontWeight:800}}>
+          <td style={{padding:"5px 6px"}}>Total</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtUnits(total.forecastUnits)}</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtUnits(total.actualUnits)}</td><td style={{padding:"5px 6px",textAlign:"right",color:color(total.varUnits)}}>{fmtUnits(total.varUnits)}</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtValue(total.forecastValue)}</td><td style={{padding:"5px 6px",textAlign:"right"}}>{fmtValue(total.actualValue)}</td><td style={{padding:"5px 6px",textAlign:"right",color:color(total.varValue)}}>{fmtValue(total.varValue)}</td>
+        </tr></tbody>
+      </table>:<div style={{padding:"12px 4px",fontSize:10,color:"#667085"}}>No unit/value data is available for this period.</div>}
+    </div>}
+  </span>;
+};
+
 const BurnDetailTable=({year,month})=>{
   const cf=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
   const months=Array.from({length:Math.max(month,1)},(_,i)=>i+1);
@@ -328,12 +391,6 @@ const BurnDetailTable=({year,month})=>{
     {id:"other",label:"Other Burn Adjustments",values:otherBurn,ytd:sum(otherBurn),group:"other",expandable:true,visible:true},
     {label:"Unclassified / Reconciliation",values:otherBurn,ytd:sum(otherBurn),level:1,visible:open.other},
     {label:"BURN TOTAL — equals monthly cards",values:burnTotal,ytd:sum(burnTotal),group:"burn",visible:true},
-    {id:"financing",label:"Financing Activities — excluded from Burn",values:financing,ytd:sum(financing),group:"financing",expandable:true,visible:true},
-    {label:"Capital contributions",values:capital,ytd:sum(capital),level:1,visible:open.financing},
-    {id:"net",label:"NET CASH MOVEMENT = Burn + Financing",values:netCashMovement,ytd:sum(netCashMovement),group:"net",expandable:true,visible:true},
-    {label:"Starting cash",values:starting,ytd:firstStart??null,level:1,visible:open.net},
-    {label:"Ending cash",values:ending,ytd:lastEnd??null,level:1,visible:open.net},
-    {label:"RECONCILIATION DIFFERENCE",values:reconciliation,ytd:sum(reconciliation),group:"reconciliation",showZero:true,visible:true},
   ];  const bg={operating:"#F3F0FF",investing:"#EDF6FF",other:"#FFF5E9",burn:"#E0E7FF",financing:"#FEF3C7",net:"#EAF8F3",reconciliation:"#DCFCE7"};
   const fg={operating:"#5234A8",investing:"#185FA5",other:"#A34B00",burn:"#243C9E",financing:"#8A5B00",net:"#087A5B",reconciliation:"#087A5B"};
   return <div data-burn-detail-table="true" style={{marginTop:14,background:"#fff",border:"1px solid #A8C9FF",borderRadius:10,overflow:"hidden",width:"100%"}}>
@@ -365,7 +422,6 @@ export default function Dashboard() {
   const [optSec, setOptSec] = useState({}); // optional sections open state
   const [expOpex, setExpOpex] = useState({});
   const [expComp, setExpComp] = useState({});
-  const [showSellInDetail, setShowSellInDetail] = useState(false);
   const [expB, setExpB] = useState({});
   const [expArea, setExpArea] = useState({});
   const [expPL, setExpPL] = useState({});
@@ -1266,42 +1322,8 @@ export default function Dashboard() {
                       <tr key={"r-"+i} style={r.k==="sellOut" || r.k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : r.k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : r.k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: r.isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && setExpComp(p => ({...p, [expKey]: !p[expKey]}))}>
                         <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
                           {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
-                          {r.k==="salesInUnits" && (t.prefix==="ytd"||t.prefix==="cm") && CUR_YEAR===2026 && cm===8 ? (
-                            <span style={{position:"relative",display:"inline-block"}} onMouseEnter={()=>setShowSellInDetail(true)} onMouseLeave={()=>setShowSellInDetail(false)}>
-                              <span style={{textDecoration:"underline",textDecorationStyle:"dotted",textUnderlineOffset:3,cursor:"help",fontWeight:700}}>{r.label} <span style={{color:"#7C3AED"}}>ⓘ</span></span>
-                              {showSellInDetail && (
-                                <div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,top:"calc(100% + 8px)",zIndex:9999,width:390,background:"#fff",border:"1px solid #C4B5FD",borderTop:"4px solid #7C3AED",borderRadius:10,boxShadow:"0 12px 30px rgba(30,42,58,0.22)",padding:12,color:"#1a1a2e"}}>
-                                  <div style={{fontSize:11,fontWeight:800,marginBottom:2}}>Sell In Units Detail · {t.prefix==="ytd"?"YTD Jan–Aug 2026":"Month — Aug 2026"}</div>
-                                  <div style={{fontSize:8,color:"#8A90A8",marginBottom:9}}>Variance explanation by channel and molecule</div>
-                                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:9}}>
-                                    <thead><tr style={{background:"#F3E8FF"}}>
-                                      {["Channel","Molecule","Forecast","Actuals"].map(h=><th key={h} style={{padding:"5px 7px",borderBottom:"1px solid #D8B4FE",textAlign:h==="Channel"||h==="Molecule"?"left":"right",fontWeight:700}}>{h}</th>)}
-                                    </tr></thead>
-                                    <tbody>
-                                      {[
-                                        ["Private","Hyaxum",70,85],
-                                        ["Private","Hyaxum Plus",100,75],
-                                        ["Private","Hyaxum Pro",t.prefix==="ytd"?180:90,t.prefix==="ytd"?75:0],
-                                        ["Private","Euxara",47,0],
-                                        ["Public","Hyaxum",55,0],
-                                        ["Public","Hyaxum Pro",16,0],
-                                        ["Public","Euxara",36,0],
-                                      ].map((x,i)=><tr key={i} style={{background:i%2?"#FAFAFF":"#fff"}}>
-                                        <td style={{padding:"4px 7px",borderBottom:"1px solid #F0F2FA"}}>{x[0]}</td>
-                                        <td style={{padding:"4px 7px",borderBottom:"1px solid #F0F2FA"}}>{x[1]}</td>
-                                        <td style={{padding:"4px 7px",borderBottom:"1px solid #F0F2FA",textAlign:"right"}}>{x[2].toLocaleString("en-US")}</td>
-                                        <td style={{padding:"4px 7px",borderBottom:"1px solid #F0F2FA",textAlign:"right",fontWeight:600,color:"#534AB7"}}>{x[3].toLocaleString("en-US")}</td>
-                                      </tr>)}
-                                      <tr style={{background:"#E5E7EB",fontWeight:800}}>
-                                        <td style={{padding:"5px 7px"}}></td><td style={{padding:"5px 7px"}}>Total</td>
-                                        <td style={{padding:"5px 7px",textAlign:"right"}}>{t.prefix==="ytd"?504:414}</td>
-                                        <td style={{padding:"5px 7px",textAlign:"right",color:"#534AB7"}}>{t.prefix==="ytd"?235:160}</td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              )}
-                            </span>
+                          {(r.k==="salesInUnits"||r.k==="salesIn") && (t.prefix==="ytd"||t.prefix==="cm") ? (
+                            <PnlAutoVarianceLabel label={r.label} prefix={t.prefix} year={CUR_YEAR} month={cm}/>
                           ) : r.label}
                         </td>
                         <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct, r.k)}</td>
