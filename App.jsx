@@ -275,12 +275,12 @@ const PnlAutoVarianceLabel=({label,metric,prefix,year,month})=>{
   const amount=(version,molecule)=>sourceRows.filter(r=>versionOf(r)===version&&moleculeOf(r)===molecule).reduce((a,r)=>a+n(r),0);
   const rows=molecules.map(molecule=>{
     const forecast=amount("forecast",molecule),actual=amount("actual",molecule);
-    return {molecule,forecast,actual,variance:actual-forecast};
+    return {molecule,forecast,actual,variance:forecast-actual};
   }).filter(x=>x.forecast||x.actual);
   const total=rows.reduce((a,x)=>({forecast:a.forecast+x.forecast,actual:a.actual+x.actual,variance:a.variance+x.variance}),{forecast:0,actual:0,variance:0});
   const sourceForecast=sourceRows.filter(r=>versionOf(r)==="forecast").reduce((a,r)=>a+n(r),0);
   const sourceActual=sourceRows.filter(r=>versionOf(r)==="actual").reduce((a,r)=>a+n(r),0);
-  const sourceVariance=sourceActual-sourceForecast;
+  const sourceVariance=sourceForecast-sourceActual;
   const reconciliation=Math.max(Math.abs(total.forecast-sourceForecast),Math.abs(total.actual-sourceActual),Math.abs(total.variance-sourceVariance));
   const period=prefix==="ytd"?`YTD Jan–${monthNames[Math.max(0,month-1)]} ${year}`:`${monthNames[Math.max(0,month-1)]} ${year}`;
   const fmtUnits=v=>Math.round(v).toLocaleString("en-US");
@@ -630,8 +630,8 @@ export default function Dashboard() {
     });
     return PL_KEYS.map(k => ({
       k, label: PL_LABELS[k], isPct: PCT_KEYS.has(k), isBold: BOLD_KEYS.has(k),
-      ytdFC: ytdFC[k], ytdRE: ytdRE[k], ytdVar: ytdRE[k] - ytdFC[k], ytdVarPct: ytdFC[k] ? (ytdRE[k] - ytdFC[k]) / Math.abs(ytdFC[k]) : 0,
-      cmFC: cmFC[k], cmRE: cmRE[k], cmVar: cmRE[k] - cmFC[k], cmVarPct: cmFC[k] ? (cmRE[k] - cmFC[k]) / Math.abs(cmFC[k]) : 0,
+      ytdFC: ytdFC[k], ytdRE: ytdRE[k], ytdVar: ytdFC[k] - ytdRE[k], ytdVarPct: ytdFC[k] ? (ytdFC[k] - ytdRE[k]) / Math.abs(ytdFC[k]) : 0,
+      cmFC: cmFC[k], cmRE: cmRE[k], cmVar: cmFC[k] - cmRE[k], cmVarPct: cmFC[k] ? (cmFC[k] - cmRE[k]) / Math.abs(cmFC[k]) : 0,
     }));
   }, [fd, cm, ytdM]);
 {/* */}
@@ -1042,7 +1042,7 @@ export default function Dashboard() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #E4E8F2", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src="data:image/png;base64,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" alt="Saya Biologics" style={{width:42,height:42,borderRadius:10,objectFit:"cover"}} />
-          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Business Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]} · <span style={{background:"#E8F4FF",color:"#185FA5",borderRadius:3,padding:"1px 5px",fontWeight:700,letterSpacing:1}}>Amounts in MXN</span></div></div>
+          <div><div style={{ fontFamily: "serif", fontSize: 20, fontWeight: 500, color: "#1a1a2e" }}>Business Intelligence</div><div style={{ fontSize: 9, color: "#8A90A8", letterSpacing: 2, textTransform: "uppercase" }}>Rolling Forecast 2026 · Corte: {MO[cm - 1]}</div></div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
@@ -1065,7 +1065,8 @@ export default function Dashboard() {
       </div>
 {/* */}
       {/* MAIN TABS */}
-      <div style={{display:"flex",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8}}>
+      <div style={{display:"flex",alignItems:"center",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8,overflowX:"auto"}}>
+        <div data-currency-badge="true" style={{flexShrink:0,fontSize:12,padding:"6px 12px",marginRight:8,borderRadius:6,background:"#E8F4FF",color:"#185FA5",fontWeight:800,letterSpacing:1.2,whiteSpace:"nowrap"}}>AMOUNTS IN MXN</div>
         {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["portfolio","🧬 Portfolio Mapping"],["capex","📦 CAPEX"],["auxiliares","🗂 Auxiliares"],["breakeven","📉 Breakeven"],["inventarios","📦 Inventarios"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
@@ -1734,7 +1735,7 @@ export default function Dashboard() {
               return(
                 <div style={kC("#D97706")}>
                   <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>👤</div>
-                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>Anual Anual Revenue per Employee</div>
+                  <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>Revenue per Employee</div>
                   <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(revEmp)}</div>
                   <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>YTD {CUR_YEAR} · {empCount} employees</div>
                 </div>
@@ -2470,42 +2471,36 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "capex" && (
         <div style={{padding:"20px"}}>
-          <div style={{maxWidth:520}}>
+          <div data-capex-monthly="true" style={{width:"100%"}}>
           {(() => {
-            const capexRows = auxRowsCum('CAPEX', CUR_YEAR, cm)
-              .filter(r => !['Activo Fijo','Intangibles'].includes(r.name) && Math.abs(r.monto) > 0.5)
-              .sort((a,b)=>Math.abs(b.monto)-Math.abs(a.monto))
-              .map(r => ({ cat: r.name === 'Licencias de Moléculas' ? 'Molecule Licenses' : r.name, monto: r.monto, pct: 0 }));
-            const totalCapex = capexRows.reduce((sum,r)=>sum+r.monto,0);
-            capexRows.forEach(r => { r.pct = totalCapex ? Math.round(r.monto / totalCapex * 100) : 0; });
+            const months=Array.from({length:Math.max(cm,1)},(_,i)=>i+1);
+            const source=(AUX_DATA&&AUX_DATA['CAPEX'])||[];
+            const capexRows=source
+              .filter(r=>!['Activo Fijo','Intangibles'].includes(r.name))
+              .map(r=>{
+                const monthly=months.map(m=>Number(r.values?.[`${CUR_YEAR}-${String(m).padStart(2,'0')}`])||0);
+                const total=monthly.reduce((a,v)=>a+v,0);
+                return {cat:r.name==='Licencias de Moléculas'?'Molecule Licenses':r.name,monthly,total,pct:0};
+              })
+              .filter(r=>Math.abs(r.total)>0.5)
+              .sort((a,b)=>Math.abs(b.total)-Math.abs(a.total));
+            const totalCapex=capexRows.reduce((a,r)=>a+r.total,0);
+            capexRows.forEach(r=>{r.pct=totalCapex?Math.round(r.total/totalCapex*100):0;});
+            const monthTotals=months.map((_,i)=>capexRows.reduce((a,r)=>a+r.monthly[i],0));
+            const csvHeader=['Category',...months.map(m=>MO[m-1]+' '+CUR_YEAR),'Total','% Total'].join(',')+'\n';
+            const csvRows=capexRows.map(r=>[r.cat,...r.monthly,r.total,r.pct+'%'].join(',')).join('\n');
             return (
               <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                  <div><div style={{fontSize:12,fontWeight:700,color:'#1a1a2e'}}>CAPEX</div><div style={{fontSize:9,color:'#8A90A8'}}>Historical data through current filtered month · {MO[cm-1]} {CUR_YEAR}</div></div>
-                  <button onClick={()=>{const hc="Category,Amount,% Total\n"; const rc=capexRows.map(r=>[r.cat,r.monto,r.pct+'%'].join(",")).join("\n"); const bc=new Blob([hc+rc],{type:"text/csv"}); const ac=document.createElement("a"); ac.href=URL.createObjectURL(bc); ac.download="capex_categoria.csv"; ac.click();}} style={{fontSize:9,padding:"4px 10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
-                  <div style={{fontSize:12,fontWeight:800,color:'#534AB7'}}>TOTAL {F(totalCapex)}</div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:8,flexWrap:'wrap'}}>
+                  <div><div style={{fontSize:12,fontWeight:700,color:'#1a1a2e'}}>CAPEX by Month</div><div style={{fontSize:9,color:'#8A90A8'}}>Monthly detail through {MO[cm-1]} {CUR_YEAR}</div></div>
+                  <div style={{display:'flex',alignItems:'center',gap:10}}><button onClick={()=>{const b=new Blob([csvHeader+csvRows],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='capex_mensual.csv';a.click();}} style={{fontSize:9,padding:'4px 10px',background:'#7C3AED',color:'#fff',border:'none',borderRadius:5,cursor:'pointer'}}>⬇ CSV</button><div style={{fontSize:12,fontWeight:800,color:'#534AB7'}}>TOTAL {F(totalCapex)}</div></div>
                 </div>
-                <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
-                  <thead><tr>
-                    {['Category','Amount','% Total'].map((h,i) => (
-                      <th key={i} style={{fontSize:10,color:'#8A90A8',fontWeight:600,padding:'5px 8px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right'}}>{h}</th>
-                    ))}
-                  </tr></thead>
-                  <tbody>
-                    {capexRows.map((r,i) => (
-                      <tr key={i} style={{background:i%2===0?'#fff':'#fafbfe'}}>
-                        <td style={{padding:'6px 8px'}}>{r.cat}</td>
-                        <td style={{padding:'6px 8px',textAlign:'right',fontWeight:600}}>{F(r.monto)}</td>
-                        <td style={{padding:'6px 8px',textAlign:'right',color:'#534AB7',fontWeight:600}}>{r.pct}%</td>
-                      </tr>
-                    ))}
-                    <tr style={{background:'#f0f2fa',fontWeight:700}}>
-                      <td style={{padding:'7px 8px'}}>TOTAL</td>
-                      <td style={{padding:'7px 8px',textAlign:'right'}}>{F(totalCapex)}</td>
-                      <td style={{padding:'7px 8px',textAlign:'right',color:'#534AB7'}}>100%</td>
-                    </tr>
+                <div style={{overflowX:'auto'}}><table style={{width:'100%',minWidth:760,borderCollapse:'collapse',fontSize:10}}>
+                  <thead><tr>{['Category',...months.map(m=>MO[m-1]),'Total','% Total'].map((h,i)=><th key={i} style={{fontSize:9,color:'#8A90A8',fontWeight:600,padding:'5px 7px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right',whiteSpace:'nowrap',position:i===0?'sticky':undefined,left:i===0?0:undefined,background:'#fff'}}>{h}</th>)}</tr></thead>
+                  <tbody>{capexRows.map((r,i)=><tr key={r.cat} style={{background:i%2===0?'#fff':'#fafbfe'}}><td style={{padding:'6px 7px',position:'sticky',left:0,background:i%2===0?'#fff':'#fafbfe',whiteSpace:'nowrap'}}>{r.cat}</td>{r.monthly.map((v,j)=><td key={j} style={{padding:'6px 7px',textAlign:'right',color:v<0?'#E24B4A':'#1a1a2e'}}>{Math.abs(v)<0.5?'—':F(v)}</td>)}<td style={{padding:'6px 7px',textAlign:'right',fontWeight:700,borderLeft:'1px solid #E4E8F2'}}>{F(r.total)}</td><td style={{padding:'6px 7px',textAlign:'right',color:'#534AB7',fontWeight:700}}>{r.pct}%</td></tr>)}
+                    <tr style={{background:'#f0f2fa',fontWeight:700}}><td style={{padding:'7px'}}>TOTAL</td>{monthTotals.map((v,i)=><td key={i} style={{padding:'7px',textAlign:'right'}}>{Math.abs(v)<0.5?'—':F(v)}</td>)}<td style={{padding:'7px',textAlign:'right',borderLeft:'1px solid #D0D5DD'}}>{F(totalCapex)}</td><td style={{padding:'7px',textAlign:'right',color:'#534AB7'}}>100%</td></tr>
                   </tbody>
-                </table>
+                </table></div>
               </div>
             );
           })()}
