@@ -184,7 +184,7 @@ function buildPL(fd, yr, m, cm, mode) {
   const ops = getVal("Operations");
   const oth = getVal("Others");
   const qual = getVal("Quality");
-  const totOpex = mode === "forecast" ? (sw + sm + ta + pf + of_ + ops + oth + qual) : (sw + sm + ta + pf + of_ + reg + sh + mob + qual + ops + oth);
+  const totOpex = mode === "forecast" ? (sw + sm + ta + pf + of_ + sh + ops + oth + qual) : (sw + sm + ta + pf + of_ + reg + sh + mob + qual + ops + oth);
   const totOpexPct = ns ? totOpex / ns : 0;
   const ebitdaDirect = getVal("EBITDA");
   const ebitda = ebitdaDirect || (gp - totOpex);
@@ -510,7 +510,7 @@ export default function Dashboard() {
             ops=g("Operations"),oth=g("Others"),qual=g("Quality"),
             reg=g("Regulatory"),sh=fNZ(g("Software & Hardware"),g("IT (Software-Hardware)")),mob=g("Mobility");
       const totOpex = orig==="Forecast"
-        ? sw+sm+ta+pf+of_+ops+oth+qual
+        ? sw+sm+ta+pf+of_+sh+ops+oth+qual
         : sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth;
       const ebitda = gp - totOpex;
       // Amortizacion de inversion (upfronts, licencias, depr) — parte de la inversion a recuperar
@@ -584,7 +584,7 @@ export default function Dashboard() {
     const cogsSAP=fd.filter(r=>normPL(r[0])===normPL("COGS")&&r[1]==="Reales"&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0); const cogs = cogsComponents || cogsSAP, gp=ns-cogs, gmPct=ns?gp/ns:0;
     const sw=getOpex("Salaries & Wages"),sm=firstNonZero(getOpex("Sales & Marketing"),getOpex("Sales &Marketing")),ta=firstNonZero(getOpex("Travel & Accommodation"),getOpex("Travel & Accomodation")),pf=firstNonZero(getOpex("Professional Fees"),getOpex("Professional Services")),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=firstNonZero(getOpex("Software & Hardware"),getOpex("IT (Software-Hardware)")),mob=getOpex("Mobility");
     const qual=getOpex("Quality"),ops=getOpex("Operations"),oth=getOpex("Others");
-    const totOpex=mode==="forecast"?(sw+sm+ta+pf+of_+ops+oth+qual):(sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth),totOpexPct=ns?totOpex/ns:0,ebitda=(getPL("EBITDA")||gp-totOpex),ebitdaPct=ns?ebitda/ns:0;
+    const totOpex=mode==="forecast"?(sw+sm+ta+pf+of_+sh+ops+oth+qual):(sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth),totOpexPct=ns?totOpex/ns:0,ebitda=(getPL("EBITDA")||gp-totOpex),ebitdaPct=ns?ebitda/ns:0;
     const deprRaw = mode === "forecast" ? (firstNonZero(getPL("Summary Flow - Up-Fronts"),getPL("Up-Fronts"),getPL("Up-Fronts Contable"),getPL("Up-front Fees (by Contract)")) + firstNonZero(getPL("Summary Flow - Hardware"),getPL("Hardware"),getPL("Hardware Contable")) + firstNonZero(getPL("Summary Flow - Software"),getPL("Software"),getPL("Software Contable")) + firstNonZero(getPL("Summary Flow - Regulatory"),getPL("Regulatory"),getPL("Regulatory Contable")) + firstNonZero(getPL("Depreciation"),getPL("Depreciation & Amortization"))) : firstNonZero(getOpex("Depreciation & Amortization"), getOpex("Depreciation"));
     const depr=(mode!=="forecast"&&yr===2026&&m===7&&deprRaw===0)?312632.57:deprRaw, deprPct=ns?depr/ns:0, ebit=ebitda-depr, ebitPct=ns?ebit/ns:0;
     const fi=getOpex("Financial Income"),fe=getOpex("Financial Expense"),totFin=fi+fe,netProfit=ebit-totFin,netProfitPct=ns?netProfit/ns:0;
@@ -602,7 +602,7 @@ export default function Dashboard() {
     PL_KEYS.forEach(k => {
       if (PCT_KEYS.has(k)) {
         // Recalculate percentage from totals
-        const numKey = k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda";
+        const numKey = k === "salesDiscountPct" ? "salesDiscount" : k === "salesReturnsPct" ? "salesReturns" : k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitdaPct" ? "ebitda" : k === "deprPct" ? "depr" : k === "ebitPct" ? "ebit" : k === "netProfitPct" ? "netProfit" : "ebitda";
         const num = monthly.reduce((s, row) => s + row[numKey], 0);
         const den = monthly.reduce((s, row) => s + row.ns, 0);
         totals[k] = den ? num / den : 0;
@@ -620,10 +620,10 @@ export default function Dashboard() {
       const fcMonthly = allM.map(m => buildPL(fd, CUR_YEAR, m, cm, "forecast"));
       const reMonthly = allM.map(m => buildPL(fd, CUR_YEAR, m, cm, "reales"));
       ytdFC[k] = PCT_KEYS.has(k) ?
-        (ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + fcMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) : 0) :
+        (ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + fcMonthly[m-1][k === "salesDiscountPct" ? "salesDiscount" : k === "salesReturnsPct" ? "salesReturns" : k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitdaPct" ? "ebitda" : k === "deprPct" ? "depr" : k === "ebitPct" ? "ebit" : k === "netProfitPct" ? "netProfit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + fcMonthly[m-1].ns, 0) : 0) :
         k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesInUnits,0) ? ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+fcMonthly[m-1].salesInUnits,0) : 0) : ytdM.reduce((s, m) => s + fcMonthly[m-1][k], 0);
       ytdRE[k] = PCT_KEYS.has(k) ?
-        (ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + reMonthly[m-1][k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitPct" ? "ebit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) : 0) :
+        (ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) ? ytdM.reduce((s, m) => s + reMonthly[m-1][k === "salesDiscountPct" ? "salesDiscount" : k === "salesReturnsPct" ? "salesReturns" : k === "gmPct" ? "gp" : k === "totOpexPct" ? "totOpex" : k === "ebitdaPct" ? "ebitda" : k === "deprPct" ? "depr" : k === "ebitPct" ? "ebit" : k === "netProfitPct" ? "netProfit" : "ebitda"], 0) / ytdM.reduce((s, m) => s + reMonthly[m-1].ns, 0) : 0) :
         k === "priceToDistributor" ? (ytdM.reduce((s,m)=>s+reMonthly[m-1].salesInUnits,0) ? ytdM.reduce((s,m)=>s+reMonthly[m-1].salesIn,0) / ytdM.reduce((s,m)=>s+reMonthly[m-1].salesInUnits,0) : 0) : ytdM.reduce((s, m) => s + reMonthly[m-1][k], 0);
       cmFC[k] = fcMonthly[cm-1][k];
       cmRE[k] = reMonthly[cm-1][k];
@@ -2479,16 +2479,19 @@ export default function Dashboard() {
               .filter(r=>!['Activo Fijo','Intangibles'].includes(r.name))
               .map(r=>{
                 const monthly=months.map(m=>Number(r.values?.[`${CUR_YEAR}-${String(m).padStart(2,'0')}`])||0);
-                const total=monthly.reduce((a,v)=>a+v,0);
-                return {cat:r.name==='Licencias de Moléculas'?'Molecule Licenses':r.name,monthly,total,pct:0};
+                const ytd=monthly.reduce((a,v)=>a+v,0);
+                const cutoff=`${CUR_YEAR}-${String(cm).padStart(2,'0')}`;
+                const historical=Object.entries(r.values||{}).reduce((a,[k,v])=>{const annual=/^\d{4}$/.test(k),monthlyKey=/^\d{4}-\d{2}$/.test(k);const include=annual?Number(k)<CUR_YEAR:(monthlyKey&&k<=cutoff);return include?a+(Number(v)||0):a;},0);
+                return {cat:r.name==='Licencias de Moléculas'?'Molecule Licenses':r.name,monthly,ytd,historical,pct:0};
               })
-              .filter(r=>Math.abs(r.total)>0.5)
-              .sort((a,b)=>Math.abs(b.total)-Math.abs(a.total));
-            const totalCapex=capexRows.reduce((a,r)=>a+r.total,0);
-            capexRows.forEach(r=>{r.pct=totalCapex?Math.round(r.total/totalCapex*100):0;});
+              .filter(r=>Math.abs(r.historical)>0.5)
+              .sort((a,b)=>Math.abs(b.historical)-Math.abs(a.historical));
+            const totalYTD=capexRows.reduce((a,r)=>a+r.ytd,0);
+            const totalCapex=capexRows.reduce((a,r)=>a+r.historical,0);
+            capexRows.forEach(r=>{r.pct=totalCapex?Math.round(r.historical/totalCapex*100):0;});
             const monthTotals=months.map((_,i)=>capexRows.reduce((a,r)=>a+r.monthly[i],0));
-            const csvHeader=['Category',...months.map(m=>MO[m-1]+' '+CUR_YEAR),'Total','% Total'].join(',')+'\n';
-            const csvRows=capexRows.map(r=>[r.cat,...r.monthly,r.total,r.pct+'%'].join(',')).join('\n');
+            const csvHeader=['Category',...months.map(m=>MO[m-1]+' '+CUR_YEAR),'YTD','Historical cumulative','% Historical'].join(',')+'\n';
+            const csvRows=capexRows.map(r=>[r.cat,...r.monthly,r.ytd,r.historical,r.pct+'%'].join(',')).join('\n');
             return (
               <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:10,padding:'14px 16px',borderTop:'3px solid #7C3AED'}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:8,flexWrap:'wrap'}}>
@@ -2496,9 +2499,9 @@ export default function Dashboard() {
                   <div style={{display:'flex',alignItems:'center',gap:10}}><button onClick={()=>{const b=new Blob([csvHeader+csvRows],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='capex_mensual.csv';a.click();}} style={{fontSize:9,padding:'4px 10px',background:'#7C3AED',color:'#fff',border:'none',borderRadius:5,cursor:'pointer'}}>⬇ CSV</button><div style={{fontSize:12,fontWeight:800,color:'#534AB7'}}>TOTAL {F(totalCapex)}</div></div>
                 </div>
                 <div style={{overflowX:'auto'}}><table style={{width:'100%',minWidth:760,borderCollapse:'collapse',fontSize:10}}>
-                  <thead><tr>{['Category',...months.map(m=>MO[m-1]),'Total','% Total'].map((h,i)=><th key={i} style={{fontSize:9,color:'#8A90A8',fontWeight:600,padding:'5px 7px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right',whiteSpace:'nowrap',position:i===0?'sticky':undefined,left:i===0?0:undefined,background:'#fff'}}>{h}</th>)}</tr></thead>
-                  <tbody>{capexRows.map((r,i)=><tr key={r.cat} style={{background:i%2===0?'#fff':'#fafbfe'}}><td style={{padding:'6px 7px',position:'sticky',left:0,background:i%2===0?'#fff':'#fafbfe',whiteSpace:'nowrap'}}>{r.cat}</td>{r.monthly.map((v,j)=><td key={j} style={{padding:'6px 7px',textAlign:'right',color:v<0?'#E24B4A':'#1a1a2e'}}>{Math.abs(v)<0.5?'—':F(v)}</td>)}<td style={{padding:'6px 7px',textAlign:'right',fontWeight:700,borderLeft:'1px solid #E4E8F2'}}>{F(r.total)}</td><td style={{padding:'6px 7px',textAlign:'right',color:'#534AB7',fontWeight:700}}>{r.pct}%</td></tr>)}
-                    <tr style={{background:'#f0f2fa',fontWeight:700}}><td style={{padding:'7px'}}>TOTAL</td>{monthTotals.map((v,i)=><td key={i} style={{padding:'7px',textAlign:'right'}}>{Math.abs(v)<0.5?'—':F(v)}</td>)}<td style={{padding:'7px',textAlign:'right',borderLeft:'1px solid #D0D5DD'}}>{F(totalCapex)}</td><td style={{padding:'7px',textAlign:'right',color:'#534AB7'}}>100%</td></tr>
+                  <thead><tr>{['Category',...months.map(m=>MO[m-1]),'YTD','Historical cumulative','% Hist.'].map((h,i)=><th key={i} style={{fontSize:9,color:'#8A90A8',fontWeight:600,padding:'5px 7px',borderBottom:'1px solid #E4E8F2',textAlign:i===0?'left':'right',whiteSpace:'nowrap',position:i===0?'sticky':undefined,left:i===0?0:undefined,background:'#fff'}}>{h}</th>)}</tr></thead>
+                  <tbody>{capexRows.map((r,i)=><tr key={r.cat} style={{background:i%2===0?'#fff':'#fafbfe'}}><td style={{padding:'6px 7px',position:'sticky',left:0,background:i%2===0?'#fff':'#fafbfe',whiteSpace:'nowrap'}}>{r.cat}</td>{r.monthly.map((v,j)=><td key={j} style={{padding:'6px 7px',textAlign:'right',color:v<0?'#E24B4A':'#1a1a2e'}}>{Math.abs(v)<0.5?'—':F(v)}</td>)}<td style={{padding:'6px 7px',textAlign:'right',fontWeight:700,borderLeft:'1px solid #E4E8F2'}}>{F(r.ytd)}</td><td style={{padding:'6px 7px',textAlign:'right',fontWeight:800,color:'#1E3A8A'}}>{F(r.historical)}</td><td style={{padding:'6px 7px',textAlign:'right',color:'#534AB7',fontWeight:700}}>{r.pct}%</td></tr>)}
+                    <tr style={{background:'#f0f2fa',fontWeight:700}}><td style={{padding:'7px'}}>TOTAL</td>{monthTotals.map((v,i)=><td key={i} style={{padding:'7px',textAlign:'right'}}>{Math.abs(v)<0.5?'—':F(v)}</td>)}<td style={{padding:'7px',textAlign:'right',borderLeft:'1px solid #D0D5DD'}}>{F(totalYTD)}</td><td style={{padding:'7px',textAlign:'right',fontWeight:800,color:'#1E3A8A'}}>{F(totalCapex)}</td><td style={{padding:'7px',textAlign:'right',color:'#534AB7'}}>100%</td></tr>
                   </tbody>
                 </table></div>
               </div>
