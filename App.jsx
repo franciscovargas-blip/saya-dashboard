@@ -1520,9 +1520,15 @@ export default function Dashboard() {
                 return {m:mo.m,burn};
               });
               const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
-              let burnAcumRun = 0;
-              const burnAccumMonths = burnMonths.map(x => ({m:x.m,accum:(burnAcumRun+=x.burn)}));
-              const burnAccumTotal = burnAccumMonths.length ? burnAccumMonths[burnAccumMonths.length-1].accum : 0;
+              // Histórico acumulado: enero conserva el cierre histórico aprobado; febrero en adelante suma el Burn mensual.
+              const BURN_HISTORICO_CIERRE_ENE_2026 = -86708794;
+              let burnAcumRun = BURN_HISTORICO_CIERRE_ENE_2026;
+              const burnAccumMonths = burnMonths.map((x,i) => {
+                if(i===0)return {m:x.m,accum:BURN_HISTORICO_CIERRE_ENE_2026};
+                burnAcumRun+=x.burn;
+                return {m:x.m,accum:burnAcumRun};
+              });
+              const burnAccumTotal = burnAccumMonths.length ? burnAccumMonths[burnAccumMonths.length-1].accum : BURN_HISTORICO_CIERRE_ENE_2026;
               const bs = {
                 wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
                 head:{marginBottom:12},
@@ -1771,12 +1777,15 @@ export default function Dashboard() {
                 return CUR_YEAR===2026&&approvedBurn2026[i]!=null?approvedBurn2026[i]:(cashBurn??rowBurn);
               });
               const bYTD = bArr.reduce((s,v)=>s+v,0);
-              const bCol = bYTD<0?"#E24B4A":"#065F46";
+              const BURN_HISTORICO_CIERRE_ENE_2026=-86708794;
+              let burnHist=BURN_HISTORICO_CIERRE_ENE_2026;
+              bArr.forEach((v,i)=>{if(i>0)burnHist+=v;});
+              const bCol = burnHist<0?"#E24B4A":"#065F46";
               return (<div style={kC(bCol)}>
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
                 <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN YTD</div>
                 <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(bYTD)}</div>
-                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Month {MO[cm-1]}: {F(bArr.length ? bArr[bArr.length-1] : 0)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Month {MO[cm-1]}: {F(bArr.length ? bArr[bArr.length-1] : 0)} · Historical: {F(burnHist)}</div>
               </div>);
             })()}
             {/* Intangible Assets */}
