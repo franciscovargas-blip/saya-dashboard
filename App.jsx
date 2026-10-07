@@ -346,7 +346,7 @@ const BurnDetailTable=({year,month})=>{
   const other=months.map((_,i)=>ending[i]==null||starting[i]==null?null:nz(ending[i])-nz(starting[i])-nz(revenue[i])-nz(opex[i])-nz(wc[i])-nz(capex[i])-nz(capital[i]));
   const otherActivities=combine(capital,other);
   const net=months.map((_,i)=>ending[i]==null||starting[i]==null?null:nz(ending[i])-nz(starting[i]));
-  // Burn aprobado: coincide exactamente con las tarjetas superiores Ene-Ago 2026.
+  // BURN_DYNAMIC_CASH_EX_FINANCING_V49_DETAIL — Ene-Ago aprobado; meses nuevos desde caja sin aportaciones.
   const approvedBurn2026=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
   const burnTotal=months.map((m,i)=>Number(year)===2026&&approvedBurn2026[i]!=null?approvedBurn2026[i]:(net[i]!=null?net[i]-nz(capital[i]):null));
   // Financing se presenta separado. Other Burn Adjustments absorbe solo partidas no clasificadas del Burn.
@@ -1504,17 +1504,25 @@ export default function Dashboard() {
         return (
           <div style={S.wrap}>
             {(()=>{
-              // Burn Mexico = Actividades de Operación + Actividades de Inversión + Otras variaciones no clasificadas
-              const burnMonths = rows.map(mo => ({ m: mo.m, burn: (mo.totalOperacion || 0) + (mo.totalInversion || 0) + (mo.otraVariacion || 0) }));
-              const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
-              const BURN_ACUM_ENE = -86708794;
-              let burnAcumRun = BURN_ACUM_ENE;
-              const burnAccumMonths = burnMonths.map((x, i) => {
-                if (i === 0) return { m: x.m, accum: BURN_ACUM_ENE };
-                burnAcumRun += x.burn;
-                return { m: x.m, accum: burnAcumRun };
+              // BURN_DYNAMIC_CASH_EX_FINANCING_V49 — Ene-Ago aprobado; meses nuevos desde caja sin aportaciones.
+              const approvedBurn2026=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
+              const cfSeries=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
+              const cfAt=(name,m)=>{
+                const serie=cfSeries.find(x=>x.name===name),key=`${CUR_YEAR}-${String(m).padStart(2,"0")}`;
+                const value=serie?.values?.[key];
+                return value==null||value===""?null:Number(value);
+              };
+              const burnMonths = rows.map((mo,i) => {
+                const starting=cfAt("Saldo Inicial",mo.m),ending=cfAt("Saldo Final",mo.m),capital=cfAt("Aportaciones de Capital",mo.m)||0;
+                const cashBurn=Number.isFinite(starting)&&Number.isFinite(ending)?ending-starting-capital:null;
+                const rowBurn=(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0);
+                const burn=CUR_YEAR===2026&&approvedBurn2026[i]!=null?approvedBurn2026[i]:(cashBurn??rowBurn);
+                return {m:mo.m,burn};
               });
-              const burnAccumTotal = burnAccumMonths.length ? burnAccumMonths[burnAccumMonths.length-1].accum : BURN_ACUM_ENE;
+              const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
+              let burnAcumRun = 0;
+              const burnAccumMonths = burnMonths.map(x => ({m:x.m,accum:(burnAcumRun+=x.burn)}));
+              const burnAccumTotal = burnAccumMonths.length ? burnAccumMonths[burnAccumMonths.length-1].accum : 0;
               const bs = {
                 wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
                 head:{marginBottom:12},
@@ -1752,13 +1760,18 @@ export default function Dashboard() {
             ))}
             {/* BURN MEXICO: histrico como primario, YTD como secundario */}
             {cashFlow && (() => {
-              const bArr = cashFlow.months.slice(0,cm).map(mo=>(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0));
+              // BURN_DYNAMIC_CASH_EX_FINANCING_V49_EXECUTIVE
+              const approvedBurn2026=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
+              const cfSeries=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
+              const cfAt=(name,m)=>{const serie=cfSeries.find(x=>x.name===name),key=`${CUR_YEAR}-${String(m).padStart(2,"0")}`;const value=serie?.values?.[key];return value==null||value===""?null:Number(value);};
+              const bArr = cashFlow.months.slice(0,cm).map((mo,i)=>{
+                const starting=cfAt("Saldo Inicial",mo.m),ending=cfAt("Saldo Final",mo.m),capital=cfAt("Aportaciones de Capital",mo.m)||0;
+                const cashBurn=Number.isFinite(starting)&&Number.isFinite(ending)?ending-starting-capital:null;
+                const rowBurn=(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0);
+                return CUR_YEAR===2026&&approvedBurn2026[i]!=null?approvedBurn2026[i]:(cashBurn??rowBurn);
+              });
               const bYTD = bArr.reduce((s,v)=>s+v,0);
-              const BURN_ACUM_ENE = -86708794;
-              let burnRun = BURN_ACUM_ENE;
-              bArr.forEach((v,i) => { if(i>0) burnRun += v; });
-              const burnHist = burnRun;
-              const bCol = burnHist<0?"#E24B4A":"#065F46";
+              const bCol = bYTD<0?"#E24B4A":"#065F46";
               return (<div style={kC(bCol)}>
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
                 <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN YTD</div>
@@ -2321,13 +2334,7 @@ export default function Dashboard() {
       </div>
 {/* */}
 
-
-
-
-
-
-        );
-      })()}      </>
+      </>
       }
 {/* */}
       {mainTab === "pnl-anual" && (
