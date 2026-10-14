@@ -469,7 +469,7 @@ export default function Dashboard() {
   const summaryPartnerOptions=React.useMemo(()=>[...new Set(summaryStatusRows.map(partnerOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b)),[summaryStatusRows]);
   React.useEffect(()=>{setSummaryPartners(prev=>prev.filter(p=>summaryPartnerOptions.includes(p)));},[summaryProductStatuses,selChannels,selAreas,summaryPartnerOptions.join('|')]);
   const summaryPartnerRows=React.useMemo(()=>summaryPartners.length===0?summaryStatusRows:summaryStatusRows.filter(r=>summaryPartners.includes(partnerOf(r))),[summaryStatusRows,summaryPartners]);
-  const summaryMoleculeOptions=React.useMemo(()=>[...new Set(summaryPartnerRows.map(r=>consolidatedMol(r[4])).filter(m=>m&&m!=='Consolidado'))].sort(),[summaryPartnerRows]);
+  const summaryMoleculeOptions=React.useMemo(()=>[...new Set(summaryPartnerRows.filter(r=>Math.abs(Number(r[9]||0))>.0001).map(r=>consolidatedMol(r[4])).filter(m=>m&&m!=='Consolidado'))].sort(),[summaryPartnerRows]); // SUMMARY_MOLECULES_WITH_DATA_V76
   React.useEffect(()=>{setSummaryMols(prev=>prev.filter(m=>summaryMoleculeOptions.includes(m)));},[summaryProductStatuses,selChannels,selAreas,summaryPartners,summaryMoleculeOptions.join('|')]);
   const summaryRows=React.useMemo(()=>summaryMols.length===0?summaryPartnerRows:summaryPartnerRows.filter(r=>summaryMols.includes(consolidatedMol(r[4]))),[summaryPartnerRows,summaryMols]);
   const fd = useMemo(() => {
@@ -481,7 +481,7 @@ export default function Dashboard() {
   const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
   const allM = Array.from({ length: 12 }, (_, i) => i + 1);
   const allYears = [...new Set(D.map(r=>r[2]))].sort();
-  const pnlYears = view === "reales" ? [...new Set(D.filter(r=>r[1]==="Reales").map(r=>r[2]))].sort() : [...new Set(D.filter(r=>r[1]==="Forecast").map(r=>r[2]))].sort();
+  const pnlYears = [...new Set(summaryRows.filter(r=>Math.abs(Number(r[9]||0))>.0001&&(view==="reales"?r[1]==="Reales":view==="forecast"?r[1]==="Forecast":(r[2]<CUR_YEAR?r[1]==="Reales":r[2]===CUR_YEAR?["Reales","Forecast"].includes(r[1]):r[1]==="Forecast"))).map(r=>r[2]))].sort(); // SUMMARY_FILTERED_YEARS_V76
   // Fast index for Summary O(1) lookups instead of O(7756) filter per call
   const _didx = React.useMemo(() => {
     const idx = {};
@@ -2484,7 +2484,7 @@ export default function Dashboard() {
             <thead>
               <tr>
                 <th style={{textAlign:"left",padding:"8px 10px",background:"#F4F6FB",fontWeight:600,fontSize:13,borderBottom:"2px solid #E4E8F2",position:"sticky",left:0,minWidth:200,zIndex:2}}>P&L Line</th>
-                {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => (
+                {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => (
                   <React.Fragment key={yr}>
                     <th
                       style={{textAlign:"right",padding:"8px 14px",background:"#F4F6FB",fontWeight:700,fontSize:14,borderBottom:"2px solid #E4E8F2",cursor:"pointer",whiteSpace:"nowrap",userSelect:"none",color:"#185FA5"}}
@@ -2517,17 +2517,17 @@ export default function Dashboard() {
                   <React.Fragment key={k}>
                     {[ ["salesIn","Net Sales"], ["cogs","Gross Profit"], ["sw","Operating Expenses"], ["capHardware","Capital Expenditure"], ["totalExpenses","Total Expenses"], ["ebitda","EBITDA"] ].filter(([kk])=>k===kk).map(([kk,label])=>(
                       <tr key={"sep-"+kk}>
-                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>{label}</td>
+                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>{label}</td>
                       </tr>
                     ))}
                     {k==="depr" && (
                       <tr key="sep-depr">
-                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>Amortization & depreciation</td>
+                        <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>Amortization & depreciation</td>
                       </tr>
                     )}
                     <tr style={{...rowStyle,cursor:canSummaryMolExpand?'pointer':'default'}} onClick={()=>canSummaryMolExpand&&setExpMolRows(p=>({...p,[molExpKey]:!p[molExpKey]}))}>
                       <td style={tdLbl}>{canSummaryMolExpand&&<span data-summary-molecule-arrow="true" style={{fontSize:10,marginRight:6}}>{expMolRows[molExpKey]?"▼":"▶"}</span>}{PL_LABELS[k]}</td>
-                      {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
+                      {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
                         const isExp = expPnlAnn[yr];
                         const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "consolidado" : "forecast");
                         const fyVal = allM.reduce((s,m) => s + bpl(yr,m,modeForYr)[k], 0);
@@ -2549,17 +2549,17 @@ export default function Dashboard() {
                         );
                       })}
                     {(()=>{
-                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));});
+                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));});
                       const tVal=ay.reduce((s,yr)=>{
-                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */
                         return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[k],0);
                       },0);
                       const tNs=ay.reduce((s,yr)=>{
-                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */
                         return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md).ns,0);
                       },0);
                       const tPct=isPct&&tNs?ay.reduce((s,yr)=>{
-                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");
+                        const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */
                         return s+allM.reduce((sm,m)=>sm+bpl(yr,m,md)[(k==="gmPct"?"gp":k.replace("Pct",""))],0);
                       },0)/tNs:null;
                       return <td key="total" style={{textAlign:"right",padding:"8px 14px",fontWeight:700,borderBottom:"1px solid #B0B8D0",borderLeft:"3px solid #6366F1",background:"#EEF2FF",color:k==="netProfit"?"#4C1D95":"#1E2A3A",fontSize:14,whiteSpace:"nowrap"}}>{isPct?P(tPct):F(tVal)}</td>;
@@ -2567,12 +2567,12 @@ export default function Dashboard() {
                     </tr>
                     {/* SUMMARY_MOLECULE_ROWS_V72 */}
                     {canSummaryMolExpand&&expMolRows[molExpKey]&&summaryMoleculeOptions.map(mol=>{
-                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Math.abs(Number(bpl(yr,m,md,mol)[k]||0))>.0001);});
+                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */return allM.some(m=>Math.abs(Number(bpl(yr,m,md,mol)[k]||0))>.0001);});
                       if(!ay.length)return null;
                       const grand=ay.reduce((s,yr)=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast");return s+allM.reduce((a,m)=>a+Number(bpl(yr,m,md,mol)[k]||0),0)},0);
                       return <tr key={"summary-mol-"+k+"|"+mol} style={{background:'#FBFCFF'}} onClick={e=>e.stopPropagation()}>
                         <td style={{...tdLbl,paddingLeft:30,fontSize:10,fontWeight:500,color:'#667085',background:'#FBFCFF'}}>↳ {mol}</td>
-                        {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast");const annual=allM.reduce((a,m)=>a+Number(bpl(yr,m,md,mol)[k]||0),0);return <React.Fragment key={yr}><td style={{textAlign:'right',padding:'6px 10px',fontSize:10,color:annual<0?'#E24B4A':'#667085'}}>{F(annual)}</td>{expPnlAnn[yr]&&allM.map((m,mi)=>{const val=bpl(yr,m,md,mol)[k];return <td key={mi} style={{textAlign:'right',padding:'5px 6px',fontSize:9,color:Number(val)<0?'#E24B4A':Number(val)===0?'#ddd':'#667085'}}>{F(val)}</td>})}</React.Fragment>})}
+                        {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); /* SUMMARY_YEAR_VISIBILITY_V75 */return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast");const annual=allM.reduce((a,m)=>a+Number(bpl(yr,m,md,mol)[k]||0),0);return <React.Fragment key={yr}><td style={{textAlign:'right',padding:'6px 10px',fontSize:10,color:annual<0?'#E24B4A':'#667085'}}>{F(annual)}</td>{expPnlAnn[yr]&&allM.map((m,mi)=>{const val=bpl(yr,m,md,mol)[k];return <td key={mi} style={{textAlign:'right',padding:'5px 6px',fontSize:9,color:Number(val)<0?'#E24B4A':Number(val)===0?'#ddd':'#667085'}}>{F(val)}</td>})}</React.Fragment>})}
                         <td style={{textAlign:'right',padding:'6px 10px',fontSize:10,fontWeight:700,borderLeft:'3px solid #6366F1',background:'#EEF2FF'}}>{F(grand)}</td>
                       </tr>
                     })}
