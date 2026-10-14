@@ -434,6 +434,7 @@ export default function Dashboard() {
   const [expB, setExpB] = useState({});
   const [expArea, setExpArea] = useState({});
   const [expPL, setExpPL] = useState({});
+  const [expMolRows, setExpMolRows] = useState({});
   const [expCF, setExpCF] = useState({});
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
   const [mainTab, setMainTab] = useState("executive");
@@ -484,7 +485,7 @@ export default function Dashboard() {
   // Fast index for Summary O(1) lookups instead of O(7756) filter per call
   const _didx = React.useMemo(() => {
     const idx = {};
-    summaryRows.forEach(r => { const k = r[0]+'|'+r[1]+'|'+r[2]+'|'+r[3]; idx[k] = (idx[k]||0) + (r[9]||0); });
+    summaryRows.forEach(r => { const k = r[0]+'|'+r[1]+'|'+r[2]+'|'+r[3]; idx[k] = (idx[k]||0) + (r[9]||0); const mk='@'+consolidatedMol(r[4])+'|'+k; idx[mk]=(idx[mk]||0)+(r[9]||0); }); // SUMMARY_MOLECULE_INDEX_V72
     return idx;
   }, [summaryRows]);
   const _bplC = React.useRef({});
@@ -611,11 +612,11 @@ export default function Dashboard() {
   },[cm,mainTab]);
   const activeBeMol = beMol||(beData.mols[0]||"");
   const beMolData = beData.data[activeBeMol]||{};
-  const bpl = (yr, m, mode) => {
+  const bpl = (yr, m, mode, mol=null) => {
     // FLOW_PNL_V66 — only non-accounting flow lines feed Summary.
-    const k = yr+'-'+m+'-'+mode;
+    const k = (mol||'*')+'-'+yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
-    const gVf=(pl,tp)=>(_didx[pl+'|'+tp+'|'+yr+'|'+m]||0);
+    const gVf=(pl,tp)=>(_didx[(mol?('@'+mol+'|'):'')+pl+'|'+tp+'|'+yr+'|'+m]||0);
     const getPL=pl=>mode==="forecast"?gVf(pl,"Forecast"):mode==="reales"?(m<=cm?gVf(pl,"Reales"):0):(m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"));
     const firstNonZero=(...vals)=>vals.find(v=>v!==0)||0;
     const salesInUnits=firstNonZero(getPL("Sell In Units"),getPL("Sales In Units"));
@@ -1270,6 +1271,7 @@ export default function Dashboard() {
                 const isBold = BOLD_KEYS.has(k);
                 const isOpex = OPEX_KEY_SET.has(k);
                 const code = OPEX_CODE_MAP[k];
+                const molKey="fs|"+k; const canMolExpand=!isPct;
                 if (k === "salesInUnits") tableRows.push(<tr key="commercial-sep"><td colSpan={14} style={SEP_STYLE}>Commercial Volume & Price</td></tr>);
                 if (k === "salesIn") tableRows.push(<tr key="sales-sep"><td colSpan={14} style={SEP_STYLE}>Net Sales</td></tr>);
                 if (k === "cogs") tableRows.push(<tr key="gross-sep"><td colSpan={14} style={SEP_STYLE}>Gross Profit</td></tr>);
@@ -1278,15 +1280,29 @@ export default function Dashboard() {
                 if (k === "depr") tableRows.push(<tr key="amort-sep"><td colSpan={14} style={SEP_STYLE}>Amortization & depreciation</td></tr>);
                 /* fin-sep removed */
                 tableRows.push(
-                  <tr key={"row-"+k} style={k==="sellOut" || k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
+                  <tr key={"row-"+k} style={k==="sellOut" || k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: canMolExpand ? "pointer" : "default" }} onClick={() => canMolExpand && setExpMolRows(p=>({...p,[molKey]:!p[molKey]}))}>
                     <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: (isOpex && k !== "cogs") ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: (k==="sellOut" || k==="sellOutValue") ? "#FFF7ED" : isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: (isOpex && k !== "cogs") ? 16 : 6 }}>
-                      {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
+                      {canMolExpand && <span data-molecule-arrow="true" style={{fontSize:9,marginRight:5}}>{expMolRows[molKey] ? "▼" : "▶"}</span>}
                       {PL_LABELS[k]}
                     </td>
                     {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct, k)}</td>)}
                     <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct, k)}</td>
                   </tr>
                 );
+                // FINANCIAL_MOLECULE_ROWS_V72
+                if(canMolExpand && expMolRows[molKey]){
+                  [...new Set(fd.map(r=>mapMol(r[4])).filter(m=>m&&m!=="Consolidado"&&m!=="--"&&m!=="—"))].sort().forEach(mol=>{
+                    const mfd=fd.filter(r=>mapMol(r[4])===mol);
+                    const vals=allM.map(mm=>buildPL(mfd,CUR_YEAR,mm,cm,view)[k]);
+                    const total=vals.reduce((a,b)=>a+Number(b||0),0);
+                    if(vals.every(v=>Math.abs(Number(v||0))<.0001))return;
+                    tableRows.push(<tr key={"mol-"+k+"|"+mol} style={{background:'#FBFCFF'}}>
+                      <td style={{...td,paddingLeft:28,fontSize:9,color:'#667085',position:'sticky',left:0,background:'#FBFCFF'}}>↳ {mol}</td>
+                      {vals.map((v,mi)=><td key={mi} style={{...td,textAlign:'right',fontSize:9,color:Number(v)<0?'#E24B4A':Number(v)===0?'#ddd':'#667085'}}>{fv(v,false,k)}</td>)}
+                      <td style={{...td,textAlign:'right',fontSize:9,fontWeight:600,borderLeft:'2px solid #E4E8F2'}}>{fv(total,false,k)}</td>
+                    </tr>);
+                  });
+                }
                 // Drill-down for OpEx rows
                 if (isOpex && expOpex[k] && code) {
                   const codeData = k === "depr" ? fd.filter(r => ["Up-Fronts","Hardware","Software","Regulatory","Depreciation","Depreciation & Amortization"].includes(normPL(r[0]))) : fd.filter(r => normPL(r[0]) === code);
@@ -2397,12 +2413,17 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
+          <div data-summary-partner-dropdown="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:12,padding:12,marginBottom:10,maxWidth:320}}>
+            <div style={{fontSize:11,color:'#667085',fontWeight:800,marginBottom:5}}>Partner</div>
+            <select value={summaryPartners[0]||'All'} onChange={e=>setSummaryPartners(e.target.value==='All'?[]:[e.target.value])} style={{width:'100%',background:'#F1F4F9',border:'1px solid #E4E8F2',borderRadius:12,padding:10,fontSize:14,fontFamily:'inherit'}}>
+              <option>All</option>{summaryPartnerOptions.map(o=><option key={o}>{o}</option>)}
+            </select>
+          </div>
           <div data-summary-segmentation="true" data-multiselect="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderTop:'3px solid #7C3AED',borderRadius:12,padding:'12px 14px',marginBottom:14}}>
             {[
               ['PRODUCT STATUS',productStatusOptions,summaryProductStatuses,setSummaryProductStatuses],
               ['CHANNEL',channelOptions,selChannels,setSelChannels],
               ['THERAPEUTIC AREA',areas,selAreas,setSelAreas],
-              ['PARTNER',summaryPartnerOptions,summaryPartners,setSummaryPartners],
               ['MOLECULE',summaryMoleculeOptions,summaryMols,setSummaryMols]
             ].map(([label,opts,selected,setSelected],ri)=><div key={label} style={{display:'grid',gridTemplateColumns:'145px 1fr',gap:10,alignItems:'start',padding:'7px 0',borderTop:ri?'1px dashed #E4E8F2':'none'}}>
               <div style={{fontSize:9,fontWeight:900,color:'#667085',letterSpacing:.7,paddingTop:6}}>{label}</div>
@@ -2506,6 +2527,7 @@ export default function Dashboard() {
                     ? {background:"#fafbfe",borderTop:"1px solid #E4E8F2"}
                     : {background: isBold ? "#F4F6FB" : "transparent"};
                 const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:14,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
+                const molExpKey="summary|"+k; const canSummaryMolExpand=!isPct;
                 return (
                   <React.Fragment key={k}>
                     {[ ["salesIn","Net Sales"], ["cogs","Gross Profit"], ["sw","Operating Expenses"], ["capHardware","Capital Expenditure"], ["totalExpenses","Total Expenses"], ["ebitda","EBITDA"] ].filter(([kk])=>k===kk).map(([kk,label])=>(
@@ -2518,8 +2540,8 @@ export default function Dashboard() {
                         <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>Amortization & depreciation</td>
                       </tr>
                     )}
-                    <tr style={rowStyle}>
-                      <td style={tdLbl}>{PL_LABELS[k]}</td>
+                    <tr style={{...rowStyle,cursor:canSummaryMolExpand?'pointer':'default'}} onClick={()=>canSummaryMolExpand&&setExpMolRows(p=>({...p,[molExpKey]:!p[molExpKey]}))}>
+                      <td style={tdLbl}>{canSummaryMolExpand&&<span data-summary-molecule-arrow="true" style={{fontSize:10,marginRight:6}}>{expMolRows[molExpKey]?"▼":"▶"}</span>}{PL_LABELS[k]}</td>
                       {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr => {
                         const isExp = expPnlAnn[yr];
                         const modeForYr = view==="reales" ? "reales" : view==="forecast" ? "forecast" : (yr < CUR_YEAR ? "reales" : yr === CUR_YEAR ? "consolidado" : "forecast");
@@ -2558,6 +2580,17 @@ export default function Dashboard() {
                       return <td key="total" style={{textAlign:"right",padding:"8px 14px",fontWeight:700,borderBottom:"1px solid #B0B8D0",borderLeft:"3px solid #6366F1",background:"#EEF2FF",color:k==="netProfit"?"#4C1D95":"#1E2A3A",fontSize:14,whiteSpace:"nowrap"}}>{isPct?P(tPct):F(tVal)}</td>;
                     })()}
                     </tr>
+                    {/* SUMMARY_MOLECULE_ROWS_V72 */}
+                    {canSummaryMolExpand&&expMolRows[molExpKey]&&summaryMoleculeOptions.map(mol=>{
+                      const ay=pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Math.abs(Number(bpl(yr,m,md,mol)[k]||0))>.0001);});
+                      if(!ay.length)return null;
+                      const grand=ay.reduce((s,yr)=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast");return s+allM.reduce((a,m)=>a+Number(bpl(yr,m,md,mol)[k]||0),0)},0);
+                      return <tr key={"summary-mol-"+k+"|"+mol} style={{background:'#FBFCFF'}} onClick={e=>e.stopPropagation()}>
+                        <td style={{...tdLbl,paddingLeft:30,fontSize:10,fontWeight:500,color:'#667085',background:'#FBFCFF'}}>↳ {mol}</td>
+                        {pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).map(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast");const annual=allM.reduce((a,m)=>a+Number(bpl(yr,m,md,mol)[k]||0),0);return <React.Fragment key={yr}><td style={{textAlign:'right',padding:'6px 10px',fontSize:10,color:annual<0?'#E24B4A':'#667085'}}>{F(annual)}</td>{expPnlAnn[yr]&&allM.map((m,mi)=>{const val=bpl(yr,m,md,mol)[k];return <td key={mi} style={{textAlign:'right',padding:'5px 6px',fontSize:9,color:Number(val)<0?'#E24B4A':Number(val)===0?'#ddd':'#667085'}}>{F(val)}</td>})}</React.Fragment>})}
+                        <td style={{textAlign:'right',padding:'6px 10px',fontSize:10,fontWeight:700,borderLeft:'3px solid #6366F1',background:'#EEF2FF'}}>{F(grand)}</td>
+                      </tr>
+                    })}
                   </React.Fragment>
                 );
               })}
