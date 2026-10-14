@@ -442,6 +442,7 @@ export default function Dashboard() {
   const [portfolioFilters, setPortfolioFilters] = useState({});
   const [selChannels, setSelChannels] = useState([]);
   const [summaryProductStatuses, setSummaryProductStatuses] = useState([]);
+  const [summaryPartners, setSummaryPartners] = useState([]);
   const [summaryMols, setSummaryMols] = useState([]);
   const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
@@ -463,9 +464,13 @@ export default function Dashboard() {
   const globalRows=React.useMemo(()=>D.filter(r=>globalMolAllowed(r[4])),[globalMeta,selAreas,selChannels]);
   const allProductStatusesSelected=summaryProductStatuses.length===productStatusOptions.length;
   const summaryStatusRows=React.useMemo(()=>(summaryProductStatuses.length===0||allProductStatusesSelected)?globalRows:globalRows.filter(r=>summaryProductStatuses.includes(metaForMol(r[4]).status)),[globalRows,summaryProductStatuses,globalMeta,allProductStatusesSelected]);
-  const summaryMoleculeOptions=React.useMemo(()=>[...new Set(summaryStatusRows.map(r=>consolidatedMol(r[4])).filter(m=>m&&m!=='Consolidado'))].sort(),[summaryStatusRows]);
-  React.useEffect(()=>{setSummaryMols(prev=>prev.filter(m=>summaryMoleculeOptions.includes(m)));},[summaryProductStatuses,selChannels,selAreas,summaryMoleculeOptions.join('|')]);
-  const summaryRows=React.useMemo(()=>summaryMols.length===0?summaryStatusRows:summaryStatusRows.filter(r=>summaryMols.includes(consolidatedMol(r[4]))),[summaryStatusRows,summaryMols]);
+  const partnerOf=r=>{const p=String(r?.[8]||'').trim();return (!p||p==='--'||p==='—'||p==='Consolidado')?'':p;};
+  const summaryPartnerOptions=React.useMemo(()=>[...new Set(summaryStatusRows.map(partnerOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b)),[summaryStatusRows]);
+  React.useEffect(()=>{setSummaryPartners(prev=>prev.filter(p=>summaryPartnerOptions.includes(p)));},[summaryProductStatuses,selChannels,selAreas,summaryPartnerOptions.join('|')]);
+  const summaryPartnerRows=React.useMemo(()=>summaryPartners.length===0?summaryStatusRows:summaryStatusRows.filter(r=>summaryPartners.includes(partnerOf(r))),[summaryStatusRows,summaryPartners]);
+  const summaryMoleculeOptions=React.useMemo(()=>[...new Set(summaryPartnerRows.map(r=>consolidatedMol(r[4])).filter(m=>m&&m!=='Consolidado'))].sort(),[summaryPartnerRows]);
+  React.useEffect(()=>{setSummaryMols(prev=>prev.filter(m=>summaryMoleculeOptions.includes(m)));},[summaryProductStatuses,selChannels,selAreas,summaryPartners,summaryMoleculeOptions.join('|')]);
+  const summaryRows=React.useMemo(()=>summaryMols.length===0?summaryPartnerRows:summaryPartnerRows.filter(r=>summaryMols.includes(consolidatedMol(r[4]))),[summaryPartnerRows,summaryMols]);
   const fd = useMemo(() => {
     let d = globalRows;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[4])));
@@ -2397,6 +2402,7 @@ export default function Dashboard() {
               ['PRODUCT STATUS',productStatusOptions,summaryProductStatuses,setSummaryProductStatuses],
               ['CHANNEL',channelOptions,selChannels,setSelChannels],
               ['THERAPEUTIC AREA',areas,selAreas,setSelAreas],
+              ['PARTNER',summaryPartnerOptions,summaryPartners,setSummaryPartners],
               ['MOLECULE',summaryMoleculeOptions,summaryMols,setSummaryMols]
             ].map(([label,opts,selected,setSelected],ri)=><div key={label} style={{display:'grid',gridTemplateColumns:'145px 1fr',gap:10,alignItems:'start',padding:'7px 0',borderTop:ri?'1px dashed #E4E8F2':'none'}}>
               <div style={{fontSize:9,fontWeight:900,color:'#667085',letterSpacing:.7,paddingTop:6}}>{label}</div>
@@ -2412,6 +2418,7 @@ export default function Dashboard() {
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
           </div>
+          {view!=='forecast'&&<div data-irr-history-warning="true" style={{margin:'0 0 10px',padding:'8px 11px',borderRadius:8,background:'#FFF7ED',border:'1px solid #FED7AA',color:'#9A3412',fontSize:10,fontWeight:600}}>IRR note: Actuals before 2026 are not loaded. Use Forecast for a complete comparable investment horizon.</div>}
           {/* KPI cards */}
           {(()=>{
             const modeForYear=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':yr===CUR_YEAR?'consolidado':'forecast');
@@ -2525,7 +2532,7 @@ export default function Dashboard() {
                               {isPct ? P(fyPct) : F(fyVal)}
                             </td>
                             {isExp && allM.map((m,mi) => {
-                              const mNum = Number(m); const mMode = view==="reales" ? "reales" : view==="forecast" ? "forecast" : "consolidado";
+                              const mNum = Number(m); const mMode = modeForYr; // MONTHLY_MODE_BY_YEAR_V71
                               const isReal = mMode==="consolidado" ? Number(m)<=cm : mMode==="reales"; const v = bpl(yr,m,mMode)[k];
                               const vNs = bpl(yr,m,mMode).ns;
                               const vPct = isPct && vNs ? bpl(yr,m,mMode)[(k==="gmPct"?"gp":k.replace("Pct",""))]/vNs : null;
