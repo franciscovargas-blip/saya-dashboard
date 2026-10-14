@@ -2404,6 +2404,29 @@ export default function Dashboard() {
           </div>
           {/* KPI cards */}
           {(()=>{
+            const modeForYear=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':yr===CUR_YEAR?'consolidado':'forecast');
+            const timeline=pnlYears.flatMap(yr=>allM.map(m=>({yr,m,ebitda:bpl(yr,m,modeForYear(yr)).ebitda}))).sort((a,b)=>a.yr-b.yr||a.m-b.m);
+            let startIdx=timeline.findIndex(x=>x.ebitda<-.01);if(startIdx<0)startIdx=timeline.findIndex(x=>Math.abs(x.ebitda)>.01);
+            const life=startIdx<0?[]:timeline.slice(startIdx);
+            const peakNeed=arr=>{let run=0,min=0;arr.forEach(x=>{run+=Number(x.ebitda||0);if(run<min)min=run;});return Math.abs(min);};
+            const first24=life.slice(0,24),next24=life.slice(24,48),investment24=peakNeed(first24),investmentNext24=peakNeed(next24);
+            let running=0,seenNegative=false,be=null;
+            life.forEach((x,i)=>{if(be)return;running+=Number(x.ebitda||0);if(running<0)seenNegative=true;if(running>0&&(seenNegative||i===0))be={...x,months:i+1};});
+            let recovery=0,payback=null;
+            life.slice(24).forEach((x,i)=>{if(payback)return;recovery+=Number(x.ebitda||0);if(recovery>=investment24)payback={...x,monthsFromStart:i+25,monthsAfter24:i+1};});
+            const licenseFees=pnlYears.reduce((sy,yr)=>sy+allM.reduce((sm,m)=>sm+(_didx['Summary Flow - Up-Fronts|Forecast|'+yr+'|'+m]||0),0),0);
+            const money=v=>{const n=Math.abs(Number(v||0)),sgn=v<0?'-':'';return sgn+'$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':Math.round(n).toLocaleString('en-US'));};
+            const date=x=>x?MO[x.m-1]+' '+x.yr:'N/A';
+            const cards=[
+              {label:'Investment · First 24 Months',value:money(investment24),sub:startIdx<0?'No EBITDA data':'Peak cumulative EBITDA deficit',tip:'Maximum funding requirement, calculated as the absolute value of the lowest cumulative EBITDA balance during months 1–24. The period starts with the first negative EBITDA month.'},
+              {label:'Investment · Months 25–48',value:money(investmentNext24),sub:life.length<25?'Insufficient time horizon':'Peak additional EBITDA deficit',tip:'Additional funding requirement during months 25–48. Cumulative EBITDA is reset at month 25 to isolate the second two-year period.'},
+              {label:'License Fees',value:money(licenseFees),sub:'Summary Flow - Up-Fronts',tip:'Total forecast value of Summary Flow - Up-Fronts for the current Product Status, Channel, Therapeutic Area, and Molecule filters.'},
+              {label:'EBITDA Break-even',value:date(be),sub:be?be.months+' months since first expense':'Not reached',tip:'First month when cumulative EBITDA becomes positive after previously being negative. The month count starts with the first expense.'},
+              {label:'Payback · 24M Investment',value:date(payback),sub:payback?payback.monthsFromStart+' months from start · '+payback.monthsAfter24+' after month 24':'Not recovered',tip:'First month after month 24 when cumulative EBITDA generated from month 25 onward recovers the funding requirement calculated for the first 24 months.'}
+            ];
+            return <div data-summary-investment-kpis="true" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:10,margin:'10px 0 18px'}}>{cards.map((c,i)=><div key={c.label} title={c.tip} aria-label={c.label+': '+c.tip} style={{background:'#fff',border:'1px solid #E4E8F2',borderTop:'3px solid '+['#2563EB','#4F46E5','#0F766E','#059669','#D97706'][i],borderRadius:11,padding:'12px 14px',minHeight:88,cursor:'help'}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,fontSize:9,color:'#667085',fontWeight:800,textTransform:'uppercase',letterSpacing:.4}}><span>{c.label}</span><span title={c.tip} style={{fontSize:12,color:'#98A2B3',fontWeight:700}}>ⓘ</span></div><div style={{fontSize:20,fontWeight:800,color:'#1F2937',marginTop:6}}>{c.value}</div><div style={{fontSize:9,color:'#8A90A8',marginTop:4}}>{c.sub}</div></div>)}</div>;
+          })()}
+          {(()=>{
             const RATE=0.1151;
             const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':yr===CUR_YEAR?'consolidado':'forecast');
             const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
