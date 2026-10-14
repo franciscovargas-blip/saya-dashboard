@@ -437,15 +437,31 @@ export default function Dashboard() {
   const [beMol, setBeMol] = React.useState("");
   const [beDelay, setBeDelay] = React.useState(3);
   const [portfolioFilters, setPortfolioFilters] = useState({});
+  const [selChannels, setSelChannels] = useState([]);
+  const [summaryProductStatus, setSummaryProductStatus] = useState("All");
   const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
+  const globalMeta = React.useMemo(() => {
+    const normChannel=v=>{const x=String(v||'').trim(),k=x.toLowerCase();if(k.includes('priv'))return 'Privado';if(k.includes('pub'))return 'Público';return x||'--';};
+    const meta={}; const ensure=m=>meta[m]||(meta[m]={areas:new Set(),channels:new Set(),explicitStatus:'',actualSales:false,forecastSales:false});
+    (typeof CATALOG!=='undefined'?CATALOG:[]).forEach(c=>{const m=c.Molecula||c.Molecule||c['Molecule:'];if(!m)return;const z=ensure(m),a=c['Therapeutic Area']||c.Area,ch=c.Channel,ps=c['Product Status'];if(a)z.areas.add(String(a));if(ch)z.channels.add(normChannel(ch));if(ps)z.explicitStatus=String(ps);});
+    (typeof INPUTS!=='undefined'?INPUTS:[]).forEach(i=>{const m=i.Molecula||i.Molecule;if(!m)return;const z=ensure(m),k=String(i.Input||'').trim().toLowerCase(),v=i.Value||i.Valor;if(k==='therapeutic area'&&v)z.areas.add(String(v));if(k==='channel'&&v)z.channels.add(normChannel(v));if(k==='product status'&&v)z.explicitStatus=String(v);});
+    D.forEach(r=>{const raw=r[4],mapped=mapMol(raw),z=ensure(raw),zm=ensure(mapped);if(r[5]&&r[5]!=='Consolidado'){z.areas.add(String(r[5]));zm.areas.add(String(r[5]));}const sale=['Sales (Sell In)','Net Sales'].includes(r[0])&&Math.abs(Number(r[9]||0))>0;if(sale&&r[1]==='Reales'&&(r[2]<CUR_YEAR||(r[2]===CUR_YEAR&&r[3]<=cm))){z.actualSales=zm.actualSales=true;}if(sale&&r[1]==='Forecast'){z.forecastSales=zm.forecastSales=true;}});
+    Object.keys(meta).forEach(m=>{const z=meta[m];z.status=z.explicitStatus||(z.actualSales?'Commercial':z.forecastSales?'Pipeline':'No activity');z.areas=[...z.areas];z.channels=[...z.channels];});
+    return meta;
+  }, [cm]);
+  const metaForMol=m=>globalMeta[m]||globalMeta[mapMol(m)]||{areas:[],channels:[],status:'No activity'};
+  const channelOptions=React.useMemo(()=>[...new Set(Object.values(globalMeta).flatMap(x=>x.channels||[]).filter(x=>x&&x!=='--'))].sort(),[globalMeta]);
+  const productStatusOptions=React.useMemo(()=>[...new Set(Object.values(globalMeta).map(x=>x.status).filter(Boolean))].sort(),[globalMeta]);
+  const globalMolAllowed=m=>{const z=metaForMol(m);return (selAreas.length===0||z.areas.some(a=>selAreas.includes(a)))&&(selChannels.length===0||z.channels.some(c=>selChannels.includes(c)));};
+  const globalRows=React.useMemo(()=>D.filter(r=>globalMolAllowed(r[4])),[globalMeta,selAreas,selChannels]);
+  const summaryRows=React.useMemo(()=>summaryProductStatus==='All'?globalRows:globalRows.filter(r=>metaForMol(r[4]).status===summaryProductStatus),[globalRows,summaryProductStatus,globalMeta]);
   const fd = useMemo(() => {
-    let d = D;
+    let d = globalRows;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[4])));
     if (selMolsModelos.length > 0) d = d.filter(r => selMolsModelos.includes(r[4]));
-    if (selAreas.length > 0) d = d.filter(r => selAreas.includes(r[5]));
     return d;
-  }, [selMols, selMolsModelos, selAreas]);
+  }, [globalRows, selMols, selMolsModelos]);
   const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
   const allM = Array.from({ length: 12 }, (_, i) => i + 1);
   const allYears = [...new Set(D.map(r=>r[2]))].sort();
@@ -453,9 +469,9 @@ export default function Dashboard() {
   // Fast index for Summary O(1) lookups instead of O(7756) filter per call
   const _didx = React.useMemo(() => {
     const idx = {};
-    D.forEach(r => { const k = r[0]+'|'+r[1]+'|'+r[2]+'|'+r[3]; idx[k] = (idx[k]||0) + (r[9]||0); });
+    summaryRows.forEach(r => { const k = r[0]+'|'+r[1]+'|'+r[2]+'|'+r[3]; idx[k] = (idx[k]||0) + (r[9]||0); });
     return idx;
-  }, []);
+  }, [summaryRows]);
   const _bplC = React.useRef({});
   React.useEffect(() => { _bplC.current = {}; }, [fd, cm]);
   const AUX_CATALOG = [
@@ -1062,7 +1078,8 @@ export default function Dashboard() {
           <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
           <MultiSel options={mols} selected={selMols} onChange={setSelMols} label="All grouped molecules"/>
           <MultiSel options={molsModelos} selected={selMolsModelos} onChange={setSelMolsModelos} label="All model molecules"/>
-          <MultiSel options={areas} selected={selAreas} onChange={setSelAreas} label="All areas"/>
+          <MultiSel options={areas} selected={selAreas} onChange={setSelAreas} label="All therapeutic areas"/>
+          <MultiSel options={channelOptions} selected={selChannels} onChange={setSelChannels} label="All channels"/>
           <div style={{ display: "flex", borderRadius: 6, border: "1px solid #D0D5E8", overflow: "hidden" }}>
             {[["forecast", "Forecast"], ["reales", "Actuals"], ["consolidado", "Consolidated"]].map(([v, l]) => (
               <button key={v} onClick={() => setView(v)} style={{ padding: "5px 10px", fontSize: 10, fontFamily: "inherit", border: "none", cursor: "pointer", background: view === v ? "#1a1a2e" : "#fff", color: view === v ? "#fff" : "#1a1a2e", fontWeight: view === v ? 500 : 400 }}>{l}</button>
@@ -1099,7 +1116,7 @@ export default function Dashboard() {
         const fmtPct = v => { if(v===null||v===undefined||String(v).trim()===''||String(v).trim()==='--') return '--'; const n=Number(String(v).replace(/[% ,]/g,'')); if(!Number.isFinite(n)) return String(v); return ((Math.abs(n)<=1?n*100:n).toLocaleString('en-US',{maximumFractionDigits:2}))+'%'; };
         const fmtDate = v => { if(v===null||v===undefined||String(v).trim()===''||String(v).trim()==='--') return '--'; if(typeof v==='number' || /^\d+(\.\d+)?$/.test(String(v).trim())) { const d=new Date((Number(v)-25569)*86400*1000); if(!isNaN(d)) return d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'2-digit'}); } const d=new Date(v); return isNaN(d)?String(v):d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'2-digit'}); };
         const formatField = (label,value) => { const l=String(label).toLowerCase(); if(l.includes('release date')) return fmtDate(value); if(['discount price','gross to net','discount to distributor','other discounts','nsp%','tir'].some(k=>l.includes(k))) return fmtPct(value); if(['reference price','supply cost','market share','sales rep','moq','lead time','shelf life','days to collection','days to pay','saya price retail','peak sales','ebitda','npv','license fee','royalty'].some(k=>l.includes(k))) return fmtNum(value); return value || '--'; };
-        const baseMols = catalog.length ? [...new Set(catalog.map(c=>c.Molecula||c.Molecule||c["Molecule:"]).filter(Boolean))] : [...new Set(D.filter(r=>r[1]==="Forecast").map(r=>r[4]))];
+        const baseMols = (catalog.length ? [...new Set(catalog.map(c=>c.Molecula||c.Molecule||c["Molecule:"]).filter(Boolean))] : [...new Set(globalRows.filter(r=>r[1]==="Forecast").map(r=>r[4]))]).filter(globalMolAllowed);
         const catByMol = Object.fromEntries(catalog.map(c=>[c.Molecula||c.Molecule||c['Molecule:'],c]));
         const molInfo = baseMols.map(m=>({ mol:m, cat:catByMol[m]||{}, rows:D.filter(r=>r[1]==="Forecast"&&r[4]===m) }));
         const inputForMol = (mol, keys) => { const rows = inputs.filter(i=>(i.Molecula||i.Molecule)===mol); for (const k of keys) { const wanted=[cleanKey(k), cleanKey(String(k).replace(/:$/,''))]; if(cleanKey(k)==='discount to distributor') wanted.push(cleanKey('Discount to Distibuitor')); const hit = rows.find(i=>wanted.includes(cleanKey(i.Input||i.Field||i.Campo)) || wanted.includes(cleanKey(String(i.Input||'').replace(/:$/,'')))); if (hit && String(hit.Value||hit.Valor||"").trim()!=="") return hit.Value||hit.Valor; } return "--"; };
@@ -1124,9 +1141,7 @@ export default function Dashboard() {
         const readiness = c => { const fields=["Regulatory Status","Partner","Product Status","Channel","Reference Price","Saya Price Retail","Supply Cost"]; const filled=fields.filter(k=>valOf(c,[k])!=="--").length; return Math.round(filled/fields.length*100); };
         const uniq = arr => [...new Set(arr.filter(x=>x && x!=="--"))].sort();
         const filterDefs = [
-          ["Therapeutic Area", uniq(molInfo.map(x=>therapeuticForMol(x.mol)))],
           ["Partner", uniq(molInfo.map(x=>partnerForMol(x.mol)))],
-          ["Channel", uniq(molInfo.map(x=>channelForMol(x.mol)))],
           ["Regulatory Status", uniq(molInfo.map(x=>fieldForMol(x,["Regulatory Status"], "--")))],
           ["Product Status", uniq(molInfo.map(x=>fieldForMol(x,["Product Status"], "--")))],
           ["Molecule", baseMols]
@@ -2359,6 +2374,10 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
+          <div data-summary-product-status="true" style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:12}}>
+            <span style={{fontSize:10,fontWeight:800,color:'#667085',marginRight:3}}>PRODUCT STATUS</span>
+            {['All',...productStatusOptions].map(st=><button key={st} onClick={()=>setSummaryProductStatus(st)} style={{padding:'6px 12px',borderRadius:999,border:summaryProductStatus===st?'1px solid #534AB7':'1px solid #D0D5DD',background:summaryProductStatus===st?'#534AB7':'#fff',color:summaryProductStatus===st?'#fff':'#475467',fontSize:10,fontWeight:700,cursor:'pointer'}}>{st}</button>)}
+          </div>
           <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
           <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
           <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
