@@ -438,8 +438,8 @@ export default function Dashboard() {
   const [beDelay, setBeDelay] = React.useState(3);
   const [portfolioFilters, setPortfolioFilters] = useState({});
   const [selChannels, setSelChannels] = useState([]);
-  const [summaryProductStatus, setSummaryProductStatus] = useState("All");
-  const [summaryMol, setSummaryMol] = useState("All");
+  const [summaryProductStatuses, setSummaryProductStatuses] = useState([]);
+  const [summaryMols, setSummaryMols] = useState([]);
   const [mOpen, setMOpen] = useState(false); // CF methodology toggle
   const [expPnlAnn, setExpPnlAnn] = useState(Object.fromEntries([...new Set(D.map(r=>r[2]))].sort().map(yr=>[yr,yr===CUR_YEAR])));
   const globalMeta = React.useMemo(() => {
@@ -458,10 +458,10 @@ export default function Dashboard() {
   const productStatusOptions=['D – Advanced Business Case','E – Term Sheet','G – Contratadas'];
   const globalMolAllowed=m=>{const z=metaForMol(m);return (selAreas.length===0||z.areas.some(a=>selAreas.includes(a)))&&(selChannels.length===0||z.channels.some(c=>selChannels.includes(c)));};
   const globalRows=React.useMemo(()=>D.filter(r=>globalMolAllowed(r[4])),[globalMeta,selAreas,selChannels]);
-  const summaryStatusRows=React.useMemo(()=>summaryProductStatus==='All'?globalRows:globalRows.filter(r=>metaForMol(r[4]).status===summaryProductStatus),[globalRows,summaryProductStatus,globalMeta]);
+  const summaryStatusRows=React.useMemo(()=>summaryProductStatuses.length===0?globalRows:globalRows.filter(r=>summaryProductStatuses.includes(metaForMol(r[4]).status)),[globalRows,summaryProductStatuses,globalMeta]);
   const summaryMoleculeOptions=React.useMemo(()=>[...new Set(summaryStatusRows.map(r=>consolidatedMol(r[4])).filter(m=>m&&m!=='Consolidado'))].sort(),[summaryStatusRows]);
-  React.useEffect(()=>{if(summaryMol!=='All'&&!summaryMoleculeOptions.includes(summaryMol))setSummaryMol('All');},[summaryProductStatus,selChannels,selAreas,summaryMoleculeOptions.join('|')]);
-  const summaryRows=React.useMemo(()=>summaryMol==='All'?summaryStatusRows:summaryStatusRows.filter(r=>consolidatedMol(r[4])===summaryMol),[summaryStatusRows,summaryMol]);
+  React.useEffect(()=>{setSummaryMols(prev=>prev.filter(m=>summaryMoleculeOptions.includes(m)));},[summaryProductStatuses,selChannels,selAreas,summaryMoleculeOptions.join('|')]);
+  const summaryRows=React.useMemo(()=>summaryMols.length===0?summaryStatusRows:summaryStatusRows.filter(r=>summaryMols.includes(consolidatedMol(r[4]))),[summaryStatusRows,summaryMols]);
   const fd = useMemo(() => {
     let d = globalRows;
     if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[4])));
@@ -605,7 +605,7 @@ export default function Dashboard() {
   const bpl = (yr, m, mode) => {
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
-    const gVf = (pl, tp) => (fd !== D ? fd.filter(r=>r[0]===pl&&r[1]===tp&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0) : (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0));
+    const gVf = (pl, tp) => (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0);
     const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; return m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"); };
     const getOpex = getPL;
     const firstNonZero = (...vals) => vals.find(v => v !== 0) || 0;
@@ -617,7 +617,7 @@ export default function Dashboard() {
     const salesReturnsPct = salesIn ? salesReturns / salesIn : 0;
     const ns = salesIn - salesDiscount - salesReturns;
     const cogsComponents = firstNonZero(getPL("Summary Flow - Supply Cost"), getPL("Supply Cost"), getPL("Supply Cost Contable")) + firstNonZero(getPL("Summary Flow - Cost per Volume"), getPL("Cost per Volume"), getPL("Cost per Volume Contable")) + firstNonZero(getPL("Summary Flow - Import Tax Cost"), getPL("Import Tax Cost"), getPL("Import Tax Cost Contable")) + firstNonZero(getPL("Summary Flow - Logistic Cost Ambient"), getPL("Logistic Cost Ambient"), getPL("Logistic Cost Ambient Contable")) + firstNonZero(getPL("Summary Flow - Product WareHouse"), getPL("Product WareHouse"), getPL("Product WareHouse Contable"));
-    const cogsSAP=fd.filter(r=>normPL(r[0])===normPL("COGS")&&r[1]==="Reales"&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0); const cogs = cogsComponents || cogsSAP, gp=ns-cogs, gmPct=ns?gp/ns:0;
+    const cogsSAP=summaryRows.filter(r=>normPL(r[0])===normPL("COGS")&&r[1]==="Reales"&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0); const cogs = cogsComponents || cogsSAP, gp=ns-cogs, gmPct=ns?gp/ns:0;
     const sw=getOpex("Salaries & Wages"),sm=firstNonZero(getOpex("Sales & Marketing"),getOpex("Sales &Marketing")),ta=firstNonZero(getOpex("Travel & Accommodation"),getOpex("Travel & Accomodation")),pf=firstNonZero(getOpex("Professional Fees"),getOpex("Professional Services")),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=firstNonZero(getOpex("Software & Hardware"),getOpex("IT (Software-Hardware)")),mob=getOpex("Mobility");
     const qual=getOpex("Quality"),ops=getOpex("Operations"),oth=getOpex("Others");
     const totOpex=mode==="forecast"?(sw+sm+ta+pf+of_+sh+ops+oth+qual):(sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth),totOpexPct=ns?totOpex/ns:0,ebitda=(getPL("EBITDA")||gp-totOpex),ebitdaPct=ns?ebitda/ns:0;
@@ -2381,15 +2381,18 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
-          <div data-summary-segmentation="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderTop:'3px solid #7C3AED',borderRadius:12,padding:'12px 14px',marginBottom:14}}>
+          <div data-summary-segmentation="true" data-multiselect="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderTop:'3px solid #7C3AED',borderRadius:12,padding:'12px 14px',marginBottom:14}}>
             {[
-              ['PRODUCT STATUS',['All',...productStatusOptions],summaryProductStatus,v=>setSummaryProductStatus(v)],
-              ['CHANNEL',['All',...channelOptions],selChannels.length?selChannels[0]:'All',v=>setSelChannels(v==='All'?[]:[v])],
-              ['THERAPEUTIC AREA',['All',...areas],selAreas.length?selAreas[0]:'All',v=>setSelAreas(v==='All'?[]:[v])],
-              ['MOLECULE',['All',...summaryMoleculeOptions],summaryMol,v=>setSummaryMol(v)]
-            ].map(([label,opts,current,onPick],ri)=><div key={label} style={{display:'grid',gridTemplateColumns:'145px 1fr',gap:10,alignItems:'start',padding:'7px 0',borderTop:ri?'1px dashed #E4E8F2':'none'}}>
+              ['PRODUCT STATUS',productStatusOptions,summaryProductStatuses,setSummaryProductStatuses],
+              ['CHANNEL',channelOptions,selChannels,setSelChannels],
+              ['THERAPEUTIC AREA',areas,selAreas,setSelAreas],
+              ['MOLECULE',summaryMoleculeOptions,summaryMols,setSummaryMols]
+            ].map(([label,opts,selected,setSelected],ri)=><div key={label} style={{display:'grid',gridTemplateColumns:'145px 1fr',gap:10,alignItems:'start',padding:'7px 0',borderTop:ri?'1px dashed #E4E8F2':'none'}}>
               <div style={{fontSize:9,fontWeight:900,color:'#667085',letterSpacing:.7,paddingTop:6}}>{label}</div>
-              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>{opts.map(opt=><button key={opt} onClick={()=>onPick(opt)} style={{padding:'6px 10px',borderRadius:999,border:current===opt?'1px solid #534AB7':'1px solid #D0D5DD',background:current===opt?'#534AB7':'#fff',color:current===opt?'#fff':'#475467',fontSize:9,fontWeight:700,cursor:'pointer'}}>{opt}</button>)}</div>
+              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                <button onClick={()=>setSelected([])} style={{padding:'6px 10px',borderRadius:999,border:selected.length===0?'1px solid #534AB7':'1px solid #D0D5DD',background:selected.length===0?'#534AB7':'#fff',color:selected.length===0?'#fff':'#475467',fontSize:9,fontWeight:700,cursor:'pointer'}}>All</button>
+                {opts.map(opt=>{const active=selected.includes(opt);return <button key={opt} onClick={()=>setSelected(prev=>active?prev.filter(v=>v!==opt):[...prev,opt])} style={{padding:'6px 10px',borderRadius:999,border:active?'1px solid #534AB7':'1px solid #D0D5DD',background:active?'#534AB7':'#fff',color:active?'#fff':'#475467',fontSize:9,fontWeight:700,cursor:'pointer'}}>{active?'✓ ':''}{opt}</button>})}
+              </div>
             </div>)}
           </div>
           <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
@@ -2403,19 +2406,14 @@ export default function Dashboard() {
             const RATE=0.1151;
             const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':yr===CUR_YEAR?'consolidado':'forecast');
             const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
-            const inv=annualEBIT.filter(v=>v<0).reduce((s,v)=>s+v,0);
             const npv=annualEBIT.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
-            let irr=0;try{if(annualEBIT.length>1&&annualEBIT.some(v=>v<0)&&annualEBIT.some(v=>v>0)){const npvAt=r=>annualEBIT.reduce((s,v,j)=>s+v/Math.pow(1+r,j+1),0);const lo=-0.999,hi=9.999;const nlo=npvAt(lo),nhi=npvAt(hi);if(nlo*nhi<0){let a=lo,b=hi;for(let i=0;i<80;i++){const mid=(a+b)/2;if(npvAt(mid)*npvAt(a)<0)b=mid;else a=mid;if(b-a<1e-8)break;}irr=(a+b)/2;}}}catch(e){irr=0;}
+            let irr=0;try{const flows=[...annualEBIT];while(flows.length&&Math.abs(flows[0])<0.01)flows.shift();if(flows.length>1&&flows.some(v=>v<0)&&flows.some(v=>v>0)){const npvAt=r=>flows.reduce((s,v,j)=>s+v/Math.pow(1+r,j),0);const dNpvAt=r=>flows.reduce((s,v,j)=>j?s-j*v/Math.pow(1+r,j+1):s,0);let guess=.10;for(let i=0;i<100;i++){const f=npvAt(guess),df=dNpvAt(guess);if(!Number.isFinite(f)||!Number.isFinite(df)||Math.abs(df)<1e-12)break;const next=guess-f/df;if(!Number.isFinite(next)||next<=-.9999||next>100)break;if(Math.abs(next-guess)<1e-10){guess=next;break;}guess=next;}if(Math.abs(npvAt(guess))<1){irr=guess;}else{let prevR=-.99,prevV=npvAt(prevR);for(let i=1;i<=6000;i++){const r=-.99+i*(10.99/6000),v=npvAt(r);if(Number.isFinite(prevV)&&Number.isFinite(v)&&prevV*v<=0){let a=prevR,b=r;for(let j=0;j<100;j++){const mid=(a+b)/2,mv=npvAt(mid);if(prevV*mv<=0)b=mid;else{a=mid;prevV=mv;}}irr=(a+b)/2;break;}prevR=r;prevV=v;}}}}catch(e){irr=0;}
             const ip=irr*100;
             const badge=ip===0?null:ip<45?{t:'Riesgo Alto',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
             const bSt=badge?Object.fromEntries([['fontSize',11],['fontWeight',600],['color',badge.c],['background',badge.bg],['border','1px solid '+badge.bc],['borderRadius',6],['padding','3px 9px']]):null;
             const Fk=v=>{const abs=Math.abs(v);const sign=v<0?'-':'';return sign+(abs>=1e6?(abs/1e6).toFixed(2)+'M':abs>=1e3?Math.round(abs/1e3).toLocaleString('es-MX')+'K':Math.round(abs).toLocaleString('es-MX'));};
             return(
               <div style={{display:'flex',flexWrap:'wrap',gap:14,marginBottom:20,marginTop:8}}>
-                <div style={{flex:'1 1 170px',background:'#EFF6FF',border:'1.5px solid #BFDBFE',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#1E40AF',fontWeight:600,marginBottom:4}}>Investment (EBIT negativo acumulado)</div>
-                  <div style={{fontSize:22,fontWeight:700,color:'#1E40AF'}}>{Fk(inv)}</div>
-                </div>
                 <div style={{flex:'1 1 170px',background:'#ECFDF5',border:'1.5px solid #6EE7B7',borderRadius:12,padding:'13px 18px'}}>
                   <div style={{fontSize:11,color:'#065F46',fontWeight:600,marginBottom:4}}>NPV EBIT 11.51%</div>
                   <div style={{fontSize:22,fontWeight:700,color:'#065F46'}}>{Fk(npv)}</div>
