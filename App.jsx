@@ -214,11 +214,14 @@ function buildPL(fd, yr, m, cm, mode) {
 }
 {/* */}
 const PL_KEYS = ["salesInUnits","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
-const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Sell In Price",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesInUnits:"Sell In Units",salesIn:"Sales (Sell In)",sellOut:"Sell Out Units",sellOutValue:"Sell Out Value",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin"};
+const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Sell In Price",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesInUnits:"Sell In Units",salesIn:"Sales (Sell In)",sellOut:"Sell Out Units",sellOutValue:"Sell Out Value",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin",capHardware:"Hardware",capSoftware:"Software",licenseFees:"License Fees",capRegulatory:"Regulatory",totalCapex:"TOTAL CAPITAL EXPENDITURE",totalExpenses:"TOTAL EXPENSES",totalExpensesPct:"% Total Expenses"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
 const INTEGER_KEYS = new Set(["marketVolume","salesInUnits","sellOut"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
 const OPEX_KEY_SET = new Set(["cogs","sw","sm","ta","pf","of","sh","qual","ops","oth","depr"]);
+const FLOW_PL_KEYS=["salesInUnits","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","capHardware","capSoftware","licenseFees","capRegulatory","totalCapex","totalExpenses","totalExpensesPct","ebitda","ebitdaPct"];
+const FLOW_PCT_KEYS=new Set(["salesDiscountPct","salesReturnsPct","gmPct","totalExpensesPct","ebitdaPct"]);
+const FLOW_BOLD_KEYS=new Set(["salesIn","ns","cogs","gp","totOpex","totalCapex","totalExpenses","ebitda"]);
 {/* */}
 function LoginGate({ children }) {
   const [input, setInput] = React.useState('');
@@ -604,29 +607,36 @@ export default function Dashboard() {
   const activeBeMol = beMol||(beData.mols[0]||"");
   const beMolData = beData.data[activeBeMol]||{};
   const bpl = (yr, m, mode) => {
+    // FLOW_PNL_V66 — only non-accounting flow lines feed Summary.
     const k = yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
-    const gVf = (pl, tp) => (_didx[pl+'|'+tp+'|'+yr+'|'+m]||0);
-    const getPL = (pl) => { if(mode==="forecast")return gVf(pl,"Forecast"); if(mode==="reales")return m<=cm?gVf(pl,"Reales"):0; return m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"); };
-    const getOpex = getPL;
-    const firstNonZero = (...vals) => vals.find(v => v !== 0) || 0;
-    const salesIn = firstNonZero(getPL("Sales (Sell In)"), getPL("Sales (Sell In) Contable"), getPL("Net Sales"));
-    const sellOut = firstNonZero(getPL("Sales (Sell Out)"), getPL("Sales (Sell Out) Contable"), getPL("Sell Out"), getPL("Sell-Out"));
-    const salesDiscount = getPL("Sales Discount (Gross to Net)");
-    const salesDiscountPct = salesIn ? salesDiscount / salesIn : 0;
-    const salesReturns = getPL("Sales Returns");
-    const salesReturnsPct = salesIn ? salesReturns / salesIn : 0;
-    const ns = salesIn - salesDiscount - salesReturns;
-    const cogsComponents = firstNonZero(getPL("Summary Flow - Supply Cost"), getPL("Supply Cost"), getPL("Supply Cost Contable")) + firstNonZero(getPL("Summary Flow - Cost per Volume"), getPL("Cost per Volume"), getPL("Cost per Volume Contable")) + firstNonZero(getPL("Summary Flow - Import Tax Cost"), getPL("Import Tax Cost"), getPL("Import Tax Cost Contable")) + firstNonZero(getPL("Summary Flow - Logistic Cost Ambient"), getPL("Logistic Cost Ambient"), getPL("Logistic Cost Ambient Contable")) + firstNonZero(getPL("Summary Flow - Product WareHouse"), getPL("Product WareHouse"), getPL("Product WareHouse Contable"));
-    const cogsSAP=summaryRows.filter(r=>normPL(r[0])===normPL("COGS")&&r[1]==="Reales"&&r[2]===yr&&r[3]===m).reduce((s,r)=>s+r[9],0); const cogs = cogsComponents || cogsSAP, gp=ns-cogs, gmPct=ns?gp/ns:0;
-    const sw=getOpex("Salaries & Wages"),sm=firstNonZero(getOpex("Sales & Marketing"),getOpex("Sales &Marketing")),ta=firstNonZero(getOpex("Travel & Accommodation"),getOpex("Travel & Accomodation")),pf=firstNonZero(getOpex("Professional Fees"),getOpex("Professional Services")),of_=getOpex("Office Expense"),reg=getOpex("Regulatory"),sh=firstNonZero(getOpex("Software & Hardware"),getOpex("IT (Software-Hardware)")),mob=getOpex("Mobility");
-    const qual=getOpex("Quality"),ops=getOpex("Operations"),oth=getOpex("Others");
-    const totOpex=mode==="forecast"?(sw+sm+ta+pf+of_+sh+ops+oth+qual):(sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth),totOpexPct=ns?totOpex/ns:0,ebitda=(getPL("EBITDA")||gp-totOpex),ebitdaPct=ns?ebitda/ns:0;
-    const deprRaw = mode === "forecast" ? (firstNonZero(getPL("Summary Flow - Up-Fronts"),getPL("Up-Fronts"),getPL("Up-Fronts Contable"),getPL("Up-front Fees (by Contract)")) + firstNonZero(getPL("Summary Flow - Hardware"),getPL("Hardware"),getPL("Hardware Contable")) + firstNonZero(getPL("Summary Flow - Software"),getPL("Software"),getPL("Software Contable")) + firstNonZero(getPL("Summary Flow - Regulatory"),getPL("Regulatory"),getPL("Regulatory Contable")) + firstNonZero(getPL("Depreciation"),getPL("Depreciation & Amortization"))) : firstNonZero(getOpex("Depreciation & Amortization"), getOpex("Depreciation"));
-    const depr=(mode!=="forecast"&&yr===2026&&m===7&&deprRaw===0)?312632.57:deprRaw, deprPct=ns?depr/ns:0, ebit=ebitda-depr, ebitPct=ns?ebit/ns:0;
-    const fi=getOpex("Financial Income"),fe=getOpex("Financial Expense"),totFin=fi+fe,netProfit=ebit-totFin,netProfitPct=ns?netProfit/ns:0;
-    const result={salesInUnits:0,salesIn,sellOut,sellOutValue:0,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,reg,sh,mob,qual,ops,oth,totOpex,totOpexPct,ebitda,ebitdaPct,depr,deprPct,ebit,ebitPct,fi,fe,totFin,netProfit,netProfitPct};
-    _bplC.current[k] = result;
+    const gVf=(pl,tp)=>(_didx[pl+'|'+tp+'|'+yr+'|'+m]||0);
+    const getPL=pl=>mode==="forecast"?gVf(pl,"Forecast"):mode==="reales"?(m<=cm?gVf(pl,"Reales"):0):(m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"));
+    const firstNonZero=(...vals)=>vals.find(v=>v!==0)||0;
+    const salesInUnits=firstNonZero(getPL("Sell In Units"),getPL("Sales In Units"));
+    const priceToDistributor=firstNonZero(getPL("Sell In Price"),getPL("Sales In Price"));
+    const salesIn=getPL("Sales (Sell In)");
+    const salesDiscount=getPL("Sales Discount (Gross to Net)"),salesDiscountPct=salesIn?salesDiscount/salesIn:0;
+    const salesReturns=getPL("Sales Returns"),salesReturnsPct=salesIn?salesReturns/salesIn:0;
+    const ns=salesIn-salesDiscount-salesReturns;
+    // COGS_FLOW_V67: Cost per Volume + Import Tax + ambient/cold logistics + cost-flow Others.
+    const cogsCostPerVolume=firstNonZero(getPL("Cost per Volume"),getPL("Summary Flow - Cost per Volume"));
+    const cogsImportTax=firstNonZero(getPL("Import Tax Cost"),getPL("Summary Flow - Import Tax Cost"));
+    const cogsLogisticAmbient=firstNonZero(getPL("Logistic Cost Ambient"),getPL("Summary Flow - Logistic Cost Ambient"));
+    const cogsLogisticCold=firstNonZero(getPL("Logistic Cost Cold"),getPL("Summary Flow - Logistic Cost Cold"));
+    const cogsOthers=getPL("Summary Flow - Others");
+    const cogs=cogsCostPerVolume+cogsImportTax+cogsLogisticAmbient+cogsLogisticCold+cogsOthers,gp=ns-cogs,gmPct=ns?gp/ns:0;
+    const sw=getPL("Salaries & Wages"),sm=firstNonZero(getPL("Sales & Marketing"),getPL("Sales &Marketing")),ta=firstNonZero(getPL("Travel & Accommodation"),getPL("Travel & Accomodation")),pf=firstNonZero(getPL("Professional Fees"),getPL("Professional Services")),of_=getPL("Office Expense"),sh=firstNonZero(getPL("Software & Hardware"),getPL("IT (Software-Hardware)")),qual=getPL("Quality"),productWareHouse=firstNonZero(getPL("Product WareHouse"),getPL("Summary Flow - Product WareHouse")),ops=getPL("Operations")+productWareHouse,oth=getPL("Others");
+    const totOpex=sw+sm+ta+pf+of_+sh+qual+ops+oth,totOpexPct=ns?totOpex/ns:0;
+    const capHardware=firstNonZero(getPL("Hardware"),getPL("Summary Flow - Hardware"));
+    const capSoftware=firstNonZero(getPL("Software"),getPL("Summary Flow - Software"));
+    const licenseFees=firstNonZero(getPL("Up-Fronts"),getPL("Summary Flow - Up-Fronts"));
+    const capRegulatory=firstNonZero(getPL("Regulatory"),getPL("Summary Flow - Regulatory"));
+    const totalCapex=capHardware+capSoftware+licenseFees+capRegulatory;
+    const totalExpenses=totOpex+totalCapex,totalExpensesPct=ns?totalExpenses/ns:0;
+    const ebitda=gp-totalExpenses,ebitdaPct=ns?ebitda/ns:0;
+    const result={salesInUnits,priceToDistributor,salesIn,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,sh,qual,ops,oth,totOpex,totOpexPct,capHardware,capSoftware,licenseFees,capRegulatory,totalCapex,totalExpenses,totalExpensesPct,ebitda,ebitdaPct};
+    _bplC.current[k]=result;
     return result;
   };
 {/* */}
@@ -2396,8 +2406,8 @@ export default function Dashboard() {
               </div>
             </div>)}
           </div>
-          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L por Año</div>
-          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); const pnlKeys=["Net Sales","Gross Profit","EBITDA","EBIT"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+          <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L by Year</div>
+          <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); const pnlKeys=["Net Sales","Gross Profit","Total Expenses","EBITDA"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
           <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#1D9E75",marginRight:4}}></span>Reales</span>
             <span><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#B0B8C8",marginRight:4}}></span>Forecast</span>
@@ -2429,9 +2439,9 @@ export default function Dashboard() {
           {(()=>{
             const RATE=0.1151;
             const modeY=yr=>view==='reales'?'reales':view==='forecast'?'forecast':(yr<CUR_YEAR?'reales':yr===CUR_YEAR?'consolidado':'forecast');
-            const annualEBIT=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebit,0));
-            const npv=annualEBIT.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
-            let irr=0;try{const flows=[...annualEBIT];while(flows.length&&Math.abs(flows[0])<0.01)flows.shift();if(flows.length>1&&flows.some(v=>v<0)&&flows.some(v=>v>0)){const npvAt=r=>flows.reduce((s,v,j)=>s+v/Math.pow(1+r,j),0);const dNpvAt=r=>flows.reduce((s,v,j)=>j?s-j*v/Math.pow(1+r,j+1):s,0);let guess=.10;for(let i=0;i<100;i++){const f=npvAt(guess),df=dNpvAt(guess);if(!Number.isFinite(f)||!Number.isFinite(df)||Math.abs(df)<1e-12)break;const next=guess-f/df;if(!Number.isFinite(next)||next<=-.9999||next>100)break;if(Math.abs(next-guess)<1e-10){guess=next;break;}guess=next;}if(Math.abs(npvAt(guess))<1){irr=guess;}else{let prevR=-.99,prevV=npvAt(prevR);for(let i=1;i<=6000;i++){const r=-.99+i*(10.99/6000),v=npvAt(r);if(Number.isFinite(prevV)&&Number.isFinite(v)&&prevV*v<=0){let a=prevR,b=r;for(let j=0;j<100;j++){const mid=(a+b)/2,mv=npvAt(mid);if(prevV*mv<=0)b=mid;else{a=mid;prevV=mv;}}irr=(a+b)/2;break;}prevR=r;prevV=v;}}}}catch(e){irr=0;}
+            const annualEBITDA=pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY(yr)).ebitda,0));
+            const npv=annualEBITDA.reduce((s,v,i)=>s+v/Math.pow(1+RATE,i+1),0);
+            let irr=0;try{const flows=[...annualEBITDA];while(flows.length&&Math.abs(flows[0])<0.01)flows.shift();if(flows.length>1&&flows.some(v=>v<0)&&flows.some(v=>v>0)){const npvAt=r=>flows.reduce((s,v,j)=>s+v/Math.pow(1+r,j),0);const dNpvAt=r=>flows.reduce((s,v,j)=>j?s-j*v/Math.pow(1+r,j+1):s,0);let guess=.10;for(let i=0;i<100;i++){const f=npvAt(guess),df=dNpvAt(guess);if(!Number.isFinite(f)||!Number.isFinite(df)||Math.abs(df)<1e-12)break;const next=guess-f/df;if(!Number.isFinite(next)||next<=-.9999||next>100)break;if(Math.abs(next-guess)<1e-10){guess=next;break;}guess=next;}if(Math.abs(npvAt(guess))<1){irr=guess;}else{let prevR=-.99,prevV=npvAt(prevR);for(let i=1;i<=6000;i++){const r=-.99+i*(10.99/6000),v=npvAt(r);if(Number.isFinite(prevV)&&Number.isFinite(v)&&prevV*v<=0){let a=prevR,b=r;for(let j=0;j<100;j++){const mid=(a+b)/2,mv=npvAt(mid);if(prevV*mv<=0)b=mid;else{a=mid;prevV=mv;}}irr=(a+b)/2;break;}prevR=r;prevV=v;}}}}catch(e){irr=0;}
             const ip=irr*100;
             const badge=ip===0?null:ip<45?{t:'Riesgo Alto',c:'#C0392B',bg:'#FFF0F0',bc:'#C0392B'}:ip<=49?{t:'Riesgo Moderado',c:'#92400E',bg:'#FFFBEB',bc:'#D97706'}:{t:'Viable',c:'#065F46',bg:'#ECFDF5',bc:'#10B981'};
             const bSt=badge?Object.fromEntries([['fontSize',11],['fontWeight',600],['color',badge.c],['background',badge.bg],['border','1px solid '+badge.bc],['borderRadius',6],['padding','3px 9px']]):null;
@@ -2439,15 +2449,15 @@ export default function Dashboard() {
             return(
               <div style={{display:'flex',flexWrap:'wrap',gap:14,marginBottom:20,marginTop:8}}>
                 <div style={{flex:'1 1 170px',background:'#ECFDF5',border:'1.5px solid #6EE7B7',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#065F46',fontWeight:600,marginBottom:4}}>NPV EBIT 11.51%</div>
+                  <div style={{fontSize:11,color:'#065F46',fontWeight:600,marginBottom:4}}>NPV EBITDA 11.51%</div>
                   <div style={{fontSize:22,fontWeight:700,color:'#065F46'}}>{Fk(npv)}</div>
                 </div>
                 <div style={{flex:'1 1 170px',background:'#F5F3FF',border:'1.5px solid #C4B5FD',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#5B21B6',fontWeight:600,marginBottom:4}}>EBITDA Acumulado</div>
-                  <div style={{fontSize:22,fontWeight:700,color:'#5B21B6'}}>{Fk(annualEBIT.reduce((s,v)=>s+v,0))}</div>
+                  <div style={{fontSize:11,color:'#5B21B6',fontWeight:600,marginBottom:4}}>Cumulative EBITDA</div>
+                  <div style={{fontSize:22,fontWeight:700,color:'#5B21B6'}}>{Fk(annualEBITDA.reduce((s,v)=>s+v,0))}</div>
                 </div>
                 <div style={{flex:'1 1 170px',background:'#FFF7ED',border:'1.5px solid #FCD34D',borderRadius:12,padding:'13px 18px'}}>
-                  <div style={{fontSize:11,color:'#92400E',fontWeight:600,marginBottom:4}}>IRR (EBIT) %</div>
+                  <div style={{fontSize:11,color:'#92400E',fontWeight:600,marginBottom:4}}>IRR (EBITDA) %</div>
                   <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
                     <span style={{fontSize:22,fontWeight:700,color:'#92400E'}}>{ip!==0?ip.toFixed(2)+' %':'0.00 %'}</span>
                     
@@ -2480,9 +2490,9 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {PL_KEYS.map((k,ki) => {
-                const isPct = PCT_KEYS.has(k);
-                const isBold = BOLD_KEYS.has(k);
+              {FLOW_PL_KEYS.map((k,ki) => {
+                const isPct = FLOW_PCT_KEYS.has(k);
+                const isBold = FLOW_BOLD_KEYS.has(k);
                 const rowStyle = k==="netProfit"
                   ? {background:"#F3E8FF",borderTop:"3px solid #7C3AED",color:"#4C1D95"}
                   : k==="totFin"
@@ -2491,7 +2501,7 @@ export default function Dashboard() {
                 const tdLbl = {padding:"6px 10px",borderBottom:"1px solid #F0F2F8",fontSize:14,position:"sticky",left:0,background: k==="netProfit"?"#F3E8FF": isBold?"#F4F6FB":"#fff",zIndex:1,color: k==="netProfit"?"#4C1D95":"#1E2A3A",fontWeight:isBold?700:400};
                 return (
                   <React.Fragment key={k}>
-                    {[ ["salesIn","Net Sales"], ["cogs","Gross Profit"], ["sw","Operating Expenses"], ["ebitda","EBITDA & EBIT"] ].filter(([kk])=>k===kk).map(([kk,label])=>(
+                    {[ ["salesIn","Net Sales"], ["cogs","Gross Profit"], ["sw","Operating Expenses"], ["capHardware","Capital Expenditure"], ["totalExpenses","Total Expenses"], ["ebitda","EBITDA"] ].filter(([kk])=>k===kk).map(([kk,label])=>(
                       <tr key={"sep-"+kk}>
                         <td colSpan={pnlYears.filter(yr=>{const md=view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":"forecast");return allM.some(m=>Object.values(bpl(yr,m,md)).some(v=>typeof v==="number"&&v!==0));}).reduce((s,yr)=>s+1+(expPnlAnn[yr]?12:0),0)+2} style={{padding:"9px 10px 5px",fontSize:10,color:"#1E2A3A",letterSpacing:1.1,textTransform:"uppercase",borderTop:"2px solid #534AB7",borderBottom:"1px solid #C9D0E4",fontWeight:800,background:"#EEF2FF"}}>{label}</td>
                       </tr>
