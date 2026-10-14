@@ -1271,7 +1271,6 @@ export default function Dashboard() {
                 const isBold = BOLD_KEYS.has(k);
                 const isOpex = OPEX_KEY_SET.has(k);
                 const code = OPEX_CODE_MAP[k];
-                const molKey="fs|"+k; const canMolExpand=!isPct;
                 if (k === "salesInUnits") tableRows.push(<tr key="commercial-sep"><td colSpan={14} style={SEP_STYLE}>Commercial Volume & Price</td></tr>);
                 if (k === "salesIn") tableRows.push(<tr key="sales-sep"><td colSpan={14} style={SEP_STYLE}>Net Sales</td></tr>);
                 if (k === "cogs") tableRows.push(<tr key="gross-sep"><td colSpan={14} style={SEP_STYLE}>Gross Profit</td></tr>);
@@ -1280,29 +1279,15 @@ export default function Dashboard() {
                 if (k === "depr") tableRows.push(<tr key="amort-sep"><td colSpan={14} style={SEP_STYLE}>Amortization & depreciation</td></tr>);
                 /* fin-sep removed */
                 tableRows.push(
-                  <tr key={"row-"+k} style={k==="sellOut" || k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: canMolExpand ? "pointer" : "default" }} onClick={() => canMolExpand && setExpMolRows(p=>({...p,[molKey]:!p[molKey]}))}>
+                  <tr key={"row-"+k} style={k==="sellOut" || k==="sellOutValue" ? { background:"#FFF7ED", borderLeft:"3px solid #F59E0B" } : k==="netProfit" ? { background:'#F3E8FF', fontWeight:700, borderTop:'3px solid #7C3AED', color:'#4C1D95' } : k==="totFin" ? { background:'#fafbfe', fontWeight:700, borderTop:'1px solid #E4E8F2' } : { background: isBold ? "#fafbfe" : "transparent", cursor: isOpex ? "pointer" : "default" }} onClick={() => isOpex && toggleOx(k)}>
                     <td style={{ ...td, fontWeight: isBold ? 500 : 400, color: (isOpex && k !== "cogs") ? "#534AB7" : "#1a1a2e", position: "sticky", left: 0, background: (k==="sellOut" || k==="sellOutValue") ? "#FFF7ED" : isBold ? "#fafbfe" : "#fff", fontSize: isOpex ? 9 : 10, paddingLeft: (isOpex && k !== "cogs") ? 16 : 6 }}>
-                      {canMolExpand && <span data-molecule-arrow="true" style={{fontSize:9,marginRight:5}}>{expMolRows[molKey] ? "▼" : "▶"}</span>}
+                      {isOpex && <span style={{fontSize:8,marginRight:4}}>{expOpex[k] ? "▼" : "▶"}</span>}
                       {PL_LABELS[k]}
                     </td>
                     {plData.monthly.map((row, mi) => <td key={mi} style={{ ...td, textAlign: "right", color: isPct ? "#8A90A8" : row[k] < 0 ? "#E24B4A" : row[k] === 0 ? "#ccc" : "#1a1a2e", fontWeight: isBold ? 500 : 400, fontSize: isOpex || isPct ? 9 : 10, fontStyle: isPct ? "italic" : "normal" }}>{fv(row[k], isPct, k)}</td>)}
                     <td style={{ ...td, textAlign: "right", fontWeight: 500, color: isPct ? "#8A90A8" : plData.totals[k] < 0 ? "#E24B4A" : "#1a1a2e", borderLeft: "2px solid #E4E8F2", fontStyle: isPct ? "italic" : "normal" }}>{fv(plData.totals[k], isPct, k)}</td>
                   </tr>
                 );
-                // FINANCIAL_MOLECULE_ROWS_V72
-                if(canMolExpand && expMolRows[molKey]){
-                  [...new Set(fd.map(r=>mapMol(r[4])).filter(m=>m&&m!=="Consolidado"&&m!=="--"&&m!=="—"))].sort().forEach(mol=>{
-                    const mfd=fd.filter(r=>mapMol(r[4])===mol);
-                    const vals=allM.map(mm=>buildPL(mfd,CUR_YEAR,mm,cm,view)[k]);
-                    const total=vals.reduce((a,b)=>a+Number(b||0),0);
-                    if(vals.every(v=>Math.abs(Number(v||0))<.0001))return;
-                    tableRows.push(<tr key={"mol-"+k+"|"+mol} style={{background:'#FBFCFF'}}>
-                      <td style={{...td,paddingLeft:28,fontSize:9,color:'#667085',position:'sticky',left:0,background:'#FBFCFF'}}>↳ {mol}</td>
-                      {vals.map((v,mi)=><td key={mi} style={{...td,textAlign:'right',fontSize:9,color:Number(v)<0?'#E24B4A':Number(v)===0?'#ddd':'#667085'}}>{fv(v,false,k)}</td>)}
-                      <td style={{...td,textAlign:'right',fontSize:9,fontWeight:600,borderLeft:'2px solid #E4E8F2'}}>{fv(total,false,k)}</td>
-                    </tr>);
-                  });
-                }
                 // Drill-down for OpEx rows
                 if (isOpex && expOpex[k] && code) {
                   const codeData = k === "depr" ? fd.filter(r => ["Up-Fronts","Hardware","Software","Regulatory","Depreciation","Depreciation & Amortization"].includes(normPL(r[0]))) : fd.filter(r => normPL(r[0]) === code);
