@@ -437,7 +437,7 @@ export default function Dashboard() {
   const [expMolRows, setExpMolRows] = useState({});
   const [expCF, setExpCF] = useState({});
   const [expandedOpexLine, setExpandedOpexLine] = useState(null);
-  const [mainTab, setMainTab] = useState("executive");
+  const [mainTab, setMainTab] = useState("pnl-anual"); // DEFAULT_SUMMARY_TAB_V83
   const [beMol, setBeMol] = React.useState("");
   const [beDelay, setBeDelay] = React.useState(3);
   const [portfolioFilters, setPortfolioFilters] = useState({});
