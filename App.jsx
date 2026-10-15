@@ -1129,7 +1129,7 @@ export default function Dashboard() {
       {/* MAIN TABS */}
       <div style={{display:"flex",alignItems:"center",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8,overflowX:"auto"}}>
         <div data-currency-badge="true" style={{flexShrink:0,fontSize:12,padding:"6px 12px",marginRight:8,borderRadius:6,background:"#E8F4FF",color:"#185FA5",fontWeight:800,letterSpacing:1.2,whiteSpace:"nowrap"}}>AMOUNTS IN MXN</div>
-        {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"] /* PORTFOLIO_TAB_REMOVED_V96 */,["auxiliares","🗂 Auxiliares"],["breakeven","📉 Breakeven"],["inventarios","📦 Inventarios"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"] /* PORTFOLIO_TAB_REMOVED_V96 */,["auxiliares","🗂 Auxiliares"] /* BREAKEVEN_TAB_REMOVED_V99 */,["inventarios","📦 Inventarios"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
