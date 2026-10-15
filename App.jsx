@@ -2398,12 +2398,6 @@ export default function Dashboard() {
 {/* */}
       {mainTab === "pnl-anual" && (
         <div style={{padding:"20px",overflowX:"hidden"}}>
-          <div data-summary-partner-dropdown="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:12,padding:12,marginBottom:10,maxWidth:320}}>
-            <div style={{fontSize:11,color:'#667085',fontWeight:800,marginBottom:5}}>Partner</div>
-            <select value={summaryPartners[0]||'All'} onChange={e=>setSummaryPartners(e.target.value==='All'?[]:[e.target.value])} style={{width:'100%',background:'#F1F4F9',border:'1px solid #E4E8F2',borderRadius:12,padding:10,fontSize:14,fontFamily:'inherit'}}>
-              <option>All</option>{summaryPartnerOptions.map(o=><option key={o}>{o}</option>)}
-            </select>
-          </div>
           <div data-summary-segmentation="true" data-multiselect="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderTop:'3px solid #7C3AED',borderRadius:12,padding:'12px 14px',marginBottom:14}}>
             {[
               ['PRODUCT STATUS',productStatusOptions,summaryProductStatuses,setSummaryProductStatuses],
@@ -2418,6 +2412,36 @@ export default function Dashboard() {
               </div>
             </div>)}
           </div>
+          {/* SUMMARY_PORTFOLIO_DONUTS_V78 */}
+          {(()=>{
+            const donutColors=['#7C00D4','#00B77A','#FF9F00','#FF0050','#6D28D9','#2563EB','#0F766E','#D97706'];
+            const selectedMolecules=[...new Set(summaryRows.filter(r=>Math.abs(Number(r[9]||0))>.0001).map(r=>consolidatedMol(r[4])).filter(m=>m&&m!=='Consolidado'))].sort();
+            const summaryMolInfo=selectedMolecules.map(mol=>{const row=summaryRows.find(r=>consolidatedMol(r[4])===mol);const raw=row?.[4]||mol;return {mol,raw};});
+            const countBy=fn=>{const out={};summaryMolInfo.forEach(x=>{const k=fn(x)||'--';out[k]=(out[k]||0)+1;});return out;};
+            const donutBox=(title,obj)=>{const all=Object.entries(obj).sort((a,b)=>b[1]-a[1]);const entries=all.slice(0,5);const total=all.reduce((s,e)=>s+e[1],0)||1;let acc=0;const bg=entries.map((e,i)=>{const pct=e[1]/total*100;const seg=`${donutColors[i%donutColors.length]} ${acc}% ${acc+pct}%`;acc+=pct;return seg;}).join(',');return <div style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:16,minWidth:0}}><div style={{fontSize:13,fontWeight:900,marginBottom:8}}>{title}</div><div style={{width:130,height:130,borderRadius:'50%',margin:'8px auto',background:entries.length?`conic-gradient(${bg})`:'#EEF2F7',position:'relative'}}><div style={{position:'absolute',inset:34,background:'#fff',borderRadius:'50%'}} /></div>{entries.map((e,i)=><div key={e[0]} title={`${e[0]}: ${e[1]} molecule${e[1]===1?'':'s'} · ${Math.round(e[1]/total*100)}%`} style={{display:'flex',justifyContent:'space-between',gap:6,fontSize:11,margin:'5px 0'}}><span style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}><span style={{display:'inline-block',width:9,height:9,borderRadius:9,background:donutColors[i%donutColors.length],marginRight:6}} />{e[0]}</span><b>{Math.round(e[1]/total*100)}%</b></div>)}</div>};
+            const areaShare=countBy(x=>therapeuticForMol(x.raw));
+            const moleculeShare=countBy(x=>x.mol);
+            const partnerShare=countBy(x=>partnerForMol(x.raw));
+            const channelShare=countBy(x=>channelForMol(x.raw));
+            const launchData=summaryMolInfo.map(x=>({...x,launch:firstSale(x.raw)})).filter(x=>x.launch);
+            const launchYears=[...new Set(launchData.map(x=>x.launch.y))].sort();
+            return <div style={{marginBottom:14}}>
+              <div data-summary-donuts="true" style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(190px,1fr))',gap:12,marginBottom:12}}>
+                {donutBox('Therapeutic Area',areaShare)}
+                {donutBox('Molecule',moleculeShare)}
+                {donutBox('Partner',partnerShare)}
+                {donutBox('Channel',channelShare)}
+              </div>
+              <details data-summary-launch-timeline="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderTop:'5px solid #FF0050',borderRadius:18,padding:'0 16px',marginBottom:12}}>
+                <summary style={{fontSize:15,fontWeight:900,padding:'14px 0',cursor:'pointer'}}>⏱ Molecule Launch Timeline</summary>
+                <div style={{paddingBottom:12}}>{launchYears.length===0?<div style={{color:'#8A90A8',fontSize:11}}>No launch dates for the current filters.</div>:launchYears.map(y=><div key={y} style={{display:'grid',gridTemplateColumns:'60px 1fr 90px',gap:10,alignItems:'center',margin:'14px 0'}}><div style={{fontSize:17,color:y===CUR_YEAR?'#6414C8':'#94A3B8',fontWeight:900}}>{y}</div><div style={{borderTop:'1px solid #DCE2F0',paddingTop:10,display:'flex',gap:8,flexWrap:'wrap'}}>{launchData.filter(x=>x.launch.y===y).map((x,i)=><div key={x.mol} style={{background:'#F8F7FF',border:'1px solid #D9D3FB',borderLeft:`4px solid ${donutColors[i%donutColors.length]}`,borderRadius:10,padding:'8px 10px',minWidth:160,fontSize:11,fontWeight:900}}>{x.mol}<div style={{color:'#6414C8',fontSize:10}}>{therapeuticForMol(x.raw)} · {MO[x.launch.m-1]} {x.launch.y}</div></div>)}</div><div style={{background:'#F3E8FF',color:'#6414C8',borderRadius:999,padding:'6px 8px',fontSize:10,fontWeight:900,textAlign:'center'}}>{y===CUR_YEAR?'▶ In progress':'⏳ Projected'}</div></div>)}</div>
+              </details>
+              <details data-summary-molecule-cards="true" style={{background:'#fff',border:'1px solid #E4E8F2',borderRadius:18,padding:'0 16px',marginBottom:12}}>
+                <summary style={{fontSize:15,fontWeight:900,padding:'14px 0',cursor:'pointer'}}>Molecule Cards</summary>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(320px,1fr))',gap:14,paddingBottom:16}}>{summaryMolInfo.map((x,ix)=>{const meta=metaForMol(x.raw);const launch=firstSale(x.raw);const fields=[['Molecule',x.mol],['Therapeutic Area',therapeuticForMol(x.raw)],['Partner',partnerForMol(x.raw)],['Channel',channelForMol(x.raw)],['Product Status',meta.status||'Sin estatus'],['Release Date',launch?`${MO[launch.m-1]} ${launch.y}`:'--']];return <div key={x.mol} style={{border:'1px solid #E4E8F2',borderTop:`4px solid ${donutColors[ix%donutColors.length]}`,borderRadius:14,padding:14,background:'#FBFCFF'}}><div style={{fontSize:16,fontWeight:900,color:'#1E2A3A',marginBottom:10}}>{x.mol}</div><div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10}}>{fields.map(([label,value])=><div key={label}><div style={{fontSize:9,color:'#667085',fontWeight:900,textTransform:'uppercase'}}>{label}</div><div style={{fontSize:12,fontWeight:700,color:'#1E2A3A',overflowWrap:'anywhere'}}>{value||'--'}</div></div>)}</div></div>})}</div>
+              </details>
+            </div>;
+          })()}
           <div style={{fontSize:15,fontWeight:700,color:"#1E2A3A",marginBottom:8}}>P&L by Year</div>
           <button onClick={()=>{const hpl="Concepto," + pnlYears.join(",") + "\n"; const modeY2=yr=>view==="reales"?"reales":view==="forecast"?"forecast":(yr<CUR_YEAR?"reales":yr===CUR_YEAR?"consolidado":"forecast"); const pnlKeys=["Net Sales","Gross Profit","Total Expenses","EBITDA"]; const rpl=pnlKeys.map(k=>k+","+pnlYears.map(yr=>allM.reduce((s,m)=>s+bpl(yr,m,modeY2(yr))[k.replace(" ","").toLowerCase()]||0,0).toFixed(0)).join(",")).join("\n"); const bpl2=new Blob([hpl+rpl],{type:"text/csv"}); const apl=document.createElement("a"); apl.href=URL.createObjectURL(bpl2); apl.download="pnl_anual.csv"; apl.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
           <div style={{fontSize:11,color:"#8A90A8",marginBottom:14,display:"flex",gap:12}}>
