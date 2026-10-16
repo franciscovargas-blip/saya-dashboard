@@ -320,7 +320,7 @@ const BurnDetailTable=({year,month})=>{
   const cf=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
   const months=Array.from({length:Math.max(month,1)},(_,i)=>i+1);
   const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-  const [open,setOpen]=React.useState({operating:true,revenue:true,opex:true,wc:true,investing:true,other:true,financing:true,net:true});
+  const [open,setOpen]=React.useState({operating:true,revenue:false,opex:false,wc:false,investing:true,other:true,financing:true,net:true}); // BURN_DEFAULT_SECOND_LEVEL_V103
   const toggle=id=>setOpen(prev=>({...prev,[id]:!prev[id]}));
   const serie=(...names)=>cf.find(x=>names.includes(x.name));
   const at=(names,m)=>{
@@ -1004,7 +1004,9 @@ export default function Dashboard() {
         capitalSocialFijo: 99350449.33,
         periodoGanancias: -40612623.29,
       },
-    8: { assets: 60426018, liabilities: 5183121, equity: 55242897, capitalSocialFijo: 99350449.33, periodoGanancias: -44107552.33 }
+    8: { assets: 60426018, liabilities: 5183121, equity: 55242897, capitalSocialFijo: 99350449.33, periodoGanancias: -44107552.33 },
+    // BALANCE_SEPTEMBER_RECONCILED_V102
+    9: { assets: 57903486.86, liabilities: 2444562.23, equity: 55458924.63, capitalSocialFijo: 102829442.83, periodoGanancias: -47370518.20 }
     };
     const applyBalanceOverride = (row) => {
       const vals = [...row.vals];
