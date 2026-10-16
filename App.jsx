@@ -1011,7 +1011,7 @@ export default function Dashboard() {
     const applyBalanceOverride = (row) => {
       const vals = [...row.vals];
       // Aplicar override para cada mes con datos manuales
-      [7, 8].forEach(m => {
+      [7, 8, 9].forEach(m => { // BALANCE_OVERRIDE_INCLUDES_SEPTEMBER_V104
         const ov = balanceOverrides[m];
         if (!ov) return;
         let target = null;
