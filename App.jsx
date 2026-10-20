@@ -266,8 +266,8 @@ const _FS_APPROVED_FC_UNITS = D.filter(r => r[1] === "Forecast" && r[2] === 2026
 // Commercial unit counts come from existing tracking, never from Sales / Price.
 // Seven July samples have no accounting Sell In; the base explicitly excludes samples from KPIs.
 const _FS_COMMERCIAL_UNITS = D.filter(r => r[1] === "Reales" && _FS_UNIT_LINES.has(r[0]) && _FS_CSV_SALES_MONTHS.has(`${r[2]}-${r[3]}`)).map(r => [...r]);
-const _FS_OTHERS_SEP = _FS_ACCOUNTING_ROWS.filter(r => r[0] === "Others" && r[1] === "Reales" && r[2] === 2026 && r[3] === 9).reduce((s,r) => s + Number(r[9]), 0);
-const _FS_AUTHORIZED_ROWS = Math.abs(1920 - _FS_OTHERS_SEP) > 1e-9 ? [["Others","Reales",2026,9,"Fixed","NOAP","Ajuste manual","Ajuste autorizado Others Sep-2026","- - -",1920 - _FS_OTHERS_SEP,"FP&A"]] : [];
+// Financial Statements: Others comes only from CSV; no manual overrides.
+const _FS_AUTHORIZED_ROWS = [];
 const FS_DATA = [
   ..._FS_ACCOUNTING_ROWS.filter(r => !(r[1] === "Forecast" && r[2] === 2026 && r[3] >= 1 && r[3] <= 8 && _FS_UNIT_LINES.has(r[0])) && !(r[1] === "Reales" && _FS_UNIT_LINES.has(r[0]))),
   ..._FS_APPROVED_FC_UNITS, ..._FS_COMMERCIAL_UNITS, ..._FS_AUTHORIZED_ROWS
