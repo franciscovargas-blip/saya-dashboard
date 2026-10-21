@@ -368,12 +368,12 @@ function buildFSPL(fd, yr, m, cm, mode) {
 {/* */}
 
 const PL_KEYS = ["salesInUnits","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","totOpexPct","ebitda","ebitdaPct","depr","deprPct","ebit","ebitPct","fi","fe","totFin","netProfit","netProfitPct"];
-const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Sell In Price",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesInUnits:"Sell In Units",salesIn:"Sales (Sell In)",sellOut:"Sell Out Units",sellOutValue:"Sell Out Value",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin",capHardware:"Hardware",capSoftware:"Software",licenseFees:"License Fees",capRegulatory:"Regulatory",totalCapex:"TOTAL CAPITAL EXPENDITURE",totalExpenses:"TOTAL EXPENSES",totalExpensesPct:"% Total Expenses"};
+const PL_LABELS = {marketGrowth:"Market Growth (Volume)",marketVolume:"Volume",priceToDistributor:"Sell In Price",marketPenPct:"Market Penetration <Saya> %",refPrice:"Reference Price <Player X>",priceRetail:"Price Retail (Saya)",varRefPct:"Var vs Reference Price",salesInUnits:"Sell In Units",salesIn:"Sales (Sell In)",sellOut:"Sell Out Units",sellOutValue:"Sell Out Value",salesDiscount:"Sales Discount (Gross to Net)",salesDiscountPct:"% Sales Discount (Gross to Net)",salesReturns:"Sales Returns",salesReturnsPct:"% Sales Returns",ns:"Net Sales",productWarehouse:"Product WareHouse",cogs:"COGS",gp:"Gross Profit",gmPct:"% Gross Margin",sw:"Salaries & Wages",sm:"Sales & Marketing",ta:"Travel & Accommodation",pf:"Professional Fees",of:"Office Expense",sh:"Software & Hardware",qual:"Quality",ops:"Operations",oth:"Others",totOpex:"TOTAL OPERATING EXPENSES",totOpexPct:"% Total Operating Expenses",ebitda:"EBITDA",ebitdaPct:"% EBITDA",depr:"Amortization and depreciation",deprPct:"% Amortization and depreciation",ebit:"EBIT",ebitPct:"% Operating Margin",fi:"Financial Income",fe:"Financial Expense",totFin:"TOTAL FINANCIAL EXPENSES",netProfit:"NET PROFIT (LOSS)",netProfitPct:"% Net Profit Margin",capHardware:"Hardware",capSoftware:"Software",licenseFees:"Up-Fronts",capRegulatory:"Regulatory",totalCapex:"TOTAL CAPITAL EXPENDITURE",totalExpenses:"TOTAL EXPENSES",totalExpensesPct:"% Total Expenses"};
 const PCT_KEYS = new Set(["marketPenPct","varRefPct","salesDiscountPct","salesReturnsPct","gmPct","totOpexPct","ebitdaPct","deprPct","ebitPct","netProfitPct"]);
 const INTEGER_KEYS = new Set(["marketVolume","salesInUnits","sellOut"]);
 const BOLD_KEYS = new Set(["salesIn","ns","cogs","gp","totOpex","ebitda","depr","ebit","totFin","netProfit"]);
 const OPEX_KEY_SET = new Set(["cogs","sw","sm","ta","pf","of","sh","qual","ops","oth","depr"]);
-const FLOW_PL_KEYS=["salesInUnits","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","cogs","gp","gmPct","sw","sm","ta","pf","of","sh","qual","ops","oth","totOpex","capHardware","capSoftware","licenseFees","capRegulatory","totalCapex","totalExpenses","totalExpensesPct","ebitda","ebitdaPct"];
+const FLOW_PL_KEYS=["salesInUnits","priceToDistributor","salesIn","salesDiscount","salesDiscountPct","salesReturns","salesReturnsPct","ns","productWarehouse","cogs","gp","gmPct","sw","sm","ta","pf","of","qual","ops","oth","totOpex","capHardware","capSoftware","licenseFees","capRegulatory","totalCapex","totalExpenses","totalExpensesPct","ebitda","ebitdaPct"];
 const FLOW_PCT_KEYS=new Set(["salesDiscountPct","salesReturnsPct","gmPct","totalExpensesPct","ebitdaPct"]);
 const FLOW_BOLD_KEYS=new Set(["salesIn","ns","cogs","gp","totOpex","totalCapex","totalExpenses","ebitda"]);
 {/* */}
@@ -709,12 +709,13 @@ export default function Dashboard() {
       const fNZ = (...v) => v.find(x=>x!==0)||0;
       const salesIn = fNZ(g("Sales (Sell In)"),g("Sales (Sell In) Contable"),g("Net Sales"));
       const ns = salesIn - g("Sales Discount (Gross to Net)") - g("Sales Returns");
-      const cogsComp = fNZ(g("Summary Flow - Supply Cost"),g("Supply Cost"),g("Supply Cost Contable"))
-                     + fNZ(g("Summary Flow - Cost per Volume"),g("Cost per Volume"),g("Cost per Volume Contable"))
-                     + fNZ(g("Summary Flow - Import Tax Cost"),g("Import Tax Cost"),g("Import Tax Cost Contable"))
-                     + fNZ(g("Summary Flow - Logistic Cost Ambient"),g("Logistic Cost Ambient"),g("Logistic Cost Ambient Contable"))
-                     + fNZ(g("Summary Flow - Product WareHouse"),g("Product WareHouse"),g("Product WareHouse Contable"));
-      const cogs = cogsComp || g("COGS");
+      const cogs = orig==="Forecast"
+        ? g("Summary Flow - Cost per Volume")+g("Summary Flow - Import Tax Cost")+g("Summary Flow - Logistic Cost Cold")+g("Summary Flow - Product WareHouse")
+        : (fNZ(g("Cost per Volume"),g("Summary Flow - Cost per Volume"))
+          + fNZ(g("Import Tax Cost"),g("Summary Flow - Import Tax Cost"))
+          + fNZ(g("Logistic Cost Ambient"),g("Summary Flow - Logistic Cost Ambient"))
+          + fNZ(g("Logistic Cost Cold"),g("Summary Flow - Logistic Cost Cold"))
+          + g("Summary Flow - Others") || g("COGS"));
       const gp = ns - cogs;
       // OPEX: forecast usa subset sin reg/sh/mob; reales incluye todo (igual que bpl)
       const sw=g("Salaries & Wages"),
@@ -725,18 +726,13 @@ export default function Dashboard() {
             ops=g("Operations"),oth=g("Others"),qual=g("Quality"),
             reg=g("Regulatory"),sh=fNZ(g("Software & Hardware"),g("IT (Software-Hardware)")),mob=g("Mobility");
       const totOpex = orig==="Forecast"
-        ? sw+sm+ta+pf+of_+sh+ops+oth+qual
+        ? sw+sm+ta+pf+of_+ops+oth
         : sw+sm+ta+pf+of_+reg+sh+mob+qual+ops+oth;
       const ebitda = gp - totOpex;
-      // Amortizacion de inversion (upfronts, licencias, depr) — parte de la inversion a recuperar
-      const depr = orig==="Forecast"
-        ? fNZ(g("Summary Flow - Up-Fronts"),g("Up-Fronts"),g("Up-Fronts Contable"),g("Up-front Fees (by Contract)"))
-          + fNZ(g("Summary Flow - Hardware"),g("Hardware"),g("Hardware Contable"))
-          + fNZ(g("Summary Flow - Software"),g("Software"),g("Software Contable"))
-          + fNZ(g("Summary Flow - Regulatory"),g("Regulatory"),g("Regulatory Contable"))
-          + fNZ(g("Depreciation"),g("Depreciation & Amortization"))
+      const investment = orig==="Forecast"
+        ? g("Summary Flow - Software")+g("Summary Flow - Up-Fronts")
         : fNZ(g("Depreciation & Amortization"),g("Depreciation"));
-      return ebitda - depr; // EBIT: EBITDA menos amortizacion de la inversion
+      return ebitda - investment;
     };
     const compute = mol => {
       const fcstCum=[], rfCum=[];
@@ -782,35 +778,38 @@ export default function Dashboard() {
   const activeBeMol = beMol||(beData.mols[0]||"");
   const beMolData = beData.data[activeBeMol]||{};
   const bpl = (yr, m, mode, mol=null) => {
-    // FLOW_PNL_V66 — only non-accounting flow lines feed Summary.
+    // SUMMARY_FORECAST_SOURCE_V107 — forecast directo de las líneas Summary Flow.
     const k = (mol||'*')+'-'+yr+'-'+m+'-'+mode;
     if (_bplC.current[k] !== undefined) return _bplC.current[k];
     const gVf=(pl,tp)=>(_didx[(mol?('@'+mol+'|'):'')+pl+'|'+tp+'|'+yr+'|'+m]||0);
     const getPL=pl=>mode==="forecast"?gVf(pl,"Forecast"):mode==="reales"?(m<=cm?gVf(pl,"Reales"):0):(m<=cm?gVf(pl,"Reales"):gVf(pl,"Forecast"));
     const firstNonZero=(...vals)=>vals.find(v=>v!==0)||0;
+    const forecastPeriod=mode==="forecast"||(mode==="consolidado"&&m>cm);
     const salesInUnits=firstNonZero(getPL("Sell In Units"),getPL("Sales In Units"));
     const priceToDistributor=firstNonZero(getPL("Sell In Price"),getPL("Sales In Price"));
     const salesIn=getPL("Sales (Sell In)");
     const salesDiscount=getPL("Sales Discount (Gross to Net)"),salesDiscountPct=salesIn?salesDiscount/salesIn:0;
     const salesReturns=getPL("Sales Returns"),salesReturnsPct=salesIn?salesReturns/salesIn:0;
     const ns=salesIn-salesDiscount-salesReturns;
-    // COGS_FLOW_V67: Cost per Volume + Import Tax + ambient/cold logistics + cost-flow Others.
-    const cogsCostPerVolume=firstNonZero(getPL("Cost per Volume"),getPL("Summary Flow - Cost per Volume"));
-    const cogsImportTax=firstNonZero(getPL("Import Tax Cost"),getPL("Summary Flow - Import Tax Cost"));
-    const cogsLogisticAmbient=firstNonZero(getPL("Logistic Cost Ambient"),getPL("Summary Flow - Logistic Cost Ambient"));
-    const cogsLogisticCold=firstNonZero(getPL("Logistic Cost Cold"),getPL("Summary Flow - Logistic Cost Cold"));
-    const cogsOthers=getPL("Summary Flow - Others");
-    const cogs=cogsCostPerVolume+cogsImportTax+cogsLogisticAmbient+cogsLogisticCold+cogsOthers,gp=ns-cogs,gmPct=ns?gp/ns:0;
-    const sw=getPL("Salaries & Wages"),sm=firstNonZero(getPL("Sales & Marketing"),getPL("Sales &Marketing")),ta=firstNonZero(getPL("Travel & Accommodation"),getPL("Travel & Accomodation")),pf=firstNonZero(getPL("Professional Fees"),getPL("Professional Services")),of_=getPL("Office Expense"),sh=firstNonZero(getPL("Software & Hardware"),getPL("IT (Software-Hardware)")),qual=getPL("Quality"),productWareHouse=firstNonZero(getPL("Product WareHouse"),getPL("Summary Flow - Product WareHouse")),ops=getPL("Operations")+productWareHouse,oth=getPL("Others");
-    const totOpex=sw+sm+ta+pf+of_+sh+qual+ops+oth,totOpexPct=ns?totOpex/ns:0;
-    const capHardware=firstNonZero(getPL("Hardware"),getPL("Summary Flow - Hardware"));
-    const capSoftware=firstNonZero(getPL("Software"),getPL("Summary Flow - Software"));
-    const licenseFees=firstNonZero(getPL("Up-Fronts"),getPL("Summary Flow - Up-Fronts"));
-    const capRegulatory=firstNonZero(getPL("Regulatory"),getPL("Summary Flow - Regulatory"));
-    const totalCapex=capHardware+capSoftware+licenseFees+capRegulatory;
+    const productWarehouse=forecastPeriod?getPL("Summary Flow - Product WareHouse"):firstNonZero(getPL("Product WareHouse"),getPL("Summary Flow - Product WareHouse"));
+    const cogs=forecastPeriod
+      ? getPL("Summary Flow - Cost per Volume")+getPL("Summary Flow - Import Tax Cost")+getPL("Summary Flow - Logistic Cost Cold")+productWarehouse
+      : firstNonZero(getPL("Cost per Volume"),getPL("Summary Flow - Cost per Volume"))
+        +firstNonZero(getPL("Import Tax Cost"),getPL("Summary Flow - Import Tax Cost"))
+        +firstNonZero(getPL("Logistic Cost Ambient"),getPL("Summary Flow - Logistic Cost Ambient"))
+        +firstNonZero(getPL("Logistic Cost Cold"),getPL("Summary Flow - Logistic Cost Cold"))
+        +getPL("Summary Flow - Others");
+    const gp=ns-cogs,gmPct=ns?gp/ns:0;
+    const sw=getPL("Salaries & Wages"),sm=firstNonZero(getPL("Sales & Marketing"),getPL("Sales &Marketing")),ta=firstNonZero(getPL("Travel & Accommodation"),getPL("Travel & Accomodation")),pf=firstNonZero(getPL("Professional Fees"),getPL("Professional Services")),of_=getPL("Office Expense"),qual=getPL("Quality"),ops=getPL("Operations"),oth=getPL("Others");
+    const totOpex=sw+sm+ta+pf+of_+ops+oth,totOpexPct=ns?totOpex/ns:0;
+    const capHardware=forecastPeriod?getPL("Summary Flow - Hardware"):firstNonZero(getPL("Hardware"),getPL("Summary Flow - Hardware"));
+    const capSoftware=forecastPeriod?getPL("Summary Flow - Software"):firstNonZero(getPL("Software"),getPL("Summary Flow - Software"));
+    const licenseFees=forecastPeriod?getPL("Summary Flow - Up-Fronts"):firstNonZero(getPL("Up-Fronts"),getPL("Summary Flow - Up-Fronts"));
+    const capRegulatory=forecastPeriod?getPL("Summary Flow - Regulatory"):firstNonZero(getPL("Regulatory"),getPL("Summary Flow - Regulatory"));
+    const totalCapex=capSoftware+licenseFees;
     const totalExpenses=totOpex+totalCapex,totalExpensesPct=ns?totalExpenses/ns:0;
     const ebitda=gp-totalExpenses,ebitdaPct=ns?ebitda/ns:0;
-    const result={salesInUnits,priceToDistributor,salesIn,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,sh,qual,ops,oth,totOpex,totOpexPct,capHardware,capSoftware,licenseFees,capRegulatory,totalCapex,totalExpenses,totalExpensesPct,ebitda,ebitdaPct};
+    const result={salesInUnits,priceToDistributor,salesIn,salesDiscount,salesDiscountPct,salesReturns,salesReturnsPct,ns,productWarehouse,cogs,gp,gmPct,sw,sm,ta,pf,of:of_,qual,ops,oth,totOpex,totOpexPct,capHardware,capSoftware,licenseFees,capRegulatory,totalCapex,totalExpenses,totalExpensesPct,ebitda,ebitdaPct};
     _bplC.current[k]=result;
     return result;
   };
