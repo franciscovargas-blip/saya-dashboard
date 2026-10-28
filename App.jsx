@@ -565,6 +565,35 @@ const CashFlowSapV112=({cf,month,year})=>{
 
 // CF_SAP_ISOLATED_V112_END
 
+// EXECUTIVE_V116_BEGIN
+function executiveRevenueMoMV116(rows,year,month){
+  const prevYear=month===1?year-1:year,prevMonth=month===1?12:month-1;
+  const hasPeriod=(yr,mo)=>rows.some(r=>r[1]==='Reales'&&Number(r[2])===Number(yr)&&Number(r[3])===mo);
+  const current=hasPeriod(year,month)?buildFSPL(rows,year,month,12,'reales').ns:null;
+  const previous=hasPeriod(prevYear,prevMonth)?buildFSPL(rows,prevYear,prevMonth,12,'reales').ns:null;
+  let reason=null,pct=null;
+  if(current==null||previous==null)reason='No hay datos reales suficientes para comparar el mes seleccionado con el anterior.';
+  else if(previous===0)reason='El Revenue del mes anterior es cero; no existe una variación porcentual MoM definida.';
+  else pct=(current-previous)/Math.abs(previous)*100;
+  return {current,previous,prevYear,prevMonth,pct,reason};
+}
+const CashFlowBarV116=({bar,index,count,height,period,children})=>{
+  const [hover,setHover]=useState(false),[focused,setFocused]=useState(false);
+  const show=hover||focused;
+  const value=(bar.value<0?'-$':'$')+Math.abs(bar.value).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' MXN';
+  const first=index===0,last=index===count-1;
+  return <div data-cashflow-hover-v116="true" tabIndex={0} aria-label={`${period} · ${bar.name}: ${value}`} aria-describedby={show?`cf-tooltip-v116-${index}`:undefined}
+    onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
+    style={{flex:1,position:'relative',height,zIndex:show?60:1,cursor:'help'}}>
+    {children}
+    {show&&<div id={`cf-tooltip-v116-${index}`} role="tooltip" style={{position:'absolute',top:8,left:last?'auto':first?0:'50%',right:last?0:'auto',transform:!first&&!last?'translateX(-50%)':'none',width:'max-content',maxWidth:220,padding:'9px 11px',background:'#fff',border:'1px solid #CBD5E1',borderRadius:8,boxShadow:'0 3px 12px rgba(15,23,42,.14)',fontSize:12,lineHeight:1.5,color:'#1F2937',pointerEvents:'none',whiteSpace:'nowrap',zIndex:100}}>
+      <div style={{fontSize:11,color:'#667085'}}>{period}</div><div style={{fontWeight:700}}>{bar.name}</div><div style={{fontWeight:800,color:bar.color,fontVariantNumeric:'tabular-nums'}}>{value}</div>
+    </div>}
+  </div>;
+};
+
+// EXECUTIVE_V116_END
+
 export default function Dashboard() {
   const [cm, setCm] = useState(() => {
     const realesMonths = D.filter(r=>r[1]==="Reales"&&r[2]===CUR_YEAR).map(r=>r[3]).filter(Number.isFinite);
@@ -1549,7 +1578,7 @@ export default function Dashboard() {
               </div>
             ))}
             {(()=>{
-              const empCount=24;
+              const empCount=25;
               const nsYTDe=MO.slice(0,cm).reduce((s,_mo,i)=>{const r=buildFSPL(fsFd,CUR_YEAR,i+1,cm,"reales");return s+(r.ns||0);},0);
               const revEmp=nsYTDe&&empCount?Math.round(nsYTDe/empCount):0;
               return(
@@ -1635,7 +1664,8 @@ export default function Dashboard() {
             const nsLY=ytdM.reduce((s,m)=>s+fsGetValue(fsAllFd, "Net Sales","Reales",CUR_YEAR-1,m),0);
             const gpLY=ytdM.reduce((s,m)=>s+(fsGetValue(fsAllFd, "Net Sales","Reales",CUR_YEAR-1,m)-fsGetValue(fsAllFd, "COGS","Reales",CUR_YEAR-1,m)),0);
             const gmLY=nsLY?gpLY/nsLY*100:0;
-            const growthPct=nsLY?(nsYTD-nsLY)/Math.abs(nsLY)*100:0;
+            const momRevenue=executiveRevenueMoMV116(fsAllFd,CUR_YEAR,cm);
+            const growthPct=momRevenue.pct; // EXEC_REVENUE_MOM_V116: selected month vs previous calendar month, actuals only.
             const deltaMejora=gmYTD-gmLY;
             const varVsFcst=nsYTD-nsFcstYTD;
             const fmtLbl=v=>v&&Math.abs(v)>=5e4?(v/1e6).toFixed(1)+'M':'';
@@ -1649,10 +1679,10 @@ export default function Dashboard() {
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                     <div>
-                      <div style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>Sales In (M MXN) &amp; Gross Margin (%)</div>
-                      <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Bars: Actual Net Sales · Light bars: Forecast · Green line: Gross Margin %</div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#1a1a2e"}}>Revenue (M MXN) &amp; Gross Margin (%)</div>
+                      <div style={{fontSize:8,color:"#8A90A8",marginTop:2}}>Bars: Actual Revenue · Light bars: Forecast · Green line: Gross Margin %</div>
                     </div>
-                    <button onClick={()=>{const h="Mes,Real,Forecast,GM%Real,GM%Fcst\n";const r=revData.map(d=>[d.name,d.Real,d.Forecast,d.GmPct??'',d.GmPctF??''].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="ventas_netas.csv";a.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
+                    <button onClick={()=>{const h="Month,Actual Revenue,Forecast Revenue,GM%Real,GM%Fcst\n";const r=revData.map(d=>[d.name,d.Real,d.Forecast,d.GmPct??'',d.GmPctF??''].join(",")).join("\n");const b=new Blob([h+r],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="revenue.csv";a.click();}} style={{fontSize:9,padding:"4px 10px",background:"#534AB7",color:"#fff",border:"none",borderRadius:5,cursor:"pointer"}}>⬇ CSV</button>
                   </div>
                   <ResponsiveContainer width="100%" height={240}>
                     <ComposedChart data={revData} margin={{top:22,right:46,bottom:0,left:2}} barCategoryGap="22%" barGap={2}>
@@ -1660,10 +1690,10 @@ export default function Dashboard() {
                       <YAxis yAxisId="L" tick={{fontSize:7,fill:"#8A90A8"}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'0'} domain={[0,leftMax]}/>
                       <YAxis yAxisId="R" orientation="right" tick={{fontSize:7,fill:"#1D9E75"}} axisLine={false} tickLine={false} tickFormatter={v=>v+'%'} domain={[gmMin,gmMax]}/>
                       <Tooltip formatter={(v,n)=>n.includes('%')?[(v!=null?v.toFixed(1):'--')+'%',n]:['$'+(v/1e6).toFixed(1)+'M',n]} contentStyle={{fontSize:9,borderRadius:6}}/>
-                      <Bar yAxisId="L" dataKey="Real" name="Real" fill="#1E3A8A" radius={[3,3,0,0]} maxBarSize={26}>
+                      <Bar yAxisId="L" dataKey="Real" name="Actual Revenue" fill="#1E3A8A" radius={[3,3,0,0]} maxBarSize={26}>
                         <LabelList dataKey="Real" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E3A8A",fontWeight:700}}/>
                       </Bar>
-                      <Bar yAxisId="L" dataKey="Forecast" name="Forecast" fill="#93C5FD" radius={[3,3,0,0]} maxBarSize={26}>
+                      <Bar yAxisId="L" dataKey="Forecast" name="Forecast Revenue" fill="#93C5FD" radius={[3,3,0,0]} maxBarSize={26}>
                         <LabelList dataKey="Forecast" position="top" formatter={fmtLbl} style={{fontSize:7,fill:"#1E40AF",fontWeight:700}}/>
                       </Bar>
                       <Line yAxisId="R" type="monotone" dataKey="GmPct" name="GM% Real" stroke="#1D9E75" strokeWidth={2.5} dot={{r:4,fill:"#1D9E75",stroke:"#fff",strokeWidth:1}} activeDot={{r:5}} connectNulls>
@@ -1673,7 +1703,7 @@ export default function Dashboard() {
                     </ComposedChart>
                   </ResponsiveContainer>
                   <div style={{display:"flex",gap:14,fontSize:8,color:"#8A90A8",flexWrap:"wrap",marginTop:4}}>
-                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#1E3A8A",display:"inline-block"}}/>Actual Net Sales</span>
+                    <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#1E3A8A",display:"inline-block"}}/>Actual Revenue</span>
                     <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:2,background:"#93C5FD",border:"1px solid #1E40AF",display:"inline-block"}}/>Forecast</span>
                     <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:3,background:"#1D9E75",display:"inline-block",borderRadius:2}}/>Gross Margin % Real</span>
 
@@ -1681,14 +1711,14 @@ export default function Dashboard() {
                 </div>
                 <div style={{width:152,flexShrink:0,display:"flex",flexDirection:"column",gap:7,paddingTop:38}}>
                   {[
-                    {label:"Net Sales YTD",value:F(nsYTD),color:"#1E3A8A",bg:"#EFF4FF"},
+                    {label:"Revenue YTD",value:F(nsYTD),color:"#1E3A8A",bg:"#EFF4FF"},
                     {label:"Forecast YTD",value:F(nsFcstYTD),color:"#534AB7",bg:"#F3F0FF"},
-                    {label:"Crecimiento",value:(growthPct>=0?"+":"")+growthPct.toFixed(0)+"%",color:growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct>=0?"#F0FAF6":"#FEF2F2"},
+                    {label:"MoM",value:growthPct==null?"N/D":(growthPct>=0?"+":"")+growthPct.toFixed(1)+"%",color:growthPct==null?"#667085":growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct==null?"#F8FAFC":growthPct>=0?"#F0FAF6":"#FEF2F2",title:momRevenue.reason||`${MO[cm-1]} ${CUR_YEAR} vs ${MO[momRevenue.prevMonth-1]} ${momRevenue.prevYear} · (Revenue mes corriente − Revenue mes anterior) / |Revenue mes anterior| × 100`},
                     {label:"Gross Margin YTD",value:gmYTD.toFixed(1)+"%",color:"#1D9E75",bg:"#F0FAF6"},
-                    {label:"Mejora vs LY",value:(deltaMejora>=0?"+":"")+deltaMejora.toFixed(1)+" pp",color:deltaMejora>=0?"#1D9E75":"#E24B4A",bg:deltaMejora>=0?"#F0FAF6":"#FEF2F2"},
+                    {label:"Var vs LY",value:(deltaMejora>=0?"+":"")+deltaMejora.toFixed(1)+" pp",color:deltaMejora>=0?"#1D9E75":"#E24B4A",bg:deltaMejora>=0?"#F0FAF6":"#FEF2F2"},
                     {label:"Var. vs Forecast",value:(varVsFcst>=0?"+":"")+F(varVsFcst),color:varVsFcst>=0?"#1D9E75":"#E24B4A",bg:varVsFcst>=0?"#F0FAF6":"#FEF2F2"},
                   ].map((k,i)=>(
-                    <div key={i} style={{background:k.bg,borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+k.color}}>
+                    <div key={i} title={k.title} style={{background:k.bg,borderRadius:8,padding:"6px 10px",borderLeft:"3px solid "+k.color}}>
                       <div style={{fontSize:7.5,color:"#8A90A8",marginBottom:1}}>{k.label}</div>
                       <div style={{fontSize:i<=1?13:12,fontWeight:700,color:k.color}}>{k.value}</div>
                     </div>
@@ -2009,10 +2039,10 @@ export default function Dashboard() {
                     const y1=toY(b.start),y2=toY(b.end),barTop=Math.min(y1,y2),barH=Math.max(Math.abs(y2-y1),2);
                     const labelTop=b.value>=0?Math.max(barTop-14,0):Math.min(barTop+barH+3,CHART_H-10);
                     return(
-                      <div key={i} style={{flex:1,position:'relative',height:CHART_H,zIndex:1}}>
+                      <CashFlowBarV116 key={i} bar={b} index={i} count={bars.length} height={CHART_H} period={`${MO[cm-1]} ${CUR_YEAR}`} >
                         <div style={{position:'absolute',top:labelTop,fontSize:7,fontWeight:700,color:b.color,textAlign:'center',width:'120%',left:'-10%',whiteSpace:'nowrap',zIndex:2}}>{F2(b.value)}</div>
                         <div style={{position:'absolute',top:barTop,left:'12.5%',width:'75%',height:barH,background:b.color,borderRadius:3}}/>
-                      </div>
+                      </CashFlowBarV116>
                     );
                   })}
                 </div>
