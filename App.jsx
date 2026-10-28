@@ -1752,6 +1752,11 @@ export default function Dashboard() {
             });
             const nsYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"reales").ns,0);
             const nsFcstYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"forecast").ns,0);
+            // EXEC_FORECAST_REVENUE_YTD_V123: January through selected month, not current month or Net Revenue.
+            const forecastRevenueYTDV123=ytdM.reduce((sum,m)=>{
+              const values=["Sales (Sell In) Contable","Sales (Sell In)","Net Sales"].map(line=>fsGetValue(fsFd,line,"Forecast",CUR_YEAR,m));
+              return sum+(values.find(v=>v!==0)||0);
+            },0);
             const gpYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"consolidado").gp,0);
             const gpFcstYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"forecast").gp,0);
             const gmYTD=nsYTD?gpYTD/nsYTD*100:0;
@@ -1807,7 +1812,7 @@ export default function Dashboard() {
                 <div style={{width:152,flexShrink:0,display:"flex",flexDirection:"column",gap:7,paddingTop:38}}>
                   {[
                     {label:"Revenue YTD",value:F(nsYTD),color:"#1E3A8A",bg:"#EFF4FF"},
-                    {label:"Forecast YTD",value:F(nsFcstYTD),color:"#534AB7",bg:"#F3F0FF"},
+                    {label:"Forecast YTD",value:F(forecastRevenueYTDV123),color:"#534AB7",bg:"#F3F0FF"},
                     {label:"Var MoM",value:growthPct==null?"N/D":(growthPct>=0?"+":"")+growthPct.toFixed(1)+"%",color:growthPct==null?"#667085":growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct==null?"#F8FAFC":growthPct>=0?"#F0FAF6":"#FEF2F2",title:momRevenue.reason||`${MO[cm-1]} ${CUR_YEAR} vs ${MO[momRevenue.prevMonth-1]} ${momRevenue.prevYear} · (Revenue mes corriente − Revenue mes anterior) / |Revenue mes anterior| × 100`},
                     {label:"Gross Margin YTD",value:gmYTD.toFixed(1)+"%",color:"#1D9E75",bg:"#F0FAF6"},
                     {label:"Var vs LY",value:(deltaMejora>=0?"+":"")+deltaMejora.toFixed(1)+" pp",color:deltaMejora>=0?"#1D9E75":"#E24B4A",bg:deltaMejora>=0?"#F0FAF6":"#FEF2F2"},
