@@ -407,7 +407,7 @@ function LoginGate({ children }) {
   );
 }
 
-const PnlAutoVarianceLabel=({source = FS_DATA,label,metric,prefix,year,month})=>{
+const PnlAutoVarianceLabel=({source = FS_DATA,label,metric,prefix,year,month,forecastValue,actualValue})=>{
   const [show,setShow]=React.useState(false);
   const isUnits=metric==="salesInUnits";
   const monthNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -419,10 +419,7 @@ const PnlAutoVarianceLabel=({source = FS_DATA,label,metric,prefix,year,month})=>
     if(/forecast|budget|presup/.test(v)) return "forecast";
     return "";
   };
-  const isUnitLine=r=>["market volume <saya>","market volume saya","sales in units","sell in units"].includes(normalize(r?.[0]));
-  const isValueLine=r=>normalize(r?.[0])==="sales (sell in)";
-  const relevant=r=>isUnits?isUnitLine(r):isValueLine(r);
-  const sourceRows = source.filter(r=>Array.isArray(r)&&Number(r[2])===Number(year)&&months.includes(Number(r[3]))&&relevant(r));
+  const sourceRows = fsCommercialRowsV117(source,metric,Number(year),months);
   const moleculeOf=r=>{
     const raw=String(r?.[4]??"Unspecified").trim()||"Unspecified";
     const key=raw.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
@@ -441,8 +438,9 @@ const PnlAutoVarianceLabel=({source = FS_DATA,label,metric,prefix,year,month})=>
     return {molecule,forecast,actual,variance:forecast-actual};
   }).filter(x=>x.forecast||x.actual);
   const total=rows.reduce((a,x)=>({forecast:a.forecast+x.forecast,actual:a.actual+x.actual,variance:a.variance+x.variance}),{forecast:0,actual:0,variance:0});
-  const sourceForecast=sourceRows.filter(r=>versionOf(r)==="forecast").reduce((a,r)=>a+n(r),0);
-  const sourceActual=sourceRows.filter(r=>versionOf(r)==="actual").reduce((a,r)=>a+n(r),0);
+  // Validate the grouped detail against the displayed parent P&L cells, not itself.
+  const sourceForecast=Number.isFinite(forecastValue)?forecastValue:months.reduce((sum,m)=>sum+buildFSPL(source,Number(year),m,Number(month),"forecast")[metric],0);
+  const sourceActual=Number.isFinite(actualValue)?actualValue:months.reduce((sum,m)=>sum+buildFSPL(source,Number(year),m,Number(month),"reales")[metric],0);
   const sourceVariance=sourceForecast-sourceActual;
   const reconciliation=Math.max(Math.abs(total.forecast-sourceForecast),Math.abs(total.actual-sourceActual),Math.abs(total.variance-sourceVariance));
   const period=prefix==="ytd"?`YTD Jan–${monthNames[Math.max(0,month-1)]} ${year}`:`${monthNames[Math.max(0,month-1)]} ${year}`;
@@ -593,6 +591,21 @@ const CashFlowBarV116=({bar,index,count,height,period,children})=>{
 };
 
 // EXECUTIVE_V116_END
+
+// FORECAST_DETAIL_V117_BEGIN
+// Match the P&L's first non-zero source per month and origin, before molecule grouping.
+// Never add accounting and cash-flow sales together or deduplicate transactions.
+function fsCommercialRowsV117(source, metric, year, months) {
+  const priorities = metric === "salesInUnits" ? ["Market Volume <Saya>"] : ["Sales (Sell In) Contable", "Sales (Sell In)", "Net Sales"];
+  const selected = new Set();
+  for (const month of months) for (const origin of ["Forecast", "Reales"]) {
+    const line = priorities.find(pl => fsGetValue(source, pl, origin, year, month) !== 0) || priorities[0];
+    selected.add(JSON.stringify([fsNormPL(line), origin, year, month]));
+  }
+  return source.filter(row => selected.has(JSON.stringify([fsNormPL(row[0]), row[1], row[2], row[3]])));
+}
+
+// FORECAST_DETAIL_V117_END
 
 export default function Dashboard() {
   const [cm, setCm] = useState(() => {
@@ -1172,7 +1185,7 @@ export default function Dashboard() {
       {/* MAIN TABS */}
       <div style={{display:"flex",alignItems:"center",gap:0,borderBottom:"2px solid #E4E8F2",background:"#fff",padding:"0 20px",marginTop:8,overflowX:"auto"}}>
         <div data-currency-badge="true" style={{flexShrink:0,fontSize:12,padding:"6px 12px",marginRight:8,borderRadius:6,background:"#E8F4FF",color:"#185FA5",fontWeight:800,letterSpacing:1.2,whiteSpace:"nowrap"}}>AMOUNTS IN MXN</div>
-        {[["executive","🎯 Executive KPIs"],["ventas","📈 Sales"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"] /* PORTFOLIO_TAB_REMOVED_V96 */,["auxiliares","🗂 Auxiliares"] /* BREAKEVEN_TAB_REMOVED_V99 */,["inventarios","📦 Inventarios"]].map(([t,lb]) => {
+        {[["executive","🎯 Executive KPIs"],["dashboard","📑 Financial Statements"],["pnl-anual","📋 Summary"],["capex","📦 CAPEX"] /* PORTFOLIO_TAB_REMOVED_V96 */,["auxiliares","🗂 Auxiliares"] /* BREAKEVEN_TAB_REMOVED_V99 */,["inventarios","📦 Inventarios"],["ventas","📈 Sales"]].map(([t,lb]) => {
           const active = mainTab === t;
           const btnSt = {padding:"8px 18px",border:"none",background:"none",borderBottom: active ? "2.5px solid #534AB7" : "2px solid transparent",color: active ? "#534AB7" : "#8A90A8",fontWeight: active ? 700 : 400,cursor:"pointer",fontSize:13,outline:"none"};
           return <button key={t} onClick={() => setMainTab(t)} style={btnSt}>{lb}</button>;
@@ -1429,7 +1442,7 @@ export default function Dashboard() {
                         <td style={{ ...td, fontWeight: r.isBold ? 500 : 400, fontSize: r.isPct ? 9 : 10, fontStyle: r.isPct ? "italic" : "normal", color: isOpex ? "#534AB7" : "#1a1a2e", paddingLeft: isOpex ? 16 : 6 }}>
                           {isOpex && <span style={{fontSize:8,marginRight:4}}>{isExp ? "▼" : "▶"}</span>}
                           {(r.k==="salesInUnits"||r.k==="salesIn") && (t.prefix==="ytd"||t.prefix==="cm") ? (
-                            <PnlAutoVarianceLabel source={fsFd} label={r.label} metric={r.k} prefix={t.prefix} year={CUR_YEAR} month={cm}/>
+                            <PnlAutoVarianceLabel source={fsFd} label={r.label} metric={r.k} prefix={t.prefix} year={CUR_YEAR} month={cm} forecastValue={r[t.fk]} actualValue={r[t.rk]}/>
                           ) : r.label}
                         </td>
                         <td style={{ ...td, textAlign: "right", color: r[t.fk] < 0 ? "#E24B4A" : "#185FA5", fontSize: r.isPct ? 9 : 10 }}>{fv(r[t.fk], r.isPct, r.k)}</td>
@@ -1653,10 +1666,10 @@ export default function Dashboard() {
               const f=buildFSPL(fsFd,CUR_YEAR,m,cm,"forecast");
               const showReal=(view==="reales"||view==="consolidado")&&m<=cm&&r.ns>0;
               const showFcst=true;
-              return {name:mo,Real:showReal?Math.round(r.ns):null,Forecast:showFcst?Math.round(f.ns):null,GmPct:showReal&&r.ns?parseFloat((r.gp/r.ns*100).toFixed(1)):null,GmPctF:showFcst&&f.ns?parseFloat((f.gp/f.ns*100).toFixed(1)):null,cur:m<=cm};
+              return {name:mo,Real:showReal?r.ns:null,Forecast:showFcst?f.ns:null,GmPct:showReal&&r.ns?parseFloat((r.gp/r.ns*100).toFixed(1)):null,GmPctF:showFcst&&f.ns?parseFloat((f.gp/f.ns*100).toFixed(1)):null,cur:m<=cm};
             });
-            const nsYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Real,0);
-            const nsFcstYTD=revData.filter(d=>d.cur).reduce((s,d)=>s+d.Forecast,0);
+            const nsYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"reales").ns,0);
+            const nsFcstYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"forecast").ns,0);
             const gpYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"consolidado").gp,0);
             const gpFcstYTD=ytdM.reduce((s,m)=>s+buildFSPL(fsFd,CUR_YEAR,m,cm,"forecast").gp,0);
             const gmYTD=nsYTD?gpYTD/nsYTD*100:0;
@@ -1713,7 +1726,7 @@ export default function Dashboard() {
                   {[
                     {label:"Revenue YTD",value:F(nsYTD),color:"#1E3A8A",bg:"#EFF4FF"},
                     {label:"Forecast YTD",value:F(nsFcstYTD),color:"#534AB7",bg:"#F3F0FF"},
-                    {label:"MoM",value:growthPct==null?"N/D":(growthPct>=0?"+":"")+growthPct.toFixed(1)+"%",color:growthPct==null?"#667085":growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct==null?"#F8FAFC":growthPct>=0?"#F0FAF6":"#FEF2F2",title:momRevenue.reason||`${MO[cm-1]} ${CUR_YEAR} vs ${MO[momRevenue.prevMonth-1]} ${momRevenue.prevYear} · (Revenue mes corriente − Revenue mes anterior) / |Revenue mes anterior| × 100`},
+                    {label:"Var MoM",value:growthPct==null?"N/D":(growthPct>=0?"+":"")+growthPct.toFixed(1)+"%",color:growthPct==null?"#667085":growthPct>=0?"#1D9E75":"#E24B4A",bg:growthPct==null?"#F8FAFC":growthPct>=0?"#F0FAF6":"#FEF2F2",title:momRevenue.reason||`${MO[cm-1]} ${CUR_YEAR} vs ${MO[momRevenue.prevMonth-1]} ${momRevenue.prevYear} · (Revenue mes corriente − Revenue mes anterior) / |Revenue mes anterior| × 100`},
                     {label:"Gross Margin YTD",value:gmYTD.toFixed(1)+"%",color:"#1D9E75",bg:"#F0FAF6"},
                     {label:"Var vs LY",value:(deltaMejora>=0?"+":"")+deltaMejora.toFixed(1)+" pp",color:deltaMejora>=0?"#1D9E75":"#E24B4A",bg:deltaMejora>=0?"#F0FAF6":"#FEF2F2"},
                     {label:"Var. vs Forecast",value:(varVsFcst>=0?"+":"")+F(varVsFcst),color:varVsFcst>=0?"#1D9E75":"#E24B4A",bg:varVsFcst>=0?"#F0FAF6":"#FEF2F2"},
