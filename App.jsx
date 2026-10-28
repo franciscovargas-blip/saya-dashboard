@@ -301,6 +301,21 @@ function fsProductDataV121(base) {
   return [...source.filter(row=>!replaced.has(row)),...add];
 }
 
+// FS_REVENUE_ACCOUNTING_V122: Financial Statements Forecast only; no change to D, Summary or Executive.
+function fsRevenueAccountingV122(rows) {
+  const periods=new Set(rows.filter(r=>r[1]==="Forecast"&&r[0]==="Sales (Sell In) Contable").map(r=>`${r[2]}-${r[3]}`));
+  const result=[];
+  for(const row of rows){
+    if(row[1]!=="Forecast"||!periods.has(`${row[2]}-${row[3]}`)){result.push(row);continue;}
+    if(row[0]==="Sales (Sell In)")continue;
+    result.push(row);
+    if(row[0]==="Sales (Sell In) Contable"){
+      const revenue=[...row];revenue[0]="Sales (Sell In)";result.push(revenue);
+    }
+  }
+  return result;
+}
+
 // FS_PRODUCT_HELPERS_V121_END
 const _FS_ACCOUNTING_ROWS = _FS_CSV_SOURCE.map(row => {
   const normalized = [...row]; normalized[0] = fsNormPL(row[0]);
@@ -737,7 +752,7 @@ export default function Dashboard() {
   const fsContractedProductOptionsV121=useMemo(()=>[...new Set(FS_PRODUCT_DATA_V121.filter(r=>fsIsContractedV121(r[11]??r[4])||fsIsContractedV121(r[4])).map(r=>r[4]).filter(m=>m&&m!=='Sin asignación contable'&&m!=='Consolidado'))].sort(),[globalMeta]);
   const fsAllFd = useMemo(() => {
     const locked=mainTab==='dashboard';
-    let d=(locked?FS_PRODUCT_DATA_V121:FS_DATA).filter(r=>globalMolAllowed(locked?(r[11]??r[4]):r[4]));
+    let d=(locked?fsRevenueAccountingV122(FS_PRODUCT_DATA_V121):FS_DATA).filter(r=>globalMolAllowed(locked?(r[11]??r[4]):r[4]));
     if(locked)d=d.filter(r=>fsIsContractedV121(r[11]??r[4])||fsIsContractedV121(r[4]));
     if(selMols.length>0)d=d.filter(r=>selMols.includes(locked?fsProductNameV121(r[4]):mapMol(r[4])));
     if(selMolsModelos.length>0)d=d.filter(r=>locked?selMolsModelos.some(m=>fsProductNameV121(m)===r[4]):selMolsModelos.includes(r[4]));
