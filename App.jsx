@@ -244,6 +244,64 @@ function fsGetValue(rows, pl, origin, year, month) {
   const acc = fsIndex(rows).get(JSON.stringify([fsNormPL(pl), origin, year, month]));
   return acc ? acc[0] + acc[1] : 0;
 }
+// FS_PRODUCT_HELPERS_V121_BEGIN
+// Financial Statements product identity; never changes Summary's molecule mapping.
+function fsProductNameV121(value) {
+  const raw=String(value??'').trim();
+  const key=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/,/g,'.');
+  if(/bevacizumab\s*400/.test(key))return 'Bevacizumab 400';
+  if(raw==='BEVA'||key==='bevalyax'||/bevacizumab\s*100/.test(key))return 'Bevalyax';
+  if(raw==='TERI'||key==='teriparatida'||key==='euxara')return 'Euxara';
+  if(raw==='LIRA'||key==='liraglutida'||key==='saytelia')return 'Saytelia';
+  if(raw==='PELI'||key==='pegfilgrastim'||key==='neutorum')return 'Neutorum';
+  if(raw==='DENO'||key==='deno'||key==='denosumab'||key==='corelis')return 'Corelis';
+  if(raw==='ACMI'||key==='acido micofenolico'||key==='acmi')return 'Ácido Micofenólico';
+  if(raw==='FIXED'||key==='fixed')return 'Fixed';
+  if(/hyaxum\s*plus/.test(key)||(/hialuronico/.test(key)&&/1\.5\s*%/.test(key)))return 'Hyaxum Plus';
+  if(/hyaxum\s*pro/.test(key)||(/hialuronico/.test(key)&&/(?:^|\s)2(?:\.0)?\s*%/.test(key)))return 'Hyaxum Pro';
+  if(key==='hyaxum'||(/hialuronico/.test(key)&&/(?:^|\s)1(?:\.0)?\s*%/.test(key)))return 'Hyaxum';
+  if(raw==='Consolidado'||raw==='Sin asignación contable')return 'Sin asignación contable';
+  return mapMol(raw)||raw;
+}
+function fsProductRowV121(row) {
+  const out=[...row],raw=row[11]??row[4];
+  out[4]=fsProductNameV121(raw);out[11]=raw;return out;
+}
+function fsSumV121(rows) {
+  let sum=0,error=0;
+  for(const row of rows){const value=Number(row[9])||0,next=sum+value;error+=Math.abs(sum)>=Math.abs(value)?(sum-next)+value:(value-next)+sum;sum=next;}
+  return sum+error;
+}
+function fsProductDataV121(base) {
+  const source=base.map(fsProductRowV121),priority=['Sales (Sell In) Contable','Sales (Sell In)','Net Sales'];
+  const periods=new Map();
+  for(const row of source)if(row[1]==='Reales'&&priority.includes(row[0]))periods.set(`${row[2]}-${row[3]}`,[row[2],row[3]]);
+  const commercial=new Map();
+  for(const row of D)if(row[0]==='Sales (Sell In)'&&row[1]==='Reales'&&row[4]&&fsProductNameV121(row[4])!=='Sin asignación contable'){
+    const key=`${row[2]}-${row[3]}`;if(!commercial.has(key))commercial.set(key,[]);commercial.get(key).push(row);
+  }
+  const replaced=new Set(),add=[];
+  for(const [key,[year,month]] of periods){
+    const line=priority.find(pl=>fsGetValue(source,pl,'Reales',year,month)!==0);if(!line)continue;
+    const accounting=source.filter(row=>row[0]===line&&row[1]==='Reales'&&row[2]===year&&row[3]===month);
+    const unassigned=accounting.filter(row=>row[4]==='Sin asignación contable');if(!unassigned.length)continue;
+    if(unassigned.length!==accounting.length)throw new Error(`FS ${key}: mezcla de ventas con/sin producto; requiere revisión, no prorrateo.`);
+    const detail=(commercial.get(key)||[]).map(row=>{const out=fsProductRowV121(row);out[0]=line;return out;});
+    const gap=fsSumV121(accounting)-fsSumV121(detail);
+    let retained=[];
+    if(Math.abs(gap)>=0.005){
+      // Preserve only an existing, explicit one-cent accounting record. Never create a residual.
+      const candidates=accounting.filter(row=>Math.abs(Number(row[9]))<=0.010000001&&Math.abs(Number(row[9])-gap)<0.000001);
+      if(Math.abs(gap)>0.010000001||candidates.length!==1)throw new Error(`FS ${key}: detalle comercial no concilia con Revenue contable; no se distribuye diferencia.`);
+      retained=candidates;
+    }
+    if(!detail.length||Math.abs(fsSumV121(detail)+fsSumV121(retained)-fsSumV121(accounting))>=0.005)throw new Error(`FS ${key}: faltan ventas reales por producto.`);
+    accounting.forEach(row=>replaced.add(row));add.push(...detail,...retained);
+  }
+  return [...source.filter(row=>!replaced.has(row)),...add];
+}
+
+// FS_PRODUCT_HELPERS_V121_END
 const _FS_ACCOUNTING_ROWS = _FS_CSV_SOURCE.map(row => {
   const normalized = [...row]; normalized[0] = fsNormPL(row[0]);
   // FS_COGS_SUPPLIER_CREDIT_SIGN_V106
@@ -255,6 +313,7 @@ const _FS_ACCOUNTING_ROWS = _FS_CSV_SOURCE.map(row => {
   }
   // Accounting-only aggregate; not included in molecule selector options.
   normalized[4] = row[4] === "Consolidado" ? "Sin asignación contable" : mapMol(row[4]);
+  normalized[11] = row[4]; // original product before legacy alias mapping
   return normalized;
 });
 const _FS_CSV_SALES_MONTHS = new Set(_FS_ACCOUNTING_ROWS.filter(r =>
@@ -268,10 +327,18 @@ const _FS_APPROVED_FC_UNITS = D.filter(r => r[1] === "Forecast" && r[2] === 2026
 const _FS_COMMERCIAL_UNITS = D.filter(r => r[1] === "Reales" && _FS_UNIT_LINES.has(r[0]) && _FS_CSV_SALES_MONTHS.has(`${r[2]}-${r[3]}`)).map(r => [...r]);
 // Financial Statements: Others comes only from CSV; no manual overrides.
 const _FS_AUTHORIZED_ROWS = [];
+// FS_FORECAST_REVENUE_ROWS_V120: same Forecast Sales rows as Summary, no rounding or deduplication here.
+const _FS_FORECAST_REVENUE_V120 = D.filter(row => row[1] === "Forecast" && row[0] === "Sales (Sell In)").map(row => {
+  const normalized = [...row]; normalized[0] = fsNormPL(row[0]);
+  normalized[4] = row[4] === "Consolidado" ? "Sin asignación contable" : mapMol(row[4]);
+  normalized[11] = row[4]; // original product before legacy alias mapping
+  return normalized;
+});
 const FS_DATA = [
-  ..._FS_ACCOUNTING_ROWS.filter(r => !(r[1] === "Forecast" && r[2] === 2026 && r[3] >= 1 && r[3] <= 8 && _FS_UNIT_LINES.has(r[0])) && !(r[1] === "Reales" && _FS_UNIT_LINES.has(r[0]))),
-  ..._FS_APPROVED_FC_UNITS, ..._FS_COMMERCIAL_UNITS, ..._FS_AUTHORIZED_ROWS
+  ..._FS_ACCOUNTING_ROWS.filter(r => !(r[1] === "Forecast" && r[0] === "Sales (Sell In)") && !(r[1] === "Forecast" && r[2] === 2026 && r[3] >= 1 && r[3] <= 8 && _FS_UNIT_LINES.has(r[0])) && !(r[1] === "Reales" && _FS_UNIT_LINES.has(r[0]))),
+  ..._FS_APPROVED_FC_UNITS, ..._FS_COMMERCIAL_UNITS, ..._FS_AUTHORIZED_ROWS, ..._FS_FORECAST_REVENUE_V120
 ];
+const FS_PRODUCT_DATA_V121 = fsProductDataV121(FS_DATA);
 function fsDetailRows(rows, metric, year, month, cutoff, mode) {
   const origin = mode === "forecast" ? "Forecast" : mode === "reales" ? (month <= cutoff ? "Reales" : null) : month <= cutoff ? "Reales" : "Forecast";
   const period = rows.filter(r => r[1] === origin && r[2] === year && r[3] === month);
@@ -301,7 +368,9 @@ function buildFSPL(fd, yr, m, cm, mode) {
     return fsGetValue(fd, pl, "Forecast", yr, m);
   };
   const firstNonZero = (...vals) => vals.find(v => v !== 0) || 0;
-  const salesIn = firstNonZero(getVal("Sales (Sell In) Contable"), getVal("Sales (Sell In)"), getVal("Net Sales")); // FINANCIAL_SALES_ACCOUNTING_FIRST_V74
+  // FS_FORECAST_REVENUE_SUMMARY_SOURCE_V120: Forecast uses the Sales (Sell In) source used by Summary.
+  // Actuals keep the accounting-first rule. No CSV data, Summary costs or expense rules are changed.
+  const salesIn = mode === "forecast" ? getVal("Sales (Sell In)") : firstNonZero(getVal("Sales (Sell In) Contable"), getVal("Sales (Sell In)"), getVal("Net Sales"));
   const sellOut = firstNonZero(getVal("Sales (Sell Out)"), getVal("Sales (Sell Out) Contable"), getVal("Sell Out"), getVal("Sell-Out"));
   const salesDiscount = getVal("Sales Discount (Gross to Net)");
   const salesReturns = getVal("Sales Returns");
@@ -420,16 +489,7 @@ const PnlAutoVarianceLabel=({source = FS_DATA,label,metric,prefix,year,month,for
     return "";
   };
   const sourceRows = fsCommercialRowsV117(source,metric,Number(year),months);
-  const moleculeOf=r=>{
-    const raw=String(r?.[4]??"Unspecified").trim()||"Unspecified";
-    const key=raw.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-    const aliases={
-      "acido hialuronico 1%":"Hyaxum",
-      "acido hialuronico 1.5%":"Hyaxum Plus",
-      "acido hialuronico 2%":"Hyaxum Pro"
-    };
-    return aliases[key]||raw;
-  };
+  const moleculeOf=r=>fsProductNameV121(r?.[4]??"Unspecified");
   const molecules=[...new Set(sourceRows.map(moleculeOf))].sort((a,b)=>a.localeCompare(b));
   const n=r=>Number(r?.[9])||0;
   const amount=(version,molecule)=>sourceRows.filter(r=>versionOf(r)===version&&moleculeOf(r)===molecule).reduce((a,r)=>a+n(r),0);
@@ -445,7 +505,7 @@ const PnlAutoVarianceLabel=({source = FS_DATA,label,metric,prefix,year,month,for
   const reconciliation=Math.max(Math.abs(total.forecast-sourceForecast),Math.abs(total.actual-sourceActual),Math.abs(total.variance-sourceVariance));
   const period=prefix==="ytd"?`YTD Jan–${monthNames[Math.max(0,month-1)]} ${year}`:`${monthNames[Math.max(0,month-1)]} ${year}`;
   const fmtUnits=v=>Math.round(v).toLocaleString("en-US");
-  const fmtValue=v=>`$${Math.round(v).toLocaleString("en-US")}`;
+  const fmtValue=v=>Math.abs(v)>0&&Math.abs(v)<1?`${v<0?"-$":"$"}${Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`:`$${Math.round(v).toLocaleString("en-US")}`;
   const fmt=isUnits?fmtUnits:fmtValue;
   const color=v=>v===0?"#667085":v>0?"#067647":"#B42318";
   const title=isUnits?"Units":"Revenue";
@@ -480,15 +540,15 @@ const BurnDetailTable=({year,month})=>{
   const rows=source.months.slice(0,month);if(!rows.length)return null;
   const items=[['inventory','Inventario'],['suppliers','Proveedores y anticipos'],['operation','Operación neta'],['intangibles','Intangibles'],['capex','CAPEX y depósitos']];
   const cell={padding:'9px 10px',borderBottom:'1px solid #E4E8F2',textAlign:'right',whiteSpace:'nowrap'};
-  const numbers=values=>[...values,sapSumV112(values)].map((v,i)=><td key={i} style={{...cell,color:v<0?'#15803D':'#B42318',fontWeight:i===rows.length?800:undefined}}>{sapMoneyV112(v)}</td>);
+  const numbers=values=>[...values,sapSumV112(values)].map((v,i)=><td key={i} style={{...cell,color:v<0?'#B42318':'#15803D',fontWeight:i===rows.length?800:undefined}}>{sapMoneyV112(v)}</td>);
   return <section data-burn-detail-table="true" data-burn-sap-v112="true" style={{margin:'18px 0',border:'1px solid #A8C9FF',borderRadius:10,overflow:'hidden',background:'#fff'}}>
     <div style={{padding:'12px',background:'#DBEAFE',fontWeight:800,color:'#17306F'}}>Burn detail by activity · MXN</div>
     <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
       <thead><tr style={{background:'#F1F5FF'}}><th style={{...cell,textAlign:'left',minWidth:195}}>Actividad</th>{rows.map(r=><th style={cell} key={r.m}>{sapMonthV112[r.m-1]}</th>)}<th style={cell}>YTD</th></tr></thead>
-      <tbody>{items.map(([k,label])=><tr key={k}><td style={{...cell,textAlign:'left'}}>{label}</td>{numbers(rows.map(r=>r.burnGroups[k]))}</tr>)}
-      <tr style={{background:'#DBEAFE',fontWeight:800}}><td style={{...cell,textAlign:'left'}}>Burn neto · consumo positivo</td>{numbers(rows.map(r=>r.burnConsumption))}</tr></tbody>
+      <tbody>{items.map(([k,label])=><tr key={k}><td style={{...cell,textAlign:'left'}}>{label}</td>{numbers(rows.map(r=>-r.burnGroups[k]))}</tr>)}
+      <tr style={{background:'#DBEAFE',fontWeight:800}}><td style={{...cell,textAlign:'left'}}>Burn neto · México</td>{numbers(rows.map(r=>r.burnSigned))}</tr></tbody>
     </table></div>
-    <p style={{margin:0,padding:12,fontSize:11,lineHeight:1.6,color:'#667085'}}>Consumo positivo; importes negativos reducen el Burn. Método indirecto: Inventario = Δ115; Proveedores y anticipos = Δ120 − Δ201; Operación neta = resultado SAP más ajustes no monetarios y demás capital de trabajo; Intangibles = Δ176; CAPEX y depósitos = Δ155 + Δ156 + Δ184. Son movimientos de saldos, no pagos brutos certificados ni exclusivamente licencias. Los cinco grupos concilian con el Burn neto de cada mes sin partidas residuales.</p>
+    <p style={{margin:0,padding:12,fontSize:11,lineHeight:1.6,color:'#667085'}}>México: consumo negativo, igual que la tarjeta Burn YTD; los importes positivos reducen el consumo. Se conserva la agrupación del método indirecto y se cambia únicamente el signo de presentación de los cinco grupos. Los grupos suman el Burn neto mensual y YTD de México, sin partidas residuales. Son movimientos de saldos, no pagos brutos certificados ni exclusivamente licencias. Este detalle no representa el Burn histórico de Holding; Holding se muestra por separado en Historical.</p>
   </section>;
 };
 const BurnHistoryCardsV114=({rows,history})=>{
@@ -599,7 +659,7 @@ function fsCommercialRowsV117(source, metric, year, months) {
   const priorities = metric === "salesInUnits" ? ["Market Volume <Saya>"] : ["Sales (Sell In) Contable", "Sales (Sell In)", "Net Sales"];
   const selected = new Set();
   for (const month of months) for (const origin of ["Forecast", "Reales"]) {
-    const line = priorities.find(pl => fsGetValue(source, pl, origin, year, month) !== 0) || priorities[0];
+    const line = metric !== "salesInUnits" && origin === "Forecast" ? "Sales (Sell In)" : priorities.find(pl => fsGetValue(source, pl, origin, year, month) !== 0) || priorities[0]; // FS_FORECAST_DETAIL_SOURCE_V120
     selected.add(JSON.stringify([fsNormPL(line), origin, year, month]));
   }
   return source.filter(row => selected.has(JSON.stringify([fsNormPL(row[0]), row[1], row[2], row[3]])));
@@ -672,12 +732,17 @@ export default function Dashboard() {
     if (selMolsModelos.length > 0) d = d.filter(r => selMolsModelos.includes(r[4]));
     return d;
   }, [globalRows, selMols, selMolsModelos]);
+  // FS_CONTRACTED_ONLY_V121: independent fixed rule, not Summary's status selector.
+  const fsIsContractedV121=m=>metaForMol(m).status==='G – Contratadas';
+  const fsContractedProductOptionsV121=useMemo(()=>[...new Set(FS_PRODUCT_DATA_V121.filter(r=>fsIsContractedV121(r[11]??r[4])||fsIsContractedV121(r[4])).map(r=>r[4]).filter(m=>m&&m!=='Sin asignación contable'&&m!=='Consolidado'))].sort(),[globalMeta]);
   const fsAllFd = useMemo(() => {
-    let d = FS_DATA.filter(r => globalMolAllowed(r[4]));
-    if (selMols.length > 0) d = d.filter(r => selMols.includes(mapMol(r[4])));
-    if (selMolsModelos.length > 0) d = d.filter(r => selMolsModelos.includes(r[4]));
+    const locked=mainTab==='dashboard';
+    let d=(locked?FS_PRODUCT_DATA_V121:FS_DATA).filter(r=>globalMolAllowed(locked?(r[11]??r[4]):r[4]));
+    if(locked)d=d.filter(r=>fsIsContractedV121(r[11]??r[4])||fsIsContractedV121(r[4]));
+    if(selMols.length>0)d=d.filter(r=>selMols.includes(locked?fsProductNameV121(r[4]):mapMol(r[4])));
+    if(selMolsModelos.length>0)d=d.filter(r=>locked?selMolsModelos.some(m=>fsProductNameV121(m)===r[4]):selMolsModelos.includes(r[4]));
     return d;
-  }, [globalMeta, selAreas, selChannels, selMols, selMolsModelos]);
+  }, [globalMeta, selAreas, selChannels, selMols, selMolsModelos, mainTab]);
   const fsFd = useMemo(() => fsAllFd.filter(r => r[2] === CUR_YEAR), [fsAllFd]);
 
   const ytdM = useMemo(() => Array.from({ length: cm }, (_, i) => i + 1), [cm]);
@@ -919,7 +984,7 @@ export default function Dashboard() {
     const intangYTD = intangRow ? ytdM.reduce((s, m) => s + (intangRow[4 + m] || 0), 0) : 0;
     const intangCM = intangRow ? (intangRow[4 + cm] || 0) : 0;
     return [
-      { l: "NET SALES YTD", v: F(nsYTD), s: `Month ${MO[cm-1]}: ${F(c.ns)}`, c: "#185FA5" },
+      { l: "REVENUE YTD", v: F(nsYTD), s: `Month ${MO[cm-1]}: ${F(c.ns)}`, c: "#185FA5" },
       { l: "GROSS MARGIN YTD", v: nsYTD ? P(ytdTotals.gp / nsYTD) : "N/A", s: c.ns ? `Month ${MO[cm-1]}: ${P(c.gp / c.ns)}` : "Pre-revenue", c: "#1D9E75" },
       { l: "EBITDA YTD", v: F(ytdTotals.ebitda), s: `Month ${MO[cm-1]}: ${F(c.ebitda)}`, c: ytdTotals.ebitda < 0 ? "#E24B4A" : "#1D9E75" },
       { l: "INTANGIBLE ASSETS YTD", v: F(intangYTD), s: `Month ${MO[cm-1]}: ${F(intangCM)}`, c: "#7C3AED" },
@@ -1162,10 +1227,11 @@ export default function Dashboard() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <select value={cm} onChange={e => setCm(+e.target.value)} style={sel}>{MO.map((m, i) => <option key={i} value={i + 1}>{m} 2026</option>)}</select>
-          <MultiSel options={mols} selected={selMols} onChange={setSelMols} label="All grouped molecules"/>
-          <MultiSel options={molsModelos} selected={selMolsModelos} onChange={setSelMolsModelos} label="All model molecules"/>
+          <MultiSel options={mainTab==="dashboard"?fsContractedProductOptionsV121:mols} selected={selMols} onChange={setSelMols} label="All grouped molecules"/>
+          <MultiSel options={mainTab==="dashboard"?molsModelos.filter(fsIsContractedV121):molsModelos} selected={selMolsModelos} onChange={setSelMolsModelos} label="All model molecules"/>
           <MultiSel options={areas} selected={selAreas} onChange={setSelAreas} label="All therapeutic areas"/>
           <MultiSel options={channelOptions} selected={selChannels} onChange={setSelChannels} label="All channels"/>
+          {mainTab==="dashboard"&&<span data-fs-contracted-lock="true" title="Fixed rule for Financial Statements only. Summary keeps its own filters." style={{fontSize:10,fontWeight:800,color:"#166534",background:"#ECFDF3",border:"1px solid #ABEFC6",borderRadius:6,padding:"6px 9px"}}>🔒 G – Contratadas</span>}
 
           <div style={{ display: "flex", borderRadius: 6, border: "1px solid #D0D5E8", overflow: "hidden" }}>
             {[["forecast", "Forecast"], ["reales", "Actuals"], ["consolidado", "Consolidated"]].map(([v, l]) => (
@@ -1578,7 +1644,7 @@ export default function Dashboard() {
       {/* KPI CARDS WITH ICONS */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(0,1fr))",gap:12,padding:"0 0 16px",marginBottom:8}}>
         {(()=>{
-          const ICONS = {"NET SALES YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
+          const ICONS = {"REVENUE YTD":"💰","GROSS MARGIN YTD":"📊","OPEX YTD":"💸","EBITDA YTD":"📈","NET PROFIT YTD":"🏦","INTANGIBLE ASSETS YTD":"🔬"};
           const kC = c => ({background:"#fff",border:"1px solid #E4E8F2",borderRadius:12,padding:"16px 14px",borderTop:"3px solid "+c,boxShadow:"0 2px 8px rgba(26,26,46,0.06)",display:"flex",flexDirection:"column",gap:3});
           return (<React.Fragment>
             {/* Net Sales */}
@@ -1617,15 +1683,16 @@ export default function Dashboard() {
               // BURN_DYNAMIC_CASH_EX_FINANCING_V49_EXECUTIVE
               const bArr = cashFlow.months.slice(0,cm).map(mo=>mo.burnSigned); // SAP_BURN_EXEC_V112
               const bYTD = bArr.reduce((s,v)=>s+v,0);
-              const BURN_HISTORICO_CIERRE_ENE_2026=-86708794;
-              let burnHist=BURN_HISTORICO_CIERRE_ENE_2026;
-              bArr.forEach((v,i)=>{if(i>0)burnHist+=v;});
+              // EXEC_HISTORICAL_HOLDING_V119: only Historical uses reported Holding.
+              // The main YTD and Month values remain Mexico SAP; Summary is not modified.
+              const historicalHoldingMonth=Number(BURN_INTL_DATA_V115.year)===Number(CUR_YEAR)?BURN_INTL_DATA_V115.months.find(row=>Number(row.m)===Number(cm)):null;
+              const burnHist=historicalHoldingMonth&&typeof historicalHoldingMonth.holdingReported==="number"&&Number.isFinite(historicalHoldingMonth.holdingReported)?historicalHoldingMonth.holdingReported:null;
               const bCol = burnHist<0?"#E24B4A":"#065F46";
               return (<div style={kC(bCol)}>
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
                 <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN YTD</div>
                 <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(bYTD)}</div>
-                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Month {MO[Math.min(cm,cashFlow.cutoff)-1]}: {F(bArr.length ? bArr[bArr.length-1] : 0)} · Historical: {F(burnHist)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Month {MO[Math.min(cm,cashFlow.cutoff)-1]}: {F(bArr.length ? bArr[bArr.length-1] : 0)} · Historical: <span title="Holding accumulated Burn · Auxiliares.xlsx / Burn USA / Holding">{burnHist===null?"N/D":F(burnHist)}</span></div>
               </div>);
             })()}
             {/* Intangible Assets */}
