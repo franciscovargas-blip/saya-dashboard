@@ -471,55 +471,64 @@ const PnlAutoVarianceLabel=({source = FS_DATA,label,metric,prefix,year,month})=>
   </span>;
 };
 
+// CF_SAP_ISOLATED_V112_BEGIN
+const CF_SAP_DATA_V112 = {"year":2026,"cutoff":9,"months":[{"m":1,"utilidadNeta":-3177917.67,"depAmort":120961.33,"impDiferidos":0.0,"dClientes":0.0,"dCxC":0.0,"dAnticipos":14533.91,"dAntProv":-156795.76,"dInventario":0.0,"dProveedores":374789.6,"dAcreedores":61539.65,"dProvisiones":-51695.37,"dImpuestos":-15725.92,"equComputo":-21071.55,"mobEquipo":0.0,"intangibles":-445417.5,"depositos":0.0,"aportaciones":0.0,"dIVA":-121198.51,"varCapTrabajo":105447.6,"totalOperacion":-2951508.74,"totalInversion":-466489.05,"totalFinanciamiento":0.0,"saldoInicial":4955697.71,"saldoFinal":1537699.92,"netChange":-3417997.79,"reconciliationGap":0.0,"burnGroups":{"inventory":0.0,"suppliers":-217993.84,"operation":3169502.58,"intangibles":445417.5,"capex":21071.55},"burnConsumption":3417997.79,"burnSigned":-3417997.79,"source":{"file":"05.26 Balance Enero-Mayo 2026.xlsx","sheet":"Enero","sha256":"e55387f7caf7ca0dd21a83a4ccf7df59f9eb659e1420a94d5d4baaf083772237","profit_row":2418,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":true},"106":{"row":99,"explicit_blank":true},"107":{"row":155,"explicit_blank":true},"108":{"row":188,"explicit_blank":true},"109":{"row":214,"explicit_blank":false},"110":{"row":338,"explicit_blank":true},"111":{"row":349,"explicit_blank":true},"112":{"row":360,"explicit_blank":true},"113":{"row":371,"explicit_blank":false},"114":{"row":431,"explicit_blank":true},"115":{"row":442,"explicit_blank":true},"116":{"row":492,"explicit_blank":true},"117":{"row":503,"explicit_blank":true},"118":{"row":514,"explicit_blank":true},"119":{"row":542,"explicit_blank":false},"120":{"row":570,"explicit_blank":false},"121":{"row":600,"explicit_blank":true},"151":{"row":618,"explicit_blank":true},"152":{"row":629,"explicit_blank":true},"153":{"row":641,"explicit_blank":true},"154":{"row":653,"explicit_blank":true},"155":{"row":666,"explicit_blank":false},"156":{"row":679,"explicit_blank":false},"157":{"row":692,"explicit_blank":true},"158":{"row":703,"explicit_blank":true},"159":{"row":714,"explicit_blank":true},"160":{"row":725,"explicit_blank":true},"161":{"row":736,"explicit_blank":true},"162":{"row":747,"explicit_blank":true},"163":{"row":758,"explicit_blank":true},"164":{"row":769,"explicit_blank":true},"165":{"row":780,"explicit_blank":true},"166":{"row":791,"explicit_blank":true},"167":{"row":802,"explicit_blank":true},"168":{"row":813,"explicit_blank":true},"169":{"row":824,"explicit_blank":true},"170":{"row":835,"explicit_blank":true},"171":{"row":847,"explicit_blank":false},"172":{"row":946,"explicit_blank":true},"173":{"row":1042,"explicit_blank":true},"174":{"row":1053,"explicit_blank":true},"175":{"row":1064,"explicit_blank":true},"176":{"row":1075,"explicit_blank":false},"177":{"row":1088,"explicit_blank":true},"178":{"row":1099,"explicit_blank":true},"179":{"row":1110,"explicit_blank":true},"180":{"row":1121,"explicit_blank":true},"181":{"row":1132,"explicit_blank":true},"182":{"row":1143,"explicit_blank":true},"183":{"row":1154,"explicit_blank":false},"184":{"row":1212,"explicit_blank":false},"185":{"row":1235,"explicit_blank":true},"186":{"row":1246,"explicit_blank":true},"187":{"row":1302,"explicit_blank":true},"188":{"row":1313,"explicit_blank":true},"189":{"row":1334,"explicit_blank":true},"190":{"row":1345,"explicit_blank":true},"191":{"row":1356,"explicit_blank":true},"201":{"row":1375,"explicit_blank":false},"202":{"row":1404,"explicit_blank":true},"203":{"row":1470,"explicit_blank":true},"204":{"row":1566,"explicit_blank":true},"205":{"row":1577,"explicit_blank":false},"206":{"row":1616,"explicit_blank":true},"207":{"row":1649,"explicit_blank":true},"208":{"row":1665,"explicit_blank":true},"209":{"row":1682,"explicit_blank":true},"210":{"row":1699,"explicit_blank":false},"211":{"row":1749,"explicit_blank":false},"212":{"row":1776,"explicit_blank":false},"213":{"row":1789,"explicit_blank":true},"214":{"row":1831,"explicit_blank":true},"215":{"row":1842,"explicit_blank":true},"216":{"row":1863,"explicit_blank":false},"217":{"row":1947,"explicit_blank":true},"218":{"row":1959,"explicit_blank":true},"251":{"row":1977,"explicit_blank":true},"252":{"row":2014,"explicit_blank":true},"253":{"row":2105,"explicit_blank":true},"254":{"row":2201,"explicit_blank":true},"255":{"row":2212,"explicit_blank":true},"256":{"row":2223,"explicit_blank":true},"257":{"row":2234,"explicit_blank":true},"258":{"row":2245,"explicit_blank":true},"259":{"row":2256,"explicit_blank":true},"260":{"row":2278,"explicit_blank":true},"301":{"row":2293,"explicit_blank":false},"302":{"row":2330,"explicit_blank":true},"303":{"row":2351,"explicit_blank":true},"304":{"row":2362,"explicit_blank":true},"305":{"row":2388,"explicit_blank":true},"306":{"row":2409,"explicit_blank":true}}}},{"m":2,"utilidadNeta":-2002359.22,"depAmort":153992.9,"impDiferidos":-76.8,"dClientes":0.0,"dCxC":-114401.4,"dAnticipos":14533.91,"dAntProv":1578.68,"dInventario":0.0,"dProveedores":-79674.37,"dAcreedores":194698.92,"dProvisiones":92406.06,"dImpuestos":-59985.93,"equComputo":0.0,"mobEquipo":-3275.0,"intangibles":-1013189.56,"depositos":0.0,"aportaciones":25958163.85,"dIVA":-87029.79,"varCapTrabajo":-37873.92,"totalOperacion":-1886317.04,"totalInversion":-1016464.56,"totalFinanciamiento":25958163.85,"saldoInicial":1537699.92,"saldoFinal":24593082.17,"netChange":23055382.25,"reconciliationGap":0.0,"burnGroups":{"inventory":0.0,"suppliers":78095.69,"operation":1808221.35,"intangibles":1013189.56,"capex":3275.0},"burnConsumption":2902781.6,"burnSigned":-2902781.6,"source":{"file":"05.26 Balance Enero-Mayo 2026.xlsx","sheet":"Febrero","sha256":"e55387f7caf7ca0dd21a83a4ccf7df59f9eb659e1420a94d5d4baaf083772237","profit_row":2424,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":true},"106":{"row":99,"explicit_blank":true},"107":{"row":155,"explicit_blank":true},"108":{"row":188,"explicit_blank":true},"109":{"row":214,"explicit_blank":false},"110":{"row":338,"explicit_blank":true},"111":{"row":349,"explicit_blank":true},"112":{"row":360,"explicit_blank":true},"113":{"row":371,"explicit_blank":false},"114":{"row":432,"explicit_blank":true},"115":{"row":443,"explicit_blank":true},"116":{"row":493,"explicit_blank":true},"117":{"row":504,"explicit_blank":true},"118":{"row":515,"explicit_blank":true},"119":{"row":543,"explicit_blank":false},"120":{"row":571,"explicit_blank":false},"121":{"row":601,"explicit_blank":false},"151":{"row":620,"explicit_blank":true},"152":{"row":631,"explicit_blank":true},"153":{"row":643,"explicit_blank":true},"154":{"row":655,"explicit_blank":true},"155":{"row":668,"explicit_blank":false},"156":{"row":681,"explicit_blank":false},"157":{"row":694,"explicit_blank":true},"158":{"row":705,"explicit_blank":true},"159":{"row":716,"explicit_blank":true},"160":{"row":727,"explicit_blank":true},"161":{"row":738,"explicit_blank":true},"162":{"row":749,"explicit_blank":true},"163":{"row":760,"explicit_blank":true},"164":{"row":771,"explicit_blank":true},"165":{"row":782,"explicit_blank":true},"166":{"row":793,"explicit_blank":true},"167":{"row":804,"explicit_blank":true},"168":{"row":815,"explicit_blank":true},"169":{"row":826,"explicit_blank":true},"170":{"row":837,"explicit_blank":true},"171":{"row":849,"explicit_blank":false},"172":{"row":948,"explicit_blank":true},"173":{"row":1044,"explicit_blank":true},"174":{"row":1055,"explicit_blank":true},"175":{"row":1066,"explicit_blank":true},"176":{"row":1077,"explicit_blank":false},"177":{"row":1090,"explicit_blank":true},"178":{"row":1101,"explicit_blank":true},"179":{"row":1112,"explicit_blank":true},"180":{"row":1123,"explicit_blank":true},"181":{"row":1134,"explicit_blank":true},"182":{"row":1145,"explicit_blank":true},"183":{"row":1156,"explicit_blank":false},"184":{"row":1214,"explicit_blank":false},"185":{"row":1237,"explicit_blank":true},"186":{"row":1248,"explicit_blank":true},"187":{"row":1304,"explicit_blank":true},"188":{"row":1315,"explicit_blank":true},"189":{"row":1336,"explicit_blank":true},"190":{"row":1347,"explicit_blank":true},"191":{"row":1358,"explicit_blank":true},"201":{"row":1377,"explicit_blank":false},"202":{"row":1407,"explicit_blank":true},"203":{"row":1473,"explicit_blank":true},"204":{"row":1569,"explicit_blank":true},"205":{"row":1580,"explicit_blank":false},"206":{"row":1619,"explicit_blank":true},"207":{"row":1652,"explicit_blank":true},"208":{"row":1668,"explicit_blank":true},"209":{"row":1685,"explicit_blank":true},"210":{"row":1702,"explicit_blank":false},"211":{"row":1752,"explicit_blank":false},"212":{"row":1779,"explicit_blank":false},"213":{"row":1792,"explicit_blank":true},"214":{"row":1834,"explicit_blank":true},"215":{"row":1845,"explicit_blank":true},"216":{"row":1866,"explicit_blank":false},"217":{"row":1950,"explicit_blank":false},"218":{"row":1964,"explicit_blank":true},"251":{"row":1982,"explicit_blank":true},"252":{"row":2019,"explicit_blank":true},"253":{"row":2110,"explicit_blank":true},"254":{"row":2206,"explicit_blank":true},"255":{"row":2217,"explicit_blank":true},"256":{"row":2228,"explicit_blank":true},"257":{"row":2239,"explicit_blank":true},"258":{"row":2250,"explicit_blank":true},"259":{"row":2261,"explicit_blank":false},"260":{"row":2284,"explicit_blank":true},"301":{"row":2299,"explicit_blank":false},"302":{"row":2336,"explicit_blank":true},"303":{"row":2357,"explicit_blank":true},"304":{"row":2368,"explicit_blank":true},"305":{"row":2394,"explicit_blank":true},"306":{"row":2415,"explicit_blank":true}}}},{"m":3,"utilidadNeta":-2623728.57,"depAmort":115302.06,"impDiferidos":-188.16,"dClientes":0.0,"dCxC":-88408.46,"dAnticipos":-16619.42,"dAntProv":-26895.88,"dInventario":0.0,"dProveedores":6392219.44,"dAcreedores":-196377.54,"dProvisiones":-20615.33,"dImpuestos":17307.78,"equComputo":-22540.52,"mobEquipo":0.0,"intangibles":-6242765.83,"depositos":0.0,"aportaciones":0.0,"dIVA":-207152.68,"varCapTrabajo":5853457.91,"totalOperacion":3344843.24,"totalInversion":-6265306.35,"totalFinanciamiento":0.0,"saldoInicial":24593082.17,"saldoFinal":21672619.06,"netChange":-2920463.11,"reconciliationGap":0.0,"burnGroups":{"inventory":0.0,"suppliers":-6365323.56,"operation":3020480.32,"intangibles":6242765.83,"capex":22540.52},"burnConsumption":2920463.11,"burnSigned":-2920463.11,"source":{"file":"05.26 Balance Enero-Mayo 2026.xlsx","sheet":"Marzo","sha256":"e55387f7caf7ca0dd21a83a4ccf7df59f9eb659e1420a94d5d4baaf083772237","profit_row":2423,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":true},"106":{"row":99,"explicit_blank":true},"107":{"row":155,"explicit_blank":true},"108":{"row":188,"explicit_blank":true},"109":{"row":214,"explicit_blank":false},"110":{"row":339,"explicit_blank":true},"111":{"row":350,"explicit_blank":true},"112":{"row":361,"explicit_blank":true},"113":{"row":372,"explicit_blank":false},"114":{"row":434,"explicit_blank":true},"115":{"row":445,"explicit_blank":true},"116":{"row":495,"explicit_blank":true},"117":{"row":506,"explicit_blank":true},"118":{"row":517,"explicit_blank":true},"119":{"row":545,"explicit_blank":false},"120":{"row":573,"explicit_blank":false},"121":{"row":602,"explicit_blank":false},"151":{"row":621,"explicit_blank":true},"152":{"row":632,"explicit_blank":true},"153":{"row":644,"explicit_blank":true},"154":{"row":656,"explicit_blank":true},"155":{"row":669,"explicit_blank":false},"156":{"row":682,"explicit_blank":false},"157":{"row":695,"explicit_blank":true},"158":{"row":706,"explicit_blank":true},"159":{"row":717,"explicit_blank":true},"160":{"row":728,"explicit_blank":true},"161":{"row":739,"explicit_blank":true},"162":{"row":750,"explicit_blank":true},"163":{"row":761,"explicit_blank":true},"164":{"row":772,"explicit_blank":true},"165":{"row":783,"explicit_blank":true},"166":{"row":794,"explicit_blank":true},"167":{"row":805,"explicit_blank":true},"168":{"row":816,"explicit_blank":true},"169":{"row":827,"explicit_blank":true},"170":{"row":838,"explicit_blank":true},"171":{"row":850,"explicit_blank":false},"172":{"row":949,"explicit_blank":true},"173":{"row":1045,"explicit_blank":true},"174":{"row":1056,"explicit_blank":true},"175":{"row":1067,"explicit_blank":true},"176":{"row":1078,"explicit_blank":false},"177":{"row":1091,"explicit_blank":true},"178":{"row":1102,"explicit_blank":true},"179":{"row":1113,"explicit_blank":true},"180":{"row":1124,"explicit_blank":true},"181":{"row":1135,"explicit_blank":true},"182":{"row":1146,"explicit_blank":true},"183":{"row":1157,"explicit_blank":false},"184":{"row":1215,"explicit_blank":false},"185":{"row":1238,"explicit_blank":true},"186":{"row":1249,"explicit_blank":true},"187":{"row":1305,"explicit_blank":true},"188":{"row":1316,"explicit_blank":true},"189":{"row":1337,"explicit_blank":true},"190":{"row":1348,"explicit_blank":true},"191":{"row":1359,"explicit_blank":true},"201":{"row":1378,"explicit_blank":false},"202":{"row":1408,"explicit_blank":true},"203":{"row":1474,"explicit_blank":true},"204":{"row":1570,"explicit_blank":true},"205":{"row":1581,"explicit_blank":false},"206":{"row":1620,"explicit_blank":true},"207":{"row":1653,"explicit_blank":true},"208":{"row":1669,"explicit_blank":true},"209":{"row":1686,"explicit_blank":true},"210":{"row":1703,"explicit_blank":false},"211":{"row":1753,"explicit_blank":false},"212":{"row":1780,"explicit_blank":false},"213":{"row":1793,"explicit_blank":true},"214":{"row":1835,"explicit_blank":true},"215":{"row":1846,"explicit_blank":true},"216":{"row":1867,"explicit_blank":false},"217":{"row":1951,"explicit_blank":true},"218":{"row":1963,"explicit_blank":true},"251":{"row":1981,"explicit_blank":true},"252":{"row":2018,"explicit_blank":true},"253":{"row":2109,"explicit_blank":true},"254":{"row":2205,"explicit_blank":true},"255":{"row":2216,"explicit_blank":true},"256":{"row":2227,"explicit_blank":true},"257":{"row":2238,"explicit_blank":true},"258":{"row":2249,"explicit_blank":true},"259":{"row":2260,"explicit_blank":false},"260":{"row":2283,"explicit_blank":true},"301":{"row":2298,"explicit_blank":false},"302":{"row":2335,"explicit_blank":true},"303":{"row":2356,"explicit_blank":true},"304":{"row":2367,"explicit_blank":true},"305":{"row":2393,"explicit_blank":true},"306":{"row":2414,"explicit_blank":true}}}},{"m":4,"utilidadNeta":-2541712.89,"depAmort":118751.47,"impDiferidos":-505.59,"dClientes":0.0,"dCxC":154327.44,"dAnticipos":28783.11,"dAntProv":194324.34,"dInventario":-347186.0,"dProveedores":-6465992.77,"dAcreedores":-83288.25,"dProvisiones":155212.35,"dImpuestos":6585.47,"equComputo":-30999.15,"mobEquipo":0.0,"intangibles":-341245.96,"depositos":-7546.46,"aportaciones":0.0,"dIVA":-209554.19,"varCapTrabajo":-6566788.5,"totalOperacion":-8990255.51,"totalInversion":-379791.57,"totalFinanciamiento":0.0,"saldoInicial":21672619.06,"saldoFinal":12302571.98,"netChange":-9370047.08,"reconciliationGap":0.0,"burnGroups":{"inventory":347186.0,"suppliers":6271668.43,"operation":2371401.08,"intangibles":341245.96,"capex":38545.61},"burnConsumption":9370047.08,"burnSigned":-9370047.08,"source":{"file":"05.26 Balance Enero-Mayo 2026.xlsx","sheet":"Abril","sha256":"e55387f7caf7ca0dd21a83a4ccf7df59f9eb659e1420a94d5d4baaf083772237","profit_row":2430,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":true},"106":{"row":99,"explicit_blank":true},"107":{"row":155,"explicit_blank":true},"108":{"row":188,"explicit_blank":true},"109":{"row":214,"explicit_blank":false},"110":{"row":340,"explicit_blank":true},"111":{"row":351,"explicit_blank":true},"112":{"row":362,"explicit_blank":true},"113":{"row":373,"explicit_blank":false},"114":{"row":436,"explicit_blank":true},"115":{"row":447,"explicit_blank":false},"116":{"row":498,"explicit_blank":true},"117":{"row":509,"explicit_blank":true},"118":{"row":520,"explicit_blank":true},"119":{"row":548,"explicit_blank":false},"120":{"row":576,"explicit_blank":false},"121":{"row":605,"explicit_blank":false},"151":{"row":624,"explicit_blank":true},"152":{"row":635,"explicit_blank":true},"153":{"row":647,"explicit_blank":true},"154":{"row":659,"explicit_blank":true},"155":{"row":672,"explicit_blank":false},"156":{"row":685,"explicit_blank":false},"157":{"row":698,"explicit_blank":true},"158":{"row":709,"explicit_blank":true},"159":{"row":720,"explicit_blank":true},"160":{"row":731,"explicit_blank":true},"161":{"row":742,"explicit_blank":true},"162":{"row":753,"explicit_blank":true},"163":{"row":764,"explicit_blank":true},"164":{"row":775,"explicit_blank":true},"165":{"row":786,"explicit_blank":true},"166":{"row":797,"explicit_blank":true},"167":{"row":808,"explicit_blank":true},"168":{"row":819,"explicit_blank":true},"169":{"row":830,"explicit_blank":true},"170":{"row":841,"explicit_blank":true},"171":{"row":853,"explicit_blank":false},"172":{"row":952,"explicit_blank":true},"173":{"row":1048,"explicit_blank":true},"174":{"row":1059,"explicit_blank":true},"175":{"row":1070,"explicit_blank":true},"176":{"row":1081,"explicit_blank":false},"177":{"row":1094,"explicit_blank":true},"178":{"row":1105,"explicit_blank":true},"179":{"row":1116,"explicit_blank":true},"180":{"row":1127,"explicit_blank":true},"181":{"row":1138,"explicit_blank":true},"182":{"row":1149,"explicit_blank":true},"183":{"row":1160,"explicit_blank":false},"184":{"row":1218,"explicit_blank":false},"185":{"row":1242,"explicit_blank":true},"186":{"row":1253,"explicit_blank":true},"187":{"row":1309,"explicit_blank":true},"188":{"row":1320,"explicit_blank":true},"189":{"row":1341,"explicit_blank":true},"190":{"row":1352,"explicit_blank":true},"191":{"row":1363,"explicit_blank":true},"201":{"row":1382,"explicit_blank":false},"202":{"row":1412,"explicit_blank":true},"203":{"row":1478,"explicit_blank":true},"204":{"row":1574,"explicit_blank":true},"205":{"row":1585,"explicit_blank":false},"206":{"row":1624,"explicit_blank":true},"207":{"row":1657,"explicit_blank":true},"208":{"row":1673,"explicit_blank":true},"209":{"row":1690,"explicit_blank":true},"210":{"row":1707,"explicit_blank":false},"211":{"row":1757,"explicit_blank":false},"212":{"row":1784,"explicit_blank":false},"213":{"row":1797,"explicit_blank":true},"214":{"row":1839,"explicit_blank":true},"215":{"row":1850,"explicit_blank":true},"216":{"row":1871,"explicit_blank":false},"217":{"row":1956,"explicit_blank":false},"218":{"row":1970,"explicit_blank":true},"251":{"row":1988,"explicit_blank":true},"252":{"row":2025,"explicit_blank":true},"253":{"row":2116,"explicit_blank":true},"254":{"row":2212,"explicit_blank":true},"255":{"row":2223,"explicit_blank":true},"256":{"row":2234,"explicit_blank":true},"257":{"row":2245,"explicit_blank":true},"258":{"row":2256,"explicit_blank":true},"259":{"row":2267,"explicit_blank":false},"260":{"row":2290,"explicit_blank":true},"301":{"row":2305,"explicit_blank":false},"302":{"row":2342,"explicit_blank":true},"303":{"row":2363,"explicit_blank":true},"304":{"row":2374,"explicit_blank":true},"305":{"row":2400,"explicit_blank":true},"306":{"row":2421,"explicit_blank":true}}}},{"m":5,"utilidadNeta":-2737842.34,"depAmort":134091.85,"impDiferidos":-218.81,"dClientes":0.0,"dCxC":13075.91,"dAnticipos":1963.75,"dAntProv":159142.79,"dInventario":-783933.77,"dProveedores":321273.72,"dAcreedores":95973.0,"dProvisiones":-41340.08,"dImpuestos":32986.58,"equComputo":-105484.98,"mobEquipo":0.0,"intangibles":-663559.01,"depositos":0.0,"aportaciones":0.0,"dIVA":-199507.73,"varCapTrabajo":-400365.83,"totalOperacion":-3004335.13,"totalInversion":-769043.99,"totalFinanciamiento":0.0,"saldoInicial":12302571.98,"saldoFinal":8529192.86,"netChange":-3773379.12,"reconciliationGap":0.0,"burnGroups":{"inventory":783933.77,"suppliers":-480416.51,"operation":2700817.87,"intangibles":663559.01,"capex":105484.98},"burnConsumption":3773379.12,"burnSigned":-3773379.12,"source":{"file":"05.26 Balance Enero-Mayo 2026.xlsx","sheet":"Mayo","sha256":"e55387f7caf7ca0dd21a83a4ccf7df59f9eb659e1420a94d5d4baaf083772237","profit_row":2430,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":true},"106":{"row":99,"explicit_blank":true},"107":{"row":155,"explicit_blank":true},"108":{"row":188,"explicit_blank":true},"109":{"row":214,"explicit_blank":false},"110":{"row":341,"explicit_blank":true},"111":{"row":352,"explicit_blank":true},"112":{"row":363,"explicit_blank":true},"113":{"row":374,"explicit_blank":false},"114":{"row":438,"explicit_blank":true},"115":{"row":449,"explicit_blank":false},"116":{"row":500,"explicit_blank":true},"117":{"row":511,"explicit_blank":true},"118":{"row":522,"explicit_blank":true},"119":{"row":550,"explicit_blank":false},"120":{"row":578,"explicit_blank":false},"121":{"row":607,"explicit_blank":false},"151":{"row":626,"explicit_blank":true},"152":{"row":637,"explicit_blank":true},"153":{"row":649,"explicit_blank":true},"154":{"row":661,"explicit_blank":true},"155":{"row":674,"explicit_blank":false},"156":{"row":687,"explicit_blank":false},"157":{"row":700,"explicit_blank":true},"158":{"row":711,"explicit_blank":true},"159":{"row":722,"explicit_blank":true},"160":{"row":733,"explicit_blank":true},"161":{"row":744,"explicit_blank":true},"162":{"row":755,"explicit_blank":true},"163":{"row":766,"explicit_blank":true},"164":{"row":777,"explicit_blank":true},"165":{"row":788,"explicit_blank":true},"166":{"row":799,"explicit_blank":true},"167":{"row":810,"explicit_blank":true},"168":{"row":821,"explicit_blank":true},"169":{"row":832,"explicit_blank":true},"170":{"row":843,"explicit_blank":true},"171":{"row":855,"explicit_blank":false},"172":{"row":954,"explicit_blank":true},"173":{"row":1050,"explicit_blank":true},"174":{"row":1061,"explicit_blank":true},"175":{"row":1072,"explicit_blank":true},"176":{"row":1083,"explicit_blank":false},"177":{"row":1096,"explicit_blank":true},"178":{"row":1107,"explicit_blank":true},"179":{"row":1118,"explicit_blank":true},"180":{"row":1129,"explicit_blank":true},"181":{"row":1140,"explicit_blank":true},"182":{"row":1151,"explicit_blank":true},"183":{"row":1162,"explicit_blank":false},"184":{"row":1220,"explicit_blank":false},"185":{"row":1244,"explicit_blank":true},"186":{"row":1255,"explicit_blank":true},"187":{"row":1311,"explicit_blank":true},"188":{"row":1322,"explicit_blank":true},"189":{"row":1343,"explicit_blank":true},"190":{"row":1354,"explicit_blank":true},"191":{"row":1365,"explicit_blank":true},"201":{"row":1384,"explicit_blank":false},"202":{"row":1414,"explicit_blank":true},"203":{"row":1480,"explicit_blank":true},"204":{"row":1576,"explicit_blank":true},"205":{"row":1587,"explicit_blank":false},"206":{"row":1626,"explicit_blank":true},"207":{"row":1659,"explicit_blank":true},"208":{"row":1675,"explicit_blank":true},"209":{"row":1692,"explicit_blank":true},"210":{"row":1709,"explicit_blank":false},"211":{"row":1759,"explicit_blank":false},"212":{"row":1786,"explicit_blank":false},"213":{"row":1799,"explicit_blank":true},"214":{"row":1841,"explicit_blank":true},"215":{"row":1852,"explicit_blank":true},"216":{"row":1873,"explicit_blank":false},"217":{"row":1958,"explicit_blank":true},"218":{"row":1970,"explicit_blank":true},"251":{"row":1988,"explicit_blank":true},"252":{"row":2025,"explicit_blank":true},"253":{"row":2116,"explicit_blank":true},"254":{"row":2212,"explicit_blank":true},"255":{"row":2223,"explicit_blank":true},"256":{"row":2234,"explicit_blank":true},"257":{"row":2245,"explicit_blank":true},"258":{"row":2256,"explicit_blank":true},"259":{"row":2267,"explicit_blank":false},"260":{"row":2290,"explicit_blank":true},"301":{"row":2305,"explicit_blank":false},"302":{"row":2342,"explicit_blank":true},"303":{"row":2363,"explicit_blank":true},"304":{"row":2374,"explicit_blank":true},"305":{"row":2400,"explicit_blank":true},"306":{"row":2421,"explicit_blank":true}}}},{"m":6,"utilidadNeta":-2640229.15,"depAmort":151918.31,"impDiferidos":489.12,"dClientes":-449047.9,"dCxC":35406.51,"dAnticipos":-32196.09,"dAntProv":-239548.76,"dInventario":-578892.94,"dProveedores":-248782.18,"dAcreedores":156478.48,"dProvisiones":192949.75,"dImpuestos":144804.22,"equComputo":-49327.28,"mobEquipo":0.0,"intangibles":7388.4,"depositos":0.0,"aportaciones":0.0,"dIVA":-295416.37,"varCapTrabajo":-1314245.28,"totalOperacion":-3802067.0,"totalInversion":-41938.88,"totalFinanciamiento":0.0,"saldoInicial":8529192.86,"saldoFinal":4685186.98,"netChange":-3844005.88,"reconciliationGap":0.0,"burnGroups":{"inventory":578892.94,"suppliers":488330.94,"operation":2734843.12,"intangibles":-7388.4,"capex":49327.28},"burnConsumption":3844005.88,"burnSigned":-3844005.88,"source":{"file":"06.26 Balance Junio 2026.xlsx","sheet":"Hoja1","sha256":"cd7a3b88e955cf2e643d3605192ee6603982afb4db53a7e2dd8b0c38a7249a5c","profit_row":2434,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":false},"106":{"row":100,"explicit_blank":true},"107":{"row":156,"explicit_blank":true},"108":{"row":189,"explicit_blank":true},"109":{"row":215,"explicit_blank":false},"110":{"row":342,"explicit_blank":true},"111":{"row":353,"explicit_blank":true},"112":{"row":364,"explicit_blank":true},"113":{"row":375,"explicit_blank":false},"114":{"row":440,"explicit_blank":true},"115":{"row":451,"explicit_blank":false},"116":{"row":504,"explicit_blank":true},"117":{"row":515,"explicit_blank":true},"118":{"row":526,"explicit_blank":true},"119":{"row":554,"explicit_blank":false},"120":{"row":582,"explicit_blank":false},"121":{"row":612,"explicit_blank":true},"151":{"row":630,"explicit_blank":true},"152":{"row":641,"explicit_blank":true},"153":{"row":653,"explicit_blank":true},"154":{"row":665,"explicit_blank":true},"155":{"row":678,"explicit_blank":false},"156":{"row":691,"explicit_blank":false},"157":{"row":704,"explicit_blank":true},"158":{"row":715,"explicit_blank":true},"159":{"row":726,"explicit_blank":true},"160":{"row":737,"explicit_blank":true},"161":{"row":748,"explicit_blank":true},"162":{"row":759,"explicit_blank":true},"163":{"row":770,"explicit_blank":true},"164":{"row":781,"explicit_blank":true},"165":{"row":792,"explicit_blank":true},"166":{"row":803,"explicit_blank":true},"167":{"row":814,"explicit_blank":true},"168":{"row":825,"explicit_blank":true},"169":{"row":836,"explicit_blank":true},"170":{"row":847,"explicit_blank":true},"171":{"row":859,"explicit_blank":false},"172":{"row":958,"explicit_blank":true},"173":{"row":1054,"explicit_blank":true},"174":{"row":1065,"explicit_blank":true},"175":{"row":1076,"explicit_blank":true},"176":{"row":1087,"explicit_blank":false},"177":{"row":1100,"explicit_blank":true},"178":{"row":1111,"explicit_blank":true},"179":{"row":1122,"explicit_blank":true},"180":{"row":1133,"explicit_blank":true},"181":{"row":1144,"explicit_blank":true},"182":{"row":1155,"explicit_blank":true},"183":{"row":1166,"explicit_blank":false},"184":{"row":1224,"explicit_blank":false},"185":{"row":1248,"explicit_blank":true},"186":{"row":1259,"explicit_blank":true},"187":{"row":1315,"explicit_blank":true},"188":{"row":1326,"explicit_blank":true},"189":{"row":1347,"explicit_blank":true},"190":{"row":1358,"explicit_blank":true},"191":{"row":1369,"explicit_blank":true},"201":{"row":1388,"explicit_blank":false},"202":{"row":1417,"explicit_blank":true},"203":{"row":1483,"explicit_blank":true},"204":{"row":1579,"explicit_blank":true},"205":{"row":1590,"explicit_blank":false},"206":{"row":1629,"explicit_blank":true},"207":{"row":1662,"explicit_blank":true},"208":{"row":1678,"explicit_blank":false},"209":{"row":1696,"explicit_blank":true},"210":{"row":1713,"explicit_blank":false},"211":{"row":1763,"explicit_blank":false},"212":{"row":1790,"explicit_blank":false},"213":{"row":1803,"explicit_blank":true},"214":{"row":1845,"explicit_blank":true},"215":{"row":1856,"explicit_blank":true},"216":{"row":1877,"explicit_blank":false},"217":{"row":1962,"explicit_blank":true},"218":{"row":1974,"explicit_blank":true},"251":{"row":1992,"explicit_blank":true},"252":{"row":2029,"explicit_blank":true},"253":{"row":2120,"explicit_blank":true},"254":{"row":2216,"explicit_blank":true},"255":{"row":2227,"explicit_blank":true},"256":{"row":2238,"explicit_blank":true},"257":{"row":2249,"explicit_blank":true},"258":{"row":2260,"explicit_blank":true},"259":{"row":2271,"explicit_blank":false},"260":{"row":2294,"explicit_blank":true},"301":{"row":2309,"explicit_blank":false},"302":{"row":2346,"explicit_blank":true},"303":{"row":2367,"explicit_blank":true},"304":{"row":2378,"explicit_blank":true},"305":{"row":2404,"explicit_blank":true},"306":{"row":2425,"explicit_blank":true}}}},{"m":7,"utilidadNeta":-3306068.29,"depAmort":312632.57,"impDiferidos":-188.55,"dClientes":-0.08,"dCxC":-14172.93,"dAnticipos":34392.14,"dAntProv":-724576.72,"dInventario":7467.5,"dProveedores":-64188.09,"dAcreedores":-56511.73,"dProvisiones":124673.03,"dImpuestos":-46218.42,"equComputo":-15085.34,"mobEquipo":0.0,"intangibles":-276398.65,"depositos":650.48,"aportaciones":11874017.4,"dIVA":-189798.63,"varCapTrabajo":-928933.93,"totalOperacion":-3922558.2,"totalInversion":-290833.51,"totalFinanciamiento":11874017.4,"saldoInicial":4685186.98,"saldoFinal":12345812.67,"netChange":7660625.69,"reconciliationGap":0.0,"burnGroups":{"inventory":-7467.5,"suppliers":788764.81,"operation":3141260.89,"intangibles":276398.65,"capex":14434.86},"burnConsumption":4213391.71,"burnSigned":-4213391.71,"source":{"file":"07.26 Balance Julio 2026.xlsx","sheet":"Hoja1","sha256":"c89cd83275f6e5863ef900bc9371a5d7cbd6a68d4a860f95e01fad0e46a3e268","profit_row":2439,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":false},"106":{"row":100,"explicit_blank":true},"107":{"row":156,"explicit_blank":true},"108":{"row":189,"explicit_blank":true},"109":{"row":215,"explicit_blank":false},"110":{"row":342,"explicit_blank":true},"111":{"row":353,"explicit_blank":true},"112":{"row":364,"explicit_blank":true},"113":{"row":375,"explicit_blank":false},"114":{"row":441,"explicit_blank":true},"115":{"row":452,"explicit_blank":false},"116":{"row":506,"explicit_blank":true},"117":{"row":517,"explicit_blank":true},"118":{"row":528,"explicit_blank":true},"119":{"row":556,"explicit_blank":false},"120":{"row":584,"explicit_blank":false},"121":{"row":614,"explicit_blank":false},"151":{"row":633,"explicit_blank":true},"152":{"row":644,"explicit_blank":true},"153":{"row":656,"explicit_blank":true},"154":{"row":668,"explicit_blank":true},"155":{"row":681,"explicit_blank":false},"156":{"row":694,"explicit_blank":false},"157":{"row":707,"explicit_blank":true},"158":{"row":718,"explicit_blank":true},"159":{"row":729,"explicit_blank":true},"160":{"row":740,"explicit_blank":true},"161":{"row":751,"explicit_blank":true},"162":{"row":762,"explicit_blank":true},"163":{"row":773,"explicit_blank":true},"164":{"row":784,"explicit_blank":true},"165":{"row":795,"explicit_blank":true},"166":{"row":806,"explicit_blank":true},"167":{"row":817,"explicit_blank":true},"168":{"row":828,"explicit_blank":true},"169":{"row":839,"explicit_blank":true},"170":{"row":850,"explicit_blank":true},"171":{"row":862,"explicit_blank":false},"172":{"row":961,"explicit_blank":true},"173":{"row":1057,"explicit_blank":true},"174":{"row":1068,"explicit_blank":true},"175":{"row":1079,"explicit_blank":true},"176":{"row":1090,"explicit_blank":false},"177":{"row":1103,"explicit_blank":true},"178":{"row":1114,"explicit_blank":true},"179":{"row":1125,"explicit_blank":true},"180":{"row":1136,"explicit_blank":true},"181":{"row":1147,"explicit_blank":true},"182":{"row":1158,"explicit_blank":true},"183":{"row":1169,"explicit_blank":false},"184":{"row":1227,"explicit_blank":false},"185":{"row":1251,"explicit_blank":true},"186":{"row":1262,"explicit_blank":true},"187":{"row":1318,"explicit_blank":true},"188":{"row":1329,"explicit_blank":true},"189":{"row":1350,"explicit_blank":true},"190":{"row":1361,"explicit_blank":true},"191":{"row":1372,"explicit_blank":true},"201":{"row":1391,"explicit_blank":false},"202":{"row":1420,"explicit_blank":true},"203":{"row":1486,"explicit_blank":true},"204":{"row":1582,"explicit_blank":true},"205":{"row":1593,"explicit_blank":false},"206":{"row":1632,"explicit_blank":true},"207":{"row":1665,"explicit_blank":true},"208":{"row":1681,"explicit_blank":false},"209":{"row":1699,"explicit_blank":true},"210":{"row":1716,"explicit_blank":false},"211":{"row":1768,"explicit_blank":false},"212":{"row":1795,"explicit_blank":false},"213":{"row":1808,"explicit_blank":true},"214":{"row":1850,"explicit_blank":true},"215":{"row":1861,"explicit_blank":true},"216":{"row":1882,"explicit_blank":false},"217":{"row":1967,"explicit_blank":true},"218":{"row":1979,"explicit_blank":true},"251":{"row":1997,"explicit_blank":true},"252":{"row":2034,"explicit_blank":true},"253":{"row":2125,"explicit_blank":true},"254":{"row":2221,"explicit_blank":true},"255":{"row":2232,"explicit_blank":true},"256":{"row":2243,"explicit_blank":true},"257":{"row":2254,"explicit_blank":true},"258":{"row":2265,"explicit_blank":true},"259":{"row":2276,"explicit_blank":false},"260":{"row":2299,"explicit_blank":true},"301":{"row":2314,"explicit_blank":false},"302":{"row":2351,"explicit_blank":true},"303":{"row":2372,"explicit_blank":true},"304":{"row":2383,"explicit_blank":true},"305":{"row":2409,"explicit_blank":true},"306":{"row":2430,"explicit_blank":true}}}},{"m":8,"utilidadNeta":-3494758.29,"depAmort":431012.68,"impDiferidos":-170.88,"dClientes":-257663.26,"dCxC":-9483.57,"dAnticipos":-171962.59,"dAntProv":1142415.79,"dInventario":-8103665.9,"dProveedores":2879298.79,"dAcreedores":173646.78,"dProvisiones":379330.47,"dImpuestos":-8636.39,"equComputo":-65805.13,"mobEquipo":-4136.21,"intangibles":45523.6,"depositos":650.48,"aportaciones":0.0,"dIVA":-542033.72,"varCapTrabajo":-4518753.6,"totalOperacion":-7582670.09,"totalInversion":-23767.26,"totalFinanciamiento":0.0,"saldoInicial":12345812.67,"saldoFinal":4739375.32,"netChange":-7606437.35,"reconciliationGap":0.0,"burnGroups":{"inventory":8103665.9,"suppliers":-4021714.58,"operation":3500718.77,"intangibles":-45523.6,"capex":69290.86},"burnConsumption":7606437.35,"burnSigned":-7606437.35,"source":{"file":"08.26 Balance Agosto 2026.xlsx","sheet":"Hoja1","sha256":"defbfe4e4edac597f7c0f2adc31958d0d9b2558377b6e23c93e9b49e8abfb813","profit_row":2443,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":18,"explicit_blank":false},"103":{"row":37,"explicit_blank":false},"104":{"row":60,"explicit_blank":true},"105":{"row":71,"explicit_blank":false},"106":{"row":100,"explicit_blank":true},"107":{"row":156,"explicit_blank":true},"108":{"row":189,"explicit_blank":true},"109":{"row":215,"explicit_blank":false},"110":{"row":342,"explicit_blank":true},"111":{"row":353,"explicit_blank":true},"112":{"row":364,"explicit_blank":true},"113":{"row":375,"explicit_blank":false},"114":{"row":442,"explicit_blank":true},"115":{"row":453,"explicit_blank":false},"116":{"row":508,"explicit_blank":true},"117":{"row":519,"explicit_blank":true},"118":{"row":530,"explicit_blank":true},"119":{"row":558,"explicit_blank":false},"120":{"row":586,"explicit_blank":false},"121":{"row":616,"explicit_blank":false},"151":{"row":635,"explicit_blank":true},"152":{"row":646,"explicit_blank":true},"153":{"row":658,"explicit_blank":true},"154":{"row":670,"explicit_blank":true},"155":{"row":683,"explicit_blank":false},"156":{"row":696,"explicit_blank":false},"157":{"row":709,"explicit_blank":true},"158":{"row":720,"explicit_blank":true},"159":{"row":731,"explicit_blank":true},"160":{"row":742,"explicit_blank":true},"161":{"row":753,"explicit_blank":true},"162":{"row":764,"explicit_blank":true},"163":{"row":775,"explicit_blank":true},"164":{"row":786,"explicit_blank":true},"165":{"row":797,"explicit_blank":true},"166":{"row":808,"explicit_blank":true},"167":{"row":819,"explicit_blank":true},"168":{"row":830,"explicit_blank":true},"169":{"row":841,"explicit_blank":true},"170":{"row":852,"explicit_blank":true},"171":{"row":864,"explicit_blank":false},"172":{"row":963,"explicit_blank":true},"173":{"row":1059,"explicit_blank":true},"174":{"row":1070,"explicit_blank":true},"175":{"row":1081,"explicit_blank":true},"176":{"row":1092,"explicit_blank":false},"177":{"row":1105,"explicit_blank":true},"178":{"row":1116,"explicit_blank":true},"179":{"row":1127,"explicit_blank":true},"180":{"row":1138,"explicit_blank":true},"181":{"row":1149,"explicit_blank":true},"182":{"row":1160,"explicit_blank":true},"183":{"row":1171,"explicit_blank":false},"184":{"row":1229,"explicit_blank":false},"185":{"row":1253,"explicit_blank":true},"186":{"row":1264,"explicit_blank":true},"187":{"row":1320,"explicit_blank":true},"188":{"row":1331,"explicit_blank":true},"189":{"row":1352,"explicit_blank":true},"190":{"row":1363,"explicit_blank":true},"191":{"row":1374,"explicit_blank":true},"201":{"row":1393,"explicit_blank":false},"202":{"row":1423,"explicit_blank":true},"203":{"row":1489,"explicit_blank":true},"204":{"row":1585,"explicit_blank":true},"205":{"row":1596,"explicit_blank":false},"206":{"row":1635,"explicit_blank":true},"207":{"row":1668,"explicit_blank":true},"208":{"row":1684,"explicit_blank":false},"209":{"row":1702,"explicit_blank":true},"210":{"row":1719,"explicit_blank":false},"211":{"row":1772,"explicit_blank":false},"212":{"row":1799,"explicit_blank":false},"213":{"row":1812,"explicit_blank":true},"214":{"row":1854,"explicit_blank":true},"215":{"row":1865,"explicit_blank":true},"216":{"row":1886,"explicit_blank":false},"217":{"row":1971,"explicit_blank":true},"218":{"row":1983,"explicit_blank":true},"251":{"row":2001,"explicit_blank":true},"252":{"row":2038,"explicit_blank":true},"253":{"row":2129,"explicit_blank":true},"254":{"row":2225,"explicit_blank":true},"255":{"row":2236,"explicit_blank":true},"256":{"row":2247,"explicit_blank":true},"257":{"row":2258,"explicit_blank":true},"258":{"row":2269,"explicit_blank":true},"259":{"row":2280,"explicit_blank":false},"260":{"row":2303,"explicit_blank":true},"301":{"row":2318,"explicit_blank":false},"302":{"row":2355,"explicit_blank":true},"303":{"row":2376,"explicit_blank":true},"304":{"row":2387,"explicit_blank":true},"305":{"row":2413,"explicit_blank":true},"306":{"row":2434,"explicit_blank":true}}}},{"m":9,"utilidadNeta":-3264666.82,"depAmort":436858.73,"impDiferidos":1700.95,"dClientes":-362892.45,"dCxC":-76322.84,"dAnticipos":-28515.38,"dAntProv":-10882.51,"dInventario":175544.48,"dProveedores":-2629030.53,"dAcreedores":-141468.22,"dProvisiones":3401.16,"dImpuestos":19996.42,"equComputo":-39841.39,"mobEquipo":0.0,"intangibles":-141788.0,"depositos":0.0,"aportaciones":3478993.5,"dIVA":-190751.78,"varCapTrabajo":-3240921.65,"totalOperacion":-6067028.79,"totalInversion":-181629.39,"totalFinanciamiento":3478993.5,"saldoInicial":4739375.32,"saldoFinal":1969710.64,"netChange":-2769664.68,"reconciliationGap":0.0,"burnGroups":{"inventory":-175544.48,"suppliers":2639913.04,"operation":3602660.23,"intangibles":141788.0,"capex":39841.39},"burnConsumption":6248658.18,"burnSigned":-6248658.18,"source":{"file":"09.26 Balance Septiembre 2026.xlsx","sheet":"Hoja1","sha256":"eab65fcfd4f7dfab0e3404d9546d988479eacf771bf7ac65f47b06afc68fd2cb","profit_row":139,"accounts":{"101":{"row":6,"explicit_blank":true},"102":{"row":7,"explicit_blank":false},"103":{"row":8,"explicit_blank":false},"104":{"row":9,"explicit_blank":true},"105":{"row":10,"explicit_blank":false},"106":{"row":11,"explicit_blank":true},"107":{"row":12,"explicit_blank":true},"108":{"row":13,"explicit_blank":true},"109":{"row":14,"explicit_blank":false},"110":{"row":15,"explicit_blank":true},"111":{"row":16,"explicit_blank":true},"112":{"row":17,"explicit_blank":true},"113":{"row":18,"explicit_blank":false},"114":{"row":19,"explicit_blank":true},"115":{"row":20,"explicit_blank":false},"116":{"row":21,"explicit_blank":true},"117":{"row":22,"explicit_blank":true},"118":{"row":23,"explicit_blank":false},"119":{"row":24,"explicit_blank":false},"120":{"row":25,"explicit_blank":false},"121":{"row":26,"explicit_blank":false},"151":{"row":33,"explicit_blank":true},"152":{"row":34,"explicit_blank":true},"153":{"row":35,"explicit_blank":true},"154":{"row":36,"explicit_blank":true},"155":{"row":37,"explicit_blank":false},"156":{"row":38,"explicit_blank":false},"157":{"row":39,"explicit_blank":true},"158":{"row":40,"explicit_blank":true},"159":{"row":41,"explicit_blank":true},"160":{"row":42,"explicit_blank":true},"161":{"row":43,"explicit_blank":true},"162":{"row":44,"explicit_blank":true},"163":{"row":45,"explicit_blank":true},"164":{"row":46,"explicit_blank":true},"165":{"row":47,"explicit_blank":true},"166":{"row":48,"explicit_blank":true},"167":{"row":49,"explicit_blank":true},"168":{"row":50,"explicit_blank":true},"169":{"row":51,"explicit_blank":true},"170":{"row":52,"explicit_blank":true},"171":{"row":53,"explicit_blank":false},"172":{"row":54,"explicit_blank":true},"173":{"row":55,"explicit_blank":true},"174":{"row":56,"explicit_blank":true},"175":{"row":57,"explicit_blank":true},"176":{"row":58,"explicit_blank":false},"177":{"row":59,"explicit_blank":true},"178":{"row":60,"explicit_blank":true},"179":{"row":61,"explicit_blank":true},"180":{"row":62,"explicit_blank":true},"181":{"row":63,"explicit_blank":true},"182":{"row":64,"explicit_blank":true},"183":{"row":65,"explicit_blank":false},"184":{"row":66,"explicit_blank":false},"185":{"row":67,"explicit_blank":true},"186":{"row":68,"explicit_blank":true},"187":{"row":69,"explicit_blank":true},"188":{"row":70,"explicit_blank":true},"189":{"row":71,"explicit_blank":true},"190":{"row":72,"explicit_blank":true},"191":{"row":73,"explicit_blank":true},"201":{"row":87,"explicit_blank":false},"202":{"row":88,"explicit_blank":true},"203":{"row":89,"explicit_blank":true},"204":{"row":90,"explicit_blank":true},"205":{"row":91,"explicit_blank":false},"206":{"row":92,"explicit_blank":true},"207":{"row":93,"explicit_blank":true},"208":{"row":94,"explicit_blank":false},"209":{"row":95,"explicit_blank":false},"210":{"row":96,"explicit_blank":false},"211":{"row":97,"explicit_blank":false},"212":{"row":98,"explicit_blank":false},"213":{"row":99,"explicit_blank":true},"214":{"row":100,"explicit_blank":true},"215":{"row":101,"explicit_blank":true},"216":{"row":102,"explicit_blank":false},"217":{"row":103,"explicit_blank":true},"218":{"row":104,"explicit_blank":true},"251":{"row":111,"explicit_blank":true},"252":{"row":112,"explicit_blank":true},"253":{"row":113,"explicit_blank":true},"254":{"row":114,"explicit_blank":true},"255":{"row":115,"explicit_blank":true},"256":{"row":116,"explicit_blank":true},"257":{"row":117,"explicit_blank":true},"258":{"row":118,"explicit_blank":true},"259":{"row":119,"explicit_blank":false},"260":{"row":120,"explicit_blank":true},"301":{"row":130,"explicit_blank":false},"302":{"row":131,"explicit_blank":true},"303":{"row":132,"explicit_blank":true},"304":{"row":133,"explicit_blank":true},"305":{"row":134,"explicit_blank":true},"306":{"row":135,"explicit_blank":true}}}}],"detalles":{"depAmort":[{"code":"171-00-000","name":"Depreciación Acumulada De Activos Fijos","vals":[3148.72,3676.55,3705.0,4267.52,5044.15,7681.98,8913.28,9292.34,10969.34]},{"code":"183-00-000","name":"Amortización Acumulada De Gastos Diferidos","vals":[117812.61,150316.35,111597.06,114483.95,129047.7,144236.33,303719.29,421720.34,425889.39]}],"impDiferidos":[{"code":"259-00-000","name":"Impuestos Diferidos","vals":[0.0,-76.8,-188.16,-505.59,-218.81,489.12,-188.55,-170.88,1700.95]}],"dClientes":[{"code":"105-00-000","name":"Clientes","vals":[-0.0,-0.0,-0.0,-0.0,-0.0,-449047.9,-0.08,-257663.26,-362892.45]}],"dCxC":[{"code":"121-00-000","name":"Otros Activos A Corto Plazo","vals":[-0.0,-114401.4,-88408.46,154327.44,13075.91,35406.51,-14172.93,-9483.57,-76322.84]}],"dAnticipos":[{"code":"109-00-000","name":"Pagos Anticipados","vals":[14533.91,14533.91,-16619.42,28783.11,1963.75,-32196.09,34392.14,-171962.59,-28515.38]}],"dAntProv":[{"code":"120-00-000","name":"Anticipo A Proveedores","vals":[-156795.76,1578.68,-26895.88,194324.34,159142.79,-239548.76,-724576.72,1142415.79,-10882.51]}],"dInventario":[{"code":"115-00-000","name":"Inventario","vals":[-0.0,-0.0,-0.0,-347186.0,-783933.77,-578892.94,7467.5,-8103665.9,175544.48]}],"dProveedores":[{"code":"201-00-000","name":"Proveedores","vals":[374789.6,-79674.37,6392219.44,-6465992.77,321273.72,-248782.18,-64188.09,2879298.79,-2629030.53]}],"dAcreedores":[{"code":"205-00-000","name":"Acreedores Diversos A Corto Plazo","vals":[61539.65,194698.92,-196377.54,-83288.25,95973.0,156478.48,-56511.73,173646.78,-141468.22]}],"dProvisiones":[{"code":"210-00-000","name":"Provisión De Sueldos Y Salarios","vals":[36687.51,16990.53,39168.33,40916.17,38330.69,47172.72,215661.82,226619.16,143029.28]},{"code":"211-00-000","name":"Provisión De Contribuciones Segsocial X Pagar","vals":[-87751.41,81985.15,-60968.39,113002.35,-83595.01,132234.78,-88900.45,154357.15,-144562.07]},{"code":"212-00-000","name":"Provisión De Imoto Estatal S Nómina X Pagar","vals":[-631.47,-6569.62,1184.73,1293.83,3924.24,13542.25,-2088.34,-1645.84,4933.95]}],"dImpuestos":[{"code":"216-00-000","name":"Impuestos Retenidos","vals":[-15725.92,-68331.66,25653.51,-1473.66,41045.71,144804.22,-46218.42,-8636.39,19996.42]},{"code":"217-00-000","name":"Impuestos por Retener","vals":[0.0,8345.73,-8345.73,8059.13,-8059.13,0.0,0.0,0.0,0.0]}],"equComputo":[{"code":"156-00-000","name":"Equipo De Cómputo","vals":[-21071.55,-0.0,-22540.52,-30999.15,-105484.98,-49327.28,-15085.34,-65805.13,-39841.39]}],"mobEquipo":[{"code":"155-00-000","name":"Mobiliario Y Equipo De Oficina","vals":[-0.0,-3275.0,-0.0,-0.0,-0.0,-0.0,-0.0,-4136.21,-0.0]}],"intangibles":[{"code":"176-00-000","name":"Activos Intangibles Empresariales","vals":[-445417.5,-1013189.56,-6242765.83,-341245.96,-663559.01,7388.4,-276398.65,45523.6,-141788.0]}],"depositos":[{"code":"184-00-000","name":"Depósitos En Garantía","vals":[-0.0,-0.0,-0.0,-7546.46,-0.0,-0.0,650.48,650.48,-0.0]}],"aportaciones":[{"code":"301-00-000","name":"Capital Social","vals":[0.0,25958163.85,0.0,0.0,0.0,0.0,11874017.4,0.0,3478993.5]}],"dIVA":[{"code":"113-00-000","name":"Impuestos A Favor","vals":[-70989.26,-108279.47,-201573.45,-237662.0,-170421.81,-353779.03,-198468.97,-516951.68,-259317.01]},{"code":"118-00-000","name":"Impuestos Acreditables Pagados","vals":[-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-89.0]},{"code":"119-00-000","name":"Impuestos Acreditables Por Pagar","vals":[-50209.25,21249.68,-5579.23,28107.81,-29085.92,-3574.98,8670.34,-60621.8,60111.83]},{"code":"208-00-000","name":"Impuestos Trasladados Cobrados","vals":[0.0,0.0,0.0,0.0,0.0,61937.64,0.0,35539.76,8542.3]},{"code":"209-00-000","name":"Impuestos Trasladados No Cobrados","vals":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1]}]},"openingSource":{"file":"01.25 Balance 2025.xlsx","sheet":"Hoja1","sha256":"4daf084d7ca95b4837132fca147f19530cebdb9ac76aa839c3c9cec93e7d8c2b"},"openingCutoffConfirmed":false,"historicalJanuarySigned":-86708794,"method":"SAP control balance movements and independently reported cumulative PYG; no residual; no bank-payment certification"};
+function buildSapCashFlowV112(year){return Number(year)===CF_SAP_DATA_V112.year?CF_SAP_DATA_V112:null;}
+const sapMoneyV112=v=>`${v<0?'−':''}$${Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const sapSumV112=values=>values.reduce((s,v)=>s+Math.round(v*100),0)/100;
+const sapMonthV112=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const BurnDetailTable=({year,month})=>{
-  // BURN_ACTIVITY_PRESENTATION_V111 — references only; no residual reconciliation.
-  const cf=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
-  const months=Array.from({length:Math.max(month,1)},(_,i)=>i+1);
-  const names=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-  const at=(labels,m)=>{
-    const ss=cf.find(s=>labels.includes(String(s.name||"").trim()));
-    const raw=ss?.values?.[`${year}-${String(m).padStart(2,"0")}`];
-    if(raw==null||raw==="")return null;
-    const value=Number(raw);return Number.isFinite(value)?value:null;
-  };
-  const series=labels=>months.map(m=>at(labels,m));
-  // Only explicitly named activity series may supply purchase/payment amounts.
-  // Balance/working-capital variations are NOT payments.
-  const inventory=series(["Inventario pagado","Pagos de inventario","Inventory payments"]);
-  const suppliers=series(["Pago a Proveedores","Pagos a Proveedores","Supplier payments"]);
-  const opex=series(["OPEX"]);
-  const license=series(["Licence Fees","License Fees","Pagos de licencias","License payments"]);
-  // CAPEX is the existing AUX aggregate. It has not been audited for license overlap.
-  const capex=series(["CAPEX"]);
-  const approvedBurn2026=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
-  const burnTotal=months.map((m,i)=>{
-    if(Number(year)===2026&&approvedBurn2026[i]!=null)return approvedBurn2026[i];
-    const start=at(["Saldo Inicial","Starting Cash"],m),end=at(["Saldo Final","Ending Cash"],m),capital=at(["Aportaciones de Capital","Capital Contributions"],m);
-    return start==null||end==null?null:end-start-(capital??0);
-  });
-  // Missing months never become zero or a partial YTD presented as complete.
-  const total=a=>a.every(v=>v!=null)?a.reduce((s,v)=>s+v,0):null;
-  const rows=[
-    {label:"Inventario",values:inventory},
-    {label:"Pago a Proveedores",values:suppliers},
-    {label:"OPEX",values:opex},
-    {label:"Licence Fees",values:license},
-    {label:"CAPEX",values:capex},
-    {label:"Burn — referencia actual",values:burnTotal,bold:true}
-  ];
-  const fmt=v=>v==null?"Pendiente":`${v<0?"−":""}$${Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  const cell={padding:"9px 10px",textAlign:"right",borderBottom:"1px solid #E4E8F2",whiteSpace:"nowrap"};
-  return <section data-burn-detail-table="true" data-burn-activity-v111="true" style={{marginTop:14,background:"#fff",border:"1px solid #A8C9FF",borderRadius:10,overflow:"hidden",width:"100%"}}>
-    <div style={{padding:"10px 12px",background:"#DBEAFE",fontSize:12,fontWeight:800,color:"#17306F"}}>Burn detail by activity <span style={{fontWeight:400}}>· MXN</span></div>
-    <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-      <thead><tr style={{background:"#F1F5FF"}}><th style={{...cell,textAlign:"left",minWidth:190}}>Activity</th>{months.map(m=><th key={m} style={cell}>{names[m-1]}</th>)}<th style={cell}>YTD</th></tr></thead>
-      <tbody>{rows.map(row=><tr key={row.label} style={{background:row.bold?"#E0E7FF":"#fff",fontWeight:row.bold?800:500}}>
-        <td style={{...cell,textAlign:"left"}}>{row.label}</td>{[...row.values,total(row.values)].map((v,i)=><td key={i} style={{...cell,color:v==null?"#667085":v<0?"#B42318":"#344767",fontWeight:i===months.length?800:undefined}}>{fmt(v)}</td>)}
-      </tr>)}</tbody>
+  const source=buildSapCashFlowV112(year);if(!source)return null;
+  const rows=source.months.slice(0,month);if(!rows.length)return null;
+  const items=[['inventory','Inventario'],['suppliers','Proveedores y anticipos'],['operation','Operación neta'],['intangibles','Intangibles'],['capex','CAPEX y depósitos']];
+  const cell={padding:'9px 10px',borderBottom:'1px solid #E4E8F2',textAlign:'right',whiteSpace:'nowrap'};
+  const numbers=values=>[...values,sapSumV112(values)].map((v,i)=><td key={i} style={{...cell,color:v<0?'#15803D':'#B42318',fontWeight:i===rows.length?800:undefined}}>{sapMoneyV112(v)}</td>);
+  return <section data-burn-detail-table="true" data-burn-sap-v112="true" style={{margin:'18px 0',border:'1px solid #A8C9FF',borderRadius:10,overflow:'hidden',background:'#fff'}}>
+    <div style={{padding:'12px',background:'#DBEAFE',fontWeight:800,color:'#17306F'}}>Burn detail by activity · MXN</div>
+    <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+      <thead><tr style={{background:'#F1F5FF'}}><th style={{...cell,textAlign:'left',minWidth:195}}>Actividad</th>{rows.map(r=><th style={cell} key={r.m}>{sapMonthV112[r.m-1]}</th>)}<th style={cell}>YTD</th></tr></thead>
+      <tbody>{items.map(([k,label])=><tr key={k}><td style={{...cell,textAlign:'left'}}>{label}</td>{numbers(rows.map(r=>r.burnGroups[k]))}</tr>)}
+      <tr style={{background:'#DBEAFE',fontWeight:800}}><td style={{...cell,textAlign:'left'}}>Burn neto · consumo positivo</td>{numbers(rows.map(r=>r.burnConsumption))}</tr></tbody>
     </table></div>
-    <p style={{margin:0,padding:"10px 12px",fontSize:11,lineHeight:1.6,color:"#667085"}}>Vista de presentación; no es una conciliación validada. OPEX y CAPEX conservan los importes auxiliares de referencia. CAPEX sigue agregado, sin separación validada de licencias. Inventario y pagos a proveedores requieren soporte de desembolsos: no se sustituyen por variaciones contables. Pendiente significa sin soporte suficiente; no equivale a cero. El Burn de referencia no se recalcula como suma de estas actividades.</p>
+    <p style={{margin:0,padding:12,fontSize:11,lineHeight:1.6,color:'#667085'}}>Consumo positivo; importes negativos reducen el Burn. Método indirecto: Inventario = Δ115; Proveedores y anticipos = Δ120 − Δ201; Operación neta = resultado SAP más ajustes no monetarios y demás capital de trabajo; Intangibles = Δ176; CAPEX y depósitos = Δ155 + Δ156 + Δ184. Son movimientos de saldos, no pagos brutos certificados ni exclusivamente licencias. Los cinco grupos concilian con el Burn neto de cada mes sin partidas residuales.</p>
   </section>;
 };
+const CashFlowSapV112=({cf,month,year})=>{
+  const [open,setOpen]=useState({op:false,inv:false,fin:false});
+  const rows=cf.months.slice(0,month);if(!rows.length)return null;
+  const cell={padding:'10px',borderBottom:'1px solid #E5E7EB',textAlign:'right',whiteSpace:'nowrap'};
+  const total=k=>k==='saldoInicial'?rows[0][k]:k==='saldoFinal'?rows[rows.length-1][k]:sapSumV112(rows.map(r=>r[k]));
+  const vals=(values,ytd)=>[...values,ytd??sapSumV112(values)].map((v,i)=><td key={i} style={{...cell,color:v<0?'#B42318':'#374151',fontWeight:i===rows.length?700:undefined}}>{sapMoneyV112(v)}</td>);
+  const line=(key,label,bold=false,click=null)=><tr key={key} style={{background:bold?'#F1F5F9':'#fff',fontWeight:bold?700:400,cursor:click?'pointer':'default'}} onClick={click}>
+    <td style={{...cell,textAlign:'left'}}>{label}</td>{vals(rows.map(r=>r[key]),total(key))}</tr>;
+  const detail=(key,label)=>{
+    const accounts=(cf.detalles[key]||[]).filter(d=>d.vals.slice(0,rows.length).some(v=>v!==0));
+    return <React.Fragment key={key}>{line(key,label)}{accounts.length>1&&accounts.map(d=><tr key={d.code} style={{color:'#667085',fontSize:10}}><td style={{...cell,textAlign:'left',paddingLeft:28}}>{d.code} · {d.name}</td>{vals(d.vals.slice(0,rows.length))}</tr>)}</React.Fragment>;
+  };
+  const op=[['utilidadNeta','SAP · Resultado contable del período'],['depAmort','171 / 183 · Depreciación y amortización · no monetario'],['impDiferidos','259 · Impuestos diferidos · no monetario'],['dClientes','105 · Clientes / cuentas por cobrar'],['dAnticipos','109 · Pagos anticipados'],['dIVA','113 / 118 / 119 / 208 / 209 · Impuestos operativos'],['dInventario','115 · Inventarios'],['dAntProv','120 · Anticipos a proveedores'],['dCxC','121 · Otros activos corrientes'],['dProveedores','201 · Proveedores'],['dAcreedores','205 · Acreedores diversos'],['dProvisiones','210 / 211 / 212 · Nómina y contribuciones'],['dImpuestos','216 / 217 · Retenciones / impuestos']];
+  const inv=[['equComputo','156 · Equipo de cómputo'],['mobEquipo','155 · Mobiliario y equipo'],['intangibles','176 · Activos intangibles'],['depositos','184 · Depósitos en garantía']];
+  let hist=cf.historicalJanuarySigned;
+  const history=rows.map((r,i)=>{if(i>0)hist=Math.round((hist+r.burnSigned)*100)/100;return hist;});
+  return <div data-cashflow-sap-v112="true" style={{padding:'24px 12px',color:'#374151'}}>
+    <BurnDetailTable year={year} month={month}/>
+    <div style={{overflowX:'auto',marginBottom:18}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}><thead><tr><th style={{...cell,textAlign:'left'}}>Burn acumulado histórico*</th>{rows.map(r=><th key={r.m} style={cell}>{sapMonthV112[r.m-1]}</th>)}<th style={cell}>Cierre</th></tr></thead><tbody><tr><td style={{...cell,textAlign:'left'}}>Consumo acumulado · signo de salida</td>{vals(history,history[history.length-1])}</tr></tbody></table></div>
+    <div style={{fontSize:10,color:'#667085',marginBottom:20}}>* Conserva el ancla histórica de enero de 2026 (−$86,708,794.00), no reauditada aquí; agrega el Burn SAP de febrero en adelante. YTD de la tabla de actividades excluye el histórico.</div>
+    <h3 style={{margin:'8px 0'}}>Cash Flow</h3><p style={{fontSize:12,color:'#667085'}}>Enero–{sapMonthV112[rows[rows.length-1].m-1]} {year} · Método indirecto · MXN</p>
+    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:12,marginBottom:20}}>{[['Saldo inicial*',rows[0].saldoInicial],['Variación neta acumulada',total('netChange')],['Saldo final',total('saldoFinal')]].map(([label,value])=><div key={label} style={{border:'1px solid #E5E7EB',borderRadius:10,padding:16,background:'#fff'}}><div style={{fontSize:12,color:'#667085'}}>{label}</div><div style={{fontWeight:800,fontSize:22,marginTop:6}}>{sapMoneyV112(value)}</div></div>)}</div>
+    <div style={{border:'1px solid #E5E7EB',borderRadius:10,overflow:'hidden',background:'#fff'}}>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:12,gap:10}}><strong>Flujo mensual y acumulado</strong><button type="button" onClick={()=>setOpen({op:!open.op,inv:!open.op,fin:!open.op})} style={{padding:9,border:'1px solid #E5E7EB',borderRadius:6,background:'#fff',cursor:'pointer'}}>{open.op?'Contraer detalle':'Expandir detalle'}</button></div>
+    <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}><thead><tr style={{background:'#FAFAFA'}}><th style={{...cell,textAlign:'left',minWidth:290}}>Concepto</th>{rows.map(r=><th key={r.m} style={cell}>{sapMonthV112[r.m-1]}</th>)}<th style={cell}>YTD</th></tr></thead><tbody>
+      {line('totalOperacion',(open.op?'−  ':'+  ')+'A. Actividades de operación',true,()=>setOpen(p=>({...p,op:!p.op})))}{open.op&&op.map(([k,l])=>detail(k,l))}
+      {line('totalInversion',(open.inv?'−  ':'+  ')+'B. Actividades de inversión',true,()=>setOpen(p=>({...p,inv:!p.inv})))}{open.inv&&inv.map(([k,l])=>detail(k,l))}
+      {line('totalFinanciamiento',(open.fin?'−  ':'+  ')+'C. Actividades de financiamiento',true,()=>setOpen(p=>({...p,fin:!p.fin})))}{open.fin&&detail('aportaciones','301 · Aportaciones de capital')}
+      {line('netChange','Variación neta del efectivo · A + B + C',true)}{line('saldoInicial','Saldo inicial de efectivo')}{line('saldoFinal','Saldo final de efectivo',true)}
+    </tbody></table></div><div style={{padding:12,color:'#15803D',borderTop:'1px solid #E5E7EB',fontSize:12,fontWeight:700}}>Conciliación contable: diferencia $0.00 en los {rows.length} meses · Sin partida residual.</div></div>
+    <p style={{fontSize:11,lineHeight:1.7,color:'#667085'}}>Fuente: cuentas de control SAP completas y “Período ganancias” reportado; resultado mensual = diferencia de acumulados. No modifica Balance ni sus overrides, ni sustituye el P&amp;L del CSV. YTD suma flujos; los saldos muestran apertura y cierre. La inversión representa movimientos de activos; esta conciliación no certifica pagos brutos ni excluye otros movimientos no monetarios.</p>
+    <div style={{padding:12,fontSize:11,lineHeight:1.6,color:'#92400E',background:'#FFF7ED',border:'1px solid #FDBA74',borderRadius:8}}>* Apertura por confirmar: se usa {cf.openingSource.file} como cierre 2025 / apertura 2026; el libro no imprime el corte. La variación neta de efectivo no tiene que ser cero: cero es la diferencia entre A+B+C y el cambio de caja.</div>
+  </div>;
+};
+
+// CF_SAP_ISOLATED_V112_END
 
 export default function Dashboard() {
   const [cm, setCm] = useState(() => {
@@ -958,171 +967,7 @@ export default function Dashboard() {
   const OPEN_CASH = 4955698;
   const toggleCF = k => setExpCF(p => ({ ...p, [k]: !p[k] }));
 {/* */}
-  const cashFlow = useMemo(() => {
-    if (!B || B.length === 0) return null;
-{/* */}
-    // ─── ESTRUCTURA DEL ARRAY B ──────────────────────────────────────────────────
-    // Col Enero  (mi=0): SALDO FINAL acumulado al 31-ene-2026
-    //                    (base de arranque del anio; no es un movimiento mensual)
-    // Col Feb+   (mi>0): MOVIMIENTO mensual real de ese mes
-    //
-    // Por eso bVal(row, cm) suma correctamente el saldo al mes cm:
-    //   bVal(row,1) = col[0] = saldo a enero
-    //   bVal(row,2) = col[0]+col[1] = saldo enero + movimiento feb = saldo a feb
-    //
-    // Para el flujo de efectivo necesitamos MOVIMIENTOS:
-    //   - Efectivo (102+103) enero: mov = saldo_ene - OPEN_CASH
-    //   - Todas las cuentas Feb+:   mov = col[mi] directamente
-    //   - Cuentas no-efectivo enero: mov = saldo_ene - saldo_inicio_cuenta
-    //     Como no tenemos saldos de dic-2025 de cada cuenta, usamos
-    //     un enfoque de "plug" para enero: totalOp = netChange - totalInv - totalFin
-    // ──���─���─���──��─��─��─��─��─��──────���─���─���─���──��─��──────────���─���─�����──��─────────
-{/* */}
-    // Cuentas de efectivo y equivalentes
-    const r102 = B.find(r => (r[0]||'').startsWith('102') && r[4] === 1);
-    const r103 = B.find(r => (r[0]||'').startsWith('103') && r[4] === 1);
-{/* */}
-    // Movimiento mensual de cuentas NO-efectivo (solo hojas, sin subtotales -000)
-    // mi=0 -> col[5] es saldo final enero; usamos diferencia con apertura de la cuenta
-    // mi>0 -> col[5+mi] es movimiento real del mes
-    // Para evitar doble conteo excluimos cuentas -00-000 y -0x-000 (subtotales)
-    const allCodes = new Set(B.map(r => r[0] || ''));
-    const isLeaf = code => code && !code.endsWith('-000');
-    // CASHFLOW_SEPTEMBER_ONLY_V106 — movimientos derivados del snapshot SAP adjunto.
-    // Este mapa sólo alimenta Cash Flow; const B y Balance Sheet permanecen intactos.
-    const sep26Mv={"102":-1134818.26,"103":-1634846.42,"109":28515.38,"113":259317.01,"115":-175544.48,"119":-60111.83,"120":10882.51,"121":76322.84,"155":0,"156":39841.39,"176":141788,"184":0,"201":-2629030.53,"205":-141468.22,"210":143029.28,"211":-144562.07,"212":4933.95,"216":19996.42,"217":0,"301":3478993.50};
-{/* */}
-    const mvLeaf = (pfx, mi) => {
-      if(mi===8&&Object.prototype.hasOwnProperty.call(sep26Mv,pfx))return sep26Mv[pfx];
-      return B.filter(r => !r[4] && (r[0]||'').startsWith(pfx) && isLeaf(r[0]||""))
-        .reduce((s, r) => { const v=r[5+mi]||0; return s+(mi===0?v-(B_OPEN[r[0]||""]||0):v); }, 0);
-    };
-{/* */}
-    // Para enero (mi=0) necesitamos el saldo inicial de cada cuenta en dic-2025.
-    // Usamos bVal(row,-1) = 0 como aproximacion (no tenemos dic-2025)
-    // -> mvLeaf(pfx, 0) = saldo_ene (diff vs 0 = todo el saldo de apertura)
-    // Esto sobrestima enero; se corrige con el "plug" de operacion.
-{/* */}
-    // Detalle expandible (solo hojas)
-    const detLeaf = (...pfxs) => B
-      .filter(r => !r[4] && pfxs.some(p => (r[0]||'').startsWith(p)) && isLeaf(r[0]||""))
-      .map(r => ({ name: r[1], code: r[0], vals: Array.from({length:12}, (_,i) => i===8?0:(i===0?(r[5]||0)-(B_OPEN[r[0]||""]||0):r[5+i]||0)) }));
-{/* */}
-    // ─────────────────────────────────────────────────────────────────
-    // Saldo inicial de cada cuenta de efectivo en dic-2025:
-    //   sum_saldo_dic2025 = OPEN_CASH (dato conocido)
-    // Movimiento real de efectivo en enero = saldo_ene - OPEN_CASH
-    const cash102_ene = r102 ? (r102[5] || 0) : 0;
-    const cash103_ene = r103 ? (r103[5] || 0) : 0;
-    const saldoEfec_ene = cash102_ene + cash103_ene; // saldo efectivo al 31-ene
-{/* */}
-    const months = Array.from({length: 12}, (_, mi) => {
-      const m = mi + 1;
-{/* */}
-      // MOVIMIENTO NETO DE EFECTIVO (siempre correcto)
-      let netChange;
-      if (mi === 0) {
-        // Enero: movimiento = saldo final enero - saldo inicial dic-2025
-        netChange = saldoEfec_ene - OPEN_CASH;
-      } else {
-        // Feb+: la columna B ya es el movimiento mensual real
-        const c102 = mi===8 ? sep26Mv["102"] : (r102 ? (r102[5 + mi] || 0) : 0);
-        const c103 = mi===8 ? sep26Mv["103"] : (r103 ? (r103[5 + mi] || 0) : 0);
-        netChange = c102 + c103;
-      }
-{/* */}
-      // ══ B) ACTIVIDADES DE INVERSION ═════════════════════════════���
-      // Enero: col[5] = saldo acumulado historico de activos -> no es movimiento 2026
-      // Solo Feb+ tienen movimientos reales; enero se muestra como 0
-      const equComputo  = -mvLeaf('156', mi);
-      const mobEquipo   = -mvLeaf('155', mi);
-      const intangibles = -mvLeaf('176', mi);
-      const depositos   = mi === 0 ? 0 : -mvLeaf('184', mi);
-      const totalInversion = equComputo + mobEquipo + intangibles + depositos;
-{/* */}
-      // ══ C) ACTIVIDADES DE FINANCIAMIENTO ═════════════════════════════
-      // Capital: misma logica, enero = saldo historico -> 0
-      const aportaciones       = mi === 0 ? 0 : mvLeaf('301', mi);
-      const totalFinanciamiento = aportaciones;
-{/* */}
-      // ══ A) ACTIVIDADES DE OPERACION (Metodo Indirecto) ══════════════════
-      // La utilidad neta y los cambios en capital de trabajo se derivan
-      // de modo que A + B + C = netChange SIEMPRE (cuadre garantizado).
-      //
-      // Utilidad neta del periodo (P&L mensual, NO acumulado historico de B)
-      const pl      = buildPL(fd, CUR_YEAR, m, cm, m <= cm ? 'reales' : 'forecast');
-      const utilidadNeta = pl.netProfit;
-{/* */}
-      // Depreciacion y amortizacion (cargo sin salida de caja)
-      // Usamos buildPL solo para obtener D&A ya que no esta en B por separado
-      const depAmort = pl.depr;
-{/* */}
-      // Capital de trabajo operativo (Feb+ = movimientos reales)
-      const dInventario  = -mvLeaf('115', mi);
-      const dCxC         = -mvLeaf('121', mi);
-      const dIVA         = -(mvLeaf('113', mi) + mvLeaf('119', mi));
-      const dAnticipos   = -mvLeaf('109', mi);
-      const dAntProv     = -mvLeaf('120', mi);
-      const dProveedores =  mvLeaf('201', mi);
-      const dAcreedores  =  mvLeaf('205', mi);
-      const dProvisiones =  mvLeaf('210', mi) + mvLeaf('211', mi) + mvLeaf('212', mi);
-      const dImpuestos   =  mvLeaf('216', mi) + mvLeaf('217', mi);
-      const varCapTrabajo = dInventario + dCxC + dIVA + dAnticipos + dAntProv
-                          + dProveedores + dAcreedores + dProvisiones + dImpuestos;
-{/* */}
-      // NIF B-2: Flujo Neto de Operación = suma real de sus componentes
-      // Utilidad neta + ajustes no monetarios + variación en capital de trabajo
-      const totalOperacion = utilidadNeta + depAmort + varCapTrabajo;
-      // ---
-      // Diferencia de cuadre: si hay cuentas de balance no mapeadas a las 3 secciones,
-      // netChange ≠ totalOperacion + totalInversion + totalFinanciamiento.
-      // Se muestra como "Otras variaciones de efectivo" para transparencia.
-      const otraVariacion = netChange - totalOperacion - totalInversion - totalFinanciamiento;
-{/* */}
-      return {
-        m,
-        utilidadNeta, depAmort, varCapTrabajo,
-        dInventario, dCxC, dIVA, dAnticipos, dAntProv,
-        dProveedores, dAcreedores, dProvisiones, dImpuestos,
-        totalOperacion,
-        equComputo, mobEquipo, intangibles, depositos, totalInversion,
-        aportaciones, totalFinanciamiento,
-        otraVariacion,
-        netChange,
-      };
-    });
-{/* */}
-    // Saldos acumulados de efectivo
-    let saldo = OPEN_CASH;
-    months.forEach(mo => {
-      mo.saldoInicial = saldo;
-      mo.saldoFinal   = saldo + mo.netChange;
-      saldo           = mo.saldoFinal;
-    });
-{/* */}
-    const detalles = {
-      dInventario:  detLeaf('115'),
-      dCxC:         detLeaf('121'),
-      dIVA:         detLeaf('113','119'),
-      dAnticipos:   detLeaf('109'),
-      dAntProv:     detLeaf('120'),
-      dProveedores: detLeaf('201'),
-      dAcreedores:  detLeaf('205'),
-      dProvisiones: detLeaf('210','211','212'),
-      dImpuestos:   detLeaf('216','217'),
-      equComputo:   detLeaf('156'),
-      mobEquipo:    detLeaf('155'),
-      intangibles:  detLeaf('176'),
-      depositos:    detLeaf('184'),
-      aportaciones: detLeaf('301'),
-      otraVariacion: (() => {
-        const _CF = ["102","103","113","119","115","121","109","120","201","205","210","211","212","216","217","155","156","176","184","301"];
-        return B.filter(r => !r[4] && r[2] >= 3 && (r[0]||'') && !_CF.some(p => (r[0]||'').startsWith(p)) && r.slice(5,17).some(v => Math.abs(v||0) >= 0.5)).map(r => ({ name: r[1]||r[0], code: r[0], vals: Array.from({length:12},(_,i)=>i===8?0:(r[5+i]||0)) }));
-      })(),
-    };
-{/* */}
-    return { months, detalles };
-  }, [B, fd, cm])
+  const cashFlow = useMemo(() => buildSapCashFlowV112(CUR_YEAR), [CUR_YEAR]);
 {/* */}
 {/* */}
   // ═══ BALANCE GENERAL ═══
@@ -1596,268 +1441,7 @@ export default function Dashboard() {
 {/* */}
       {/* CHARTS */}
       {/* CASH FLOW METODO DIRECTO NIF B-2 */}
-      {cashFlow && (() => {
-        const cf   = cashFlow;
-        const rows = cf.months.slice(0, cm);
-        const det  = cf.detalles || {};
-        const Fk = v => {
-          if (v === 0 || v == null) return '\u2014';
-          return (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US');
-        };
-        const nc = v => v < 0 ? '#B91C1C' : v > 0 ? '#065F46' : '#9CA3AF';
-        /* estilos como variables JS — sin llaves dobles en JSX */
-        const S = {
-          wrap:    { padding: 24 },
-          hdr:     { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 },
-          hTitle:  { fontWeight: 700, fontSize: 16, color: '#111827' },
-          hSub:    { fontSize: 11, color: '#6B7280' },
-          scroll:  { overflowX: 'auto' },
-          table:   { width: '100%', borderCollapse: 'collapse', fontSize: 11 },
-          th:      { padding: '6px 8px', textAlign: 'right', fontWeight: 600, fontSize: 10, color: '#6B7280', background: '#F9FAFB', borderBottom: '2px solid #E5E7EB' },
-          thLabel: { padding: '6px 12px', textAlign: 'left', fontWeight: 600, fontSize: 10, color: '#6B7280', background: '#F9FAFB', borderBottom: '2px solid #E5E7EB', minWidth: 280 },
-          trRow:   { cursor: 'pointer', background: 'transparent' },
-          trRowNC: { cursor: 'default', background: 'transparent' },
-          tdLabel: { padding: '5px 12px', fontSize: 11, color: '#374151', whiteSpace: 'nowrap' },
-          tdLabelInd: { padding: '5px 12px 5px 28px', fontSize: 11, color: '#374151', whiteSpace: 'nowrap' },
-          arrow:   { marginRight: 6, fontSize: 9, color: '#6B7280' },
-          trDet:   { background: '#F9FAFB' },
-          tdDet:   { padding: '4px 12px 4px 40px', fontSize: 10, color: '#6B7280', whiteSpace: 'nowrap' },
-          tdDetN:  { textAlign: 'right', fontSize: 10, padding: '4px 8px', color: '#6B7280' },
-          trTot:   { background: '#F3F4F6', borderTop: '2px solid #D1D5DB', borderBottom: '2px solid #D1D5DB' },
-          tdTot:   { padding: '7px 12px', fontWeight: 700, fontSize: 11, color: '#111827', whiteSpace: 'nowrap' },
-          trBal:   { background: '#EFF6FF', borderTop: '2px solid #3B82F6', borderBottom: '2px solid #3B82F6' },
-          tdBal:   { padding: '7px 12px', fontWeight: 700, fontSize: 12, color: '#1E40AF', whiteSpace: 'nowrap' },
-          secOp:   { padding: '8px 12px 4px', fontWeight: 700, fontSize: 11, color: '#fff', background: '#065F46', letterSpacing: '0.04em' },
-          secCT:   { padding: '6px 12px 4px 24px', fontWeight: 600, fontSize: 10, color: '#374151', background: '#F0FDF4', borderLeft: '3px solid #065F46' },
-          secInv:  { padding: '8px 12px 4px', fontWeight: 700, fontSize: 11, color: '#fff', background: '#1E40AF', letterSpacing: '0.04em' },
-          secFin:  { padding: '8px 12px 4px', fontWeight: 700, fontSize: 11, color: '#fff', background: '#6D28D9', letterSpacing: '0.04em' },
-          foot:    { fontSize: 10, color: '#9CA3AF', marginTop: 10 },
-        };
-        const numS  = v => ({ textAlign: 'right', fontSize: 11, padding: '5px 8px', color: nc(v) });
-        const numT  = v => ({ textAlign: 'right', fontSize: 11, padding: '7px 8px', fontWeight: 700, color: nc(v) });
-        const numB  = v => ({ textAlign: 'right', fontSize: 12, padding: '7px 8px', fontWeight: 700, color: '#1E40AF' });
-        /* helpers */
-        const cfRow = (key, label, detKey, indent) => {
-          const vals  = rows.map(mo => mo[key] || 0);
-          const total = vals.reduce((s, v) => s + v, 0);
-          const dets  = det[detKey] || [];
-          const hasD  = dets.length > 0;
-          const isExp = expCF[key];
-          return (
-            <React.Fragment key={key}>
-              <tr style={hasD ? S.trRow : S.trRowNC} onClick={() => hasD && toggleCF(key)}>
-                <td style={indent ? S.tdLabelInd : S.tdLabel}>
-                  {hasD && <span style={S.arrow}>{isExp ? '\u25BC' : '\u25BA'}</span>}
-                  {label}
-                </td>
-                {vals.map((v, i) => <td key={i} style={numS(v)}>{Fk(v)}</td>)}
-              </tr>
-              {isExp && dets.filter(a => a.vals.slice(0,cm).some(v => v !== 0)).map((a, ai) => (
-                <tr key={ai} style={S.trDet}>
-                  <td style={S.tdDet}><span style={S.arrow}>└</span>{a.name}</td>
-                  {a.vals.slice(0,cm).map((v,i2) => <td key={i2} style={S.tdDetN}>{v===0?'':Fk(v)}</td>)}
-                </tr>
-              ))}
-            </React.Fragment>
-          );
-        };
-        const totRow = (key, label, isBal) => {
-          const vals  = rows.map(mo => mo[key] || 0);
-          const total = vals.reduce((s, v) => s + v, 0);
-          return isBal ? (
-            <tr key={key} style={S.trBal}>
-              <td style={S.tdBal}>{label}</td>
-              {vals.map((v,i) => <td key={i} style={numB(v)}>{Fk(v)}</td>)}
-            </tr>
-          ) : (
-            <tr key={key} style={S.trTot}>
-              <td style={S.tdTot}>{label}</td>
-              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
-            </tr>
-          );
-        };
-        const balRow = (key, label) => {
-          const vals = rows.map(mo => mo[key] || 0);
-          return (
-            <tr key={key} style={S.trTot}>
-              <td style={S.tdTot}>{label}</td>
-              {vals.map((v,i) => <td key={i} style={numT(v)}>{Fk(v)}</td>)}
-            </tr>
-          );
-        };
-        const secH = (label, st) => (
-          <tr key={'h_'+label}><td colSpan={cm+1} style={st}>{label}</td></tr>
-        );
-        return (
-          <div style={S.wrap}>
-            {(()=>{
-              // BURN_DYNAMIC_CASH_EX_FINANCING_V49 — Ene-Ago aprobado; meses nuevos desde caja sin aportaciones.
-              const approvedBurn2026=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
-              const cfSeries=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
-              const cfAt=(name,m)=>{
-                const serie=cfSeries.find(x=>x.name===name),key=`${CUR_YEAR}-${String(m).padStart(2,"0")}`;
-                const value=serie?.values?.[key];
-                return value==null||value===""?null:Number(value);
-              };
-              const burnMonths = rows.map((mo,i) => {
-                const starting=cfAt("Saldo Inicial",mo.m),ending=cfAt("Saldo Final",mo.m),capital=cfAt("Aportaciones de Capital",mo.m)||0;
-                const cashBurn=Number.isFinite(starting)&&Number.isFinite(ending)?ending-starting-capital:null;
-                const rowBurn=(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0);
-                const burn=CUR_YEAR===2026&&approvedBurn2026[i]!=null?approvedBurn2026[i]:(cashBurn??rowBurn);
-                return {m:mo.m,burn};
-              });
-              const burnTotal = burnMonths.reduce((s,x)=>s+x.burn,0);
-              // Histórico acumulado: enero conserva el cierre histórico aprobado; febrero en adelante suma el Burn mensual.
-              const BURN_HISTORICO_CIERRE_ENE_2026 = -86708794;
-              let burnAcumRun = BURN_HISTORICO_CIERRE_ENE_2026;
-              const burnAccumMonths = burnMonths.map((x,i) => {
-                if(i===0)return {m:x.m,accum:BURN_HISTORICO_CIERRE_ENE_2026};
-                burnAcumRun+=x.burn;
-                return {m:x.m,accum:burnAcumRun};
-              });
-              const burnAccumTotal = burnAccumMonths.length ? burnAccumMonths[burnAccumMonths.length-1].accum : BURN_HISTORICO_CIERRE_ENE_2026;
-              const bs = {
-                wrap:{background:"linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)",border:"2px solid #2563EB",borderRadius:12,padding:"16px 20px",marginBottom:18},
-                head:{marginBottom:12},
-                title:{fontSize:17,fontWeight:800,color:"#1E3A8A"},
-                sub:{fontSize:11,color:"#1E40AF",marginTop:2},
-                grid:{display:"flex",gap:6,flexWrap:"wrap"},
-                rowLbl:{fontSize:10,color:"#1E3A8A",fontWeight:800,letterSpacing:0.5,margin:"10px 0 6px",textTransform:"uppercase"},
-                cell:{flex:"1 1 70px",minWidth:65,background:"#fff",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
-                totalCell:{flex:"1 1 80px",minWidth:75,background:"#1E40AF",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
-                accumCell:{flex:"1 1 70px",minWidth:65,background:"#F8FAFC",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #93C5FD"},
-                accumTotalCell:{flex:"1 1 80px",minWidth:75,background:"#172554",borderRadius:6,padding:"6px 4px",textAlign:"center",border:"1px solid #1E3A8A"},
-                cellLbl:{fontSize:10,color:"#1E40AF",fontWeight:600},
-                totalLbl:{fontSize:10,color:"#DBEAFE",fontWeight:700,letterSpacing:0.5}
-              };
-              const cellVal = v => ({fontSize:12,fontWeight:700,color:v<0?"#B91C1C":v>0?"#065F46":"#9CA3AF"});
-              const totalVal = v => ({fontSize:13,fontWeight:800,color:v<0?"#FCA5A5":v>0?"#86EFAC":"#FFFFFF"});
-              return (
-              <div style={bs.wrap}>
-                <div style={bs.head}>
-                  <div style={bs.title}>Burn Mexico</div>
-                  <div style={bs.sub}>Actividades de Operación + Inversión + Otras variaciones no clasificadas · Ene–{MO[cm-1]} {CUR_YEAR}</div>
-                </div>
-                <div style={bs.rowLbl}>Burn mensual</div>
-                <div style={bs.grid}>
-                  {burnMonths.map(x => (
-                    <div key={x.m} style={bs.cell}>
-                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
-                      <div style={cellVal(x.burn)}>{Fk(x.burn)}</div>
-                    </div>
-                  ))}
-                  <div style={bs.totalCell}>
-                    <div style={bs.totalLbl}>YTD TOTAL</div>
-                    <div style={totalVal(burnTotal)}>{Fk(burnTotal)}</div>
-                  </div>
-                </div>
-                <div style={bs.rowLbl}>Burn acumulado</div>
-                <div style={bs.grid}>
-                  {burnAccumMonths.map(x => (
-                    <div key={x.m} style={bs.accumCell}>
-                      <div style={bs.cellLbl}>{MO[x.m-1]}</div>
-                      <div style={cellVal(x.accum)}>{Fk(x.accum)}</div>
-                    </div>
-                  ))}
-                  <div style={bs.accumTotalCell}>
-                    <div style={bs.totalLbl}>ACUM. {MO[cm-1]}</div>
-                    <div style={totalVal(burnAccumTotal)}>{Fk(burnAccumTotal)}</div>
-                  </div>
-                </div><BurnDetailTable year={CUR_YEAR} month={cm} />
-              </div>);
-            })()}
-            <div style={S.hdr}>
-              <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#065F46"/><text x="18" y="19" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700" fontFamily="system-ui" dominantBaseline="middle">CF</text></svg>
-              <div>
-                <div style={S.hTitle}>Cash Flow</div>
-                <div style={S.hSub}>Indirect Method — NIF B-2 · January–{MO[cm-1]} {CUR_YEAR}</div>
-              </div>
-            </div>
-            <div style={S.scroll}>
-              <table style={S.table}>
-                <thead>
-                  <tr>
-                    <th style={S.thLabel}>Concepto</th>
-                    {rows.map(mo => <th key={mo.m} style={S.th}>{MO[mo.m-1]}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* ── A) OPERACION ── */}
-                  {secH('A)  Actividades de Operación  —  Indirect Method', S.secOp)}
-                  {cfRow('utilidadNeta', 'Utilidad (P\u00e9rdida) neta del per\u00edodo', '', false)}
-                  {cfRow('depAmort',     '(+) Depreciaci\u00f3n y amortizaci\u00f3n', '', false)}
-                  {secH('    Cambios en capital de trabajo:', S.secCT)}
-                  {cfRow('dInventario',  '(+/\u2212) Inventarios',                    'dInventario',  true)}
-                  {cfRow('dCxC',         '(+/\u2212) Cuentas por cobrar / Otros A.CP', 'dCxC',         true)}
-                  {cfRow('dIVA',         '(+/\u2212) IVA a favor / pendiente',         'dIVA',         true)}
-                  {cfRow('dAnticipos',   '(+/\u2212) Pagos anticipados',               'dAnticipos',   true)}
-                  {cfRow('dAntProv',     '(+/\u2212) Anticipo a proveedores',           'dAntProv',     true)}
-                  {cfRow('dProveedores', '(+/\u2212) Proveedores',                      'dProveedores', true)}
-                  {cfRow('dAcreedores',  '(+/\u2212) Acreedores diversos',              'dAcreedores',  true)}
-                  {cfRow('dProvisiones', '(+/\u2212) Provisiones de n\u00f3mina',        'dProvisiones', true)}
-                  {cfRow('dImpuestos',   '(+/\u2212) Impuestos retenidos por enterar',  'dImpuestos',   true)}
-                  {totRow('totalOperacion', '= Flujo Neto de Actividades de Operaci\u00f3n', false)}
-                  {/* ── B) INVERSION ── */}
-                  {secH('B)  Actividades de Inversi\u00f3n', S.secInv)}
-                  {cfRow('equComputo',  '(\u2212) Adquisici\u00f3n de equipo de c\u00f3mputo',  'equComputo',  false)}
-                  {cfRow('mobEquipo',   '(\u2212) Adquisici\u00f3n de mobiliario y equipo', 'mobEquipo',   false)}
-                  {cfRow('intangibles', '(\u2212) Adquisici\u00f3n de activos intangibles', 'intangibles', false)}
-                  {cfRow('depositos',   '(\u2212) Dep\u00f3sitos en garant\u00eda',           'depositos',   false)}
-                  {totRow('totalInversion', '= Flujo Neto de Actividades de Inversi\u00f3n', false)}
-                  {/* ── C) FINANCIAMIENTO ── */}
-                  {secH('C)  Actividades de Financiamiento', S.secFin)}
-                  {cfRow('aportaciones', '(+) Share capital contributions', 'aportaciones', false)}
-                  {totRow('totalFinanciamiento', '= Flujo Neto de Actividades de Financiamiento', false)}
-                  {/* ── OTRAS VARIACIONES (cuentas no clasificadas) ── */}
-                  {cfRow('otraVariacion', '(+/\u2212) Otras variaciones de efectivo no clasificadas', 'otraVariacion', true)}
-                  {totRow('netChange', 'Variación neta del efectivo', false)}
-                  {balRow('saldoInicial', 'Saldo Inicial de Efectivo y Equivalentes')}
-                  {balRow('saldoFinal',   'Saldo Final de Efectivo y Equivalentes')}
-                </tbody>
-              </table>
-            </div>
-            <div style={S.foot}>Haz clic en una l\u00ednea para expandir el detalle de cuentas.</div>
-{/* ---- METODOLOGIA CF ---- */}
-      {(()=>{
-        const mHdr={background:"#1a1a2e",color:"#e0e0ff",padding:"10px 16px",cursor:"pointer",borderRadius:mOpen?"8px 8px 0 0":"8px",fontWeight:600,marginTop:"16px",display:"flex",alignItems:"center",gap:"8px"};
-        const mBody={background:"#111128",color:"#c8c8e8",padding:"14px 18px",borderRadius:"0 0 8px 8px",fontSize:"13px",lineHeight:1.7};
-        const li={marginBottom:"3px"};
-        const cod={background:"#2a2a4a",borderRadius:"3px",padding:"1px 5px",fontFamily:"monospace",fontSize:"12px"};
-        return (
-          <div>
-            <div style={mHdr} onClick={()=>setMOpen(v=>!v)}>
-              <span>{mOpen?"▼":"►"}</span>
-              Metodología del Estado de Flujo de Efectivo
-            </div>
-            {mOpen&&(
-              <div style={mBody}>
-                <p><strong>Lógica general:</strong> Variación mensual en cuentas <span style={cod}>102</span> y <span style={cod}>103</span> (Efectivo).</p>
-                <p><strong>A) Operating activities</strong> = Net income + D&amp;A + working capital:</p>
-                <ul>
-                  <li style={li}><span style={cod}>115</span> Inventory</li>
-                  <li style={li}><span style={cod}>121</span> Accounts receivable</li>
-                  <li style={li}><span style={cod}>113, 119</span> IVA a favor</li>
-                  <li style={li}><span style={cod}>109</span> Supplier advances</li>
-                  <li style={li}><span style={cod}>120</span> Customer advances</li>
-                  <li style={li}><span style={cod}>201</span> Suppliers</li>
-                  <li style={li}><span style={cod}>205</span> Sundry creditors</li>
-                  <li style={li}><span style={cod}>210, 211, 212</span> Accruals</li>
-                  <li style={li}><span style={cod}>216, 217</span> Taxes payable</li>
-                </ul>
-                <p><strong>B) Inversión</strong>: <span style={cod}>155</span> Mob. &nbsp;<span style={cod}>156</span> Cómputo &nbsp;<span style={cod}>176</span> Intangibles &nbsp;<span style={cod}>184</span> Depósitos</p>
-                <p><strong>C) Financing</strong>: <span style={cod}>301</span> Capital contributions</p>
-                <p><strong>(+/−) Otras variaciones:</strong> residual entre variación real de efectivo y suma A+B+C. Valor distinto de cero = cuentas SAP sin clasificar.</p>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-          </div>
-        );
-      })()}
-{/* */}
-{/* */}
+      {cashFlow && <CashFlowSapV112 cf={cashFlow} month={cm} year={CUR_YEAR} />}
       {/* ═══���═══ BALANCE GENERAL ═══════ */}
       {balData&&<div style={{borderTop:"2px solid #E4E8F2",marginTop:8,paddingTop:16,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
@@ -1954,15 +1538,7 @@ export default function Dashboard() {
             {/* BURN MEXICO: histrico como primario, YTD como secundario */}
             {cashFlow && (() => {
               // BURN_DYNAMIC_CASH_EX_FINANCING_V49_EXECUTIVE
-              const approvedBurn2026=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
-              const cfSeries=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
-              const cfAt=(name,m)=>{const serie=cfSeries.find(x=>x.name===name),key=`${CUR_YEAR}-${String(m).padStart(2,"0")}`;const value=serie?.values?.[key];return value==null||value===""?null:Number(value);};
-              const bArr = cashFlow.months.slice(0,cm).map((mo,i)=>{
-                const starting=cfAt("Saldo Inicial",mo.m),ending=cfAt("Saldo Final",mo.m),capital=cfAt("Aportaciones de Capital",mo.m)||0;
-                const cashBurn=Number.isFinite(starting)&&Number.isFinite(ending)?ending-starting-capital:null;
-                const rowBurn=(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0);
-                return CUR_YEAR===2026&&approvedBurn2026[i]!=null?approvedBurn2026[i]:(cashBurn??rowBurn);
-              });
+              const bArr = cashFlow.months.slice(0,cm).map(mo=>mo.burnSigned); // SAP_BURN_EXEC_V112
               const bYTD = bArr.reduce((s,v)=>s+v,0);
               const BURN_HISTORICO_CIERRE_ENE_2026=-86708794;
               let burnHist=BURN_HISTORICO_CIERRE_ENE_2026;
@@ -1972,7 +1548,7 @@ export default function Dashboard() {
                 <div style={{fontSize:24,marginBottom:4,lineHeight:1}}>🔥</div>
                 <div style={{fontSize:9,color:"#8A90A8",letterSpacing:1.2,fontWeight:700,textTransform:"uppercase",marginBottom:2}}>BURN YTD</div>
                 <div style={{fontSize:20,fontWeight:800,color:"#1a1a2e",lineHeight:1.1,letterSpacing:-0.5}}>{F(bYTD)}</div>
-                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Month {MO[cm-1]}: {F(bArr.length ? bArr[bArr.length-1] : 0)} · Historical: {F(burnHist)}</div>
+                <div style={{fontSize:10,color:"#8A90A8",marginTop:2}}>Month {MO[Math.min(cm,cashFlow.cutoff)-1]}: {F(bArr.length ? bArr[bArr.length-1] : 0)} · Historical: {F(burnHist)}</div>
               </div>);
             })()}
             {/* Intangible Assets */}
@@ -2613,10 +2189,7 @@ export default function Dashboard() {
             const first24=life.slice(0,24),next24=life.slice(24,48),investment24=peakNeed(first24);const periodFundingNeed=arr=>{let run=0,high=0,maxDrawdown=0;arr.forEach(x=>{run+=Number(x.ebitda||0);if(run>high)high=run;const drawdown=high-run;if(drawdown>maxDrawdown)maxDrawdown=drawdown;});return maxDrawdown;};const investmentNext24=periodFundingNeed(next24); // KPI_INVESTMENT_PNL_DRAWDOWN_V94
             let peakRun=0,peakMin=0,peakDeficitPoint=null;life.forEach(x=>{peakRun+=Number(x.ebitda||0);if(peakRun<peakMin){peakMin=peakRun;peakDeficitPoint={...x,value:peakRun};}}); // GLOBAL_PEAK_EBITDA_DEFICIT_V86
             // TOTAL_KPIS_FINANCIAL_BURN_V93 — total cards recover the exact accumulated Burn from Financial Statements.
-            const approvedBurn2026Kpi=[-3417998,-2902782,-2920463,-9370047,-3773379,-3844006,-4213392,-7606437];
-            const burnCfSeriesKpi=(AUX_DATA&&AUX_DATA["Cash Flow"])||[];
-            const burnCfAtKpi=(name,m)=>{const serie=burnCfSeriesKpi.find(x=>x.name===name),key=`${CUR_YEAR}-${String(m).padStart(2,"0")}`,value=serie?.values?.[key];return value==null||value===""?null:Number(value);};
-            const financialBurnMonthsKpi=((cashFlow&&cashFlow.months)||[]).slice(0,cm).map((mo,i)=>{const starting=burnCfAtKpi("Saldo Inicial",mo.m),ending=burnCfAtKpi("Saldo Final",mo.m),capital=burnCfAtKpi("Aportaciones de Capital",mo.m)||0,cashBurn=Number.isFinite(starting)&&Number.isFinite(ending)?ending-starting-capital:null,rowBurn=(mo.totalOperacion||0)+(mo.totalInversion||0)+(mo.otraVariacion||0);return CUR_YEAR===2026&&approvedBurn2026Kpi[i]!=null?approvedBurn2026Kpi[i]:(cashBurn??rowBurn);});
+            const financialBurnMonthsKpi=((cashFlow&&cashFlow.months)||[]).slice(0,cm).map(mo=>mo.burnSigned); // SAP_BURN_PAYBACK_V112
             let financialBurnKpi=-86708794;financialBurnMonthsKpi.forEach((v,i)=>{if(i>0)financialBurnKpi+=v;});const burnTarget=Math.abs(Math.min(0,financialBurnKpi));
             let cumulativeEbitda=0,seenNegative=false,be=null,payback=null;life.forEach((x,i)=>{cumulativeEbitda+=Number(x.ebitda||0);if(cumulativeEbitda<0)seenNegative=true;if(!be&&seenNegative&&cumulativeEbitda>=0)be={...x,months:i+1};if(!payback&&burnTarget>0&&cumulativeEbitda>=burnTarget)payback={...x,monthsFromStart:i+1};}); // TOTAL_BE_ZERO_PAYBACK_BURN_V94
             const licenseFees=pnlYears.reduce((sy,yr)=>sy+allM.reduce((sm,m)=>sm+Number(bpl(yr,m,modeForYear(yr)).licenseFees||0),0),0); // KPI_LICENSE_FEES_RECONCILED_V92
