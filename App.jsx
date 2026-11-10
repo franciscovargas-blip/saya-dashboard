@@ -553,17 +553,21 @@ const sapMonthV112=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct',
 const BurnDetailTable=({year,month})=>{
   const source=buildSapCashFlowV112(year);if(!source)return null;
   const rows=source.months.slice(0,month);if(!rows.length)return null;
-  const items=[['inventory','Inventario'],['suppliers','Proveedores y anticipos'],['operation','Operación neta'],['intangibles','Intangibles'],['capex','CAPEX y depósitos']];
-  const cell={padding:'9px 10px',borderBottom:'1px solid #E4E8F2',textAlign:'right',whiteSpace:'nowrap'};
-  const numbers=values=>[...values,sapSumV112(values)].map((v,i)=><td key={i} style={{...cell,color:v<0?'#B42318':'#15803D',fontWeight:i===rows.length?800:undefined}}>{sapMoneyV112(v)}</td>);
-  return <section data-burn-detail-table="true" data-burn-sap-v112="true" style={{margin:'18px 0',border:'1px solid #A8C9FF',borderRadius:10,overflow:'hidden',background:'#fff'}}>
-    <div style={{padding:'12px',background:'#DBEAFE',fontWeight:800,color:'#17306F'}}>Burn detail by activity · MXN</div>
+  const names=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const items=[['operation','Operación neta'],['capex','CAPEX y depósitos'],['inventory','Inventario'],['suppliers','Proveedores y anticipos'],['intangibles','Intangibles']];
+  const cell={padding:'13px 12px',borderBottom:'1px solid #E8EDF5',textAlign:'right',whiteSpace:'nowrap',fontVariantNumeric:'tabular-nums'};
+  const format=v=>v===0?'—':`${v<0?'−':''}${Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  const numbers=values=>[...values,sapSumV112(values)].map((v,i)=><td key={i} style={{...cell,color:v<0?'#B42318':'#243451',fontWeight:i===rows.length?700:400,borderLeft:i===rows.length?'1px solid #CBD8EC':undefined}}>{format(v)}</td>);
+  return <section data-burn-detail-table="true" data-burn-sap-v112="true" style={{margin:'18px 0',border:'1px solid #DDE4F0',borderRadius:10,overflow:'hidden',background:'#fff',color:'#243451'}}>
+    <div style={{padding:'18px 20px 8px',fontSize:17,fontWeight:800,color:'#1F3155'}}>Burn detail by activity · México</div>
+    <div style={{padding:'0 20px 14px',fontSize:11,color:'#63728B'}}>{year} · MXN · Desglose mensual</div>
     <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
-      <thead><tr style={{background:'#F1F5FF'}}><th style={{...cell,textAlign:'left',minWidth:195}}>Actividad</th>{rows.map(r=><th style={cell} key={r.m}>{sapMonthV112[r.m-1]}</th>)}<th style={cell}>YTD</th></tr></thead>
-      <tbody>{items.map(([k,label])=><tr key={k}><td style={{...cell,textAlign:'left'}}>{label}</td>{numbers(rows.map(r=>-r.burnGroups[k]))}</tr>)}
-      <tr style={{background:'#DBEAFE',fontWeight:800}}><td style={{...cell,textAlign:'left'}}>Burn neto · México</td>{numbers(rows.map(r=>r.burnSigned))}</tr></tbody>
+      <thead><tr style={{background:'#F4F7FD',color:'#586984'}}><th style={{...cell,textAlign:'left',minWidth:190}}>Actividad</th>{rows.map(r=><th style={cell} key={r.m}>{names[r.m-1]}</th>)}<th style={{...cell,borderLeft:'1px solid #CBD8EC'}}>YTD</th></tr></thead>
+      <tbody>{items.map(([k,label],index)=><tr key={k} style={{background:index%2?'#FBFCFE':'#fff'}}><th scope="row" style={{...cell,textAlign:'left',fontWeight:600,color:'#334663'}}>{label}</th>{numbers(rows.map(r=>r.burnGroups[k]))}</tr>)}
+      <tr style={{background:'#EAF1FF',fontWeight:800}}><th scope="row" style={{...cell,textAlign:'left',borderTop:'2px solid #B7CBEE'}}>Burn neto · México</th>{numbers(rows.map(r=>r.burnConsumption))}</tr></tbody>
     </table></div>
-    <p style={{margin:0,padding:12,fontSize:11,lineHeight:1.6,color:'#667085'}}>México: consumo negativo, igual que la tarjeta Burn YTD; los importes positivos reducen el consumo. Se conserva la agrupación del método indirecto y se cambia únicamente el signo de presentación de los cinco grupos. Los grupos suman el Burn neto mensual y YTD de México, sin partidas residuales. Son movimientos de saldos, no pagos brutos certificados ni exclusivamente licencias. Este detalle no representa el Burn histórico de Holding; Holding se muestra por separado en Historical.</p>
+    <p style={{margin:0,padding:'14px 20px 6px',fontSize:11,lineHeight:1.5,color:'#63728B'}}>Positivo indica consumo de efectivo; negativo lo reduce. Los importes proceden de movimientos de saldos SAP y no certifican pagos brutos. El signo es opuesto al de la tarjeta de Burn de México; la magnitud es la misma.</p>
+    <p style={{margin:0,padding:'0 20px 16px',fontSize:11,lineHeight:1.5,color:'#63728B'}}>Los rubros usan la clasificación actual, sin asignar por separado OPEX, Licence Fees o Importación. La comparación con el reporte de referencia de junio y agosto queda pendiente de revisión.</p>
   </section>;
 };
 const BurnHistoryCardsV114=({rows,history})=>{
@@ -1268,7 +1272,6 @@ export default function Dashboard() {
         </div>
       </div>
 {/* */}
-{cm>=10&&CUR_YEAR===2026&&<div style={{padding:"8px 12px",fontSize:11,color:"#92400E",background:"#FFF7ED"}}>Octubre: saldos del balance SAP; el detalle de cuentas 160 y 252 puede no aparecer en el árbol anterior. Sus movimientos no equivalen necesariamente a pagos. Descuentos de octubre sin asignación por producto; los filtros por producto pueden excluirlos.</div>}
       {/* LEGEND */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
         <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 4, background: "#D4F0E6", color: "#085041" }}>● Actuals ≤ {MO[cm - 1]}</span>
